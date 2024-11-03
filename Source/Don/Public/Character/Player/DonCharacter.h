@@ -18,7 +18,12 @@ class DON_API ADonCharacter : public ADonCharacterBase
 public:
 	ADonCharacter();
 
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+	
 protected:
+	virtual void InitAbilityActorInfo() override;
+	void InitAndLoadInventory();
 
 public:
 	UPROPERTY(EditDefaultsOnly)
@@ -26,4 +31,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UCameraComponent> Camera;
+
+private:
 };

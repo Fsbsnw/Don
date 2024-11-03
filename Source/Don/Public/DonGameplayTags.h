@@ -1,0 +1,49 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+
+/**
+ * 
+ */
+
+struct FDonGameplayTags
+{
+public:
+	static const FDonGameplayTags& Get() { return GameplayTags; }
+	static void InitializeNativeGameplayTags();
+
+	// Inputs
+
+	FGameplayTag InputTag_LMB;
+	FGameplayTag InputTag_RMB;
+	FGameplayTag InputTag_Inventory;
+
+
+	// Primary Attributes
+
+	FGameplayTag Attributes_Primary_Vigor;
+	FGameplayTag Attributes_Primary_Agility;
+	FGameplayTag Attributes_Primary_Supernatural;
+
+
+	// Secondary Attributes
+
+	FGameplayTag Attributes_Secondary_CriticalHitChance;
+	FGameplayTag Attributes_Secondary_CriticalHitDamage;
+	FGameplayTag Attributes_Secondary_DodgeChance;
+	FGameplayTag Attributes_Secondary_SkillCooldown;
+	FGameplayTag Attributes_Secondary_SpawnChance;
+	FGameplayTag Attributes_Secondary_ExpGainRate;
+	FGameplayTag Attributes_Secondary_MoneyGainRate;
+	FGameplayTag Attributes_Secondary_ItemDropRate;
+
+
+
+protected:
+ 
+private:
+	static FDonGameplayTags GameplayTags;
+};

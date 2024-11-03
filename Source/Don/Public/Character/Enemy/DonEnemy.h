@@ -13,5 +13,10 @@ UCLASS()
 class DON_API ADonEnemy : public ADonCharacterBase
 {
 	GENERATED_BODY()
-	
+public:
+	ADonEnemy();
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void InitAbilityActorInfo() override;
 };
