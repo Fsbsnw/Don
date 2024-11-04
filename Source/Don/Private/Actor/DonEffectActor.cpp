@@ -4,6 +4,7 @@
 #include "Actor/DonEffectActor.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/DonAbilitySystemComponent.h"
 
 ADonEffectActor::ADonEffectActor()
 {
@@ -20,7 +21,7 @@ void ADonEffectActor::BeginPlay()
 
 void ADonEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
 {
-	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+	UDonAbilitySystemComponent* TargetASC = Cast<UDonAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor));
 	if (TargetASC == nullptr) return;
 
 	check(GameplayEffectClass);

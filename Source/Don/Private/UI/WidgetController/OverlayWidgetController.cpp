@@ -45,3 +45,11 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		}
 	);
 }
+
+void UOverlayWidgetController::SetCurrentHealth(float NewHealth)
+{
+	UDonAttributeSet* DonAttributeSet = CastChecked<UDonAttributeSet>(AttributeSet);
+
+	DonAttributeSet->SetHealth(NewHealth);
+	UE_LOG(LogTemp, Warning, TEXT("Set Health Attribute : %f"), NewHealth);
+}
