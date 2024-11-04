@@ -16,25 +16,25 @@ class DON_API UDonInventorySlotWidget : public UDonUserWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	FName ItemName = FName("NONE");
 	
 	UPROPERTY(BlueprintReadWrite)
 	FGuid ItemID;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	int32 Amount = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	float Durability = 0.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	int32 Upgrade = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	int32 InventorySlotIndex = -1;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	UTexture2D* Icon = nullptr;
 
 	UFUNCTION(BlueprintCallable)

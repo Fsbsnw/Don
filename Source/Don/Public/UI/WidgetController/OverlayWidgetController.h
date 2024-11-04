@@ -19,6 +19,9 @@ public:
 	virtual void BroadcastInitialValues() override;
 	virtual void BindCallbacksToDependencies() override;
 
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentHealth(float NewHealth);
+
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
 	

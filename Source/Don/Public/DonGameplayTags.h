@@ -41,6 +41,17 @@ public:
 	FGameplayTag Attributes_Secondary_ItemDropRate;
 
 
+	// Damage
+
+	FGameplayTag Damage;
+	FGameplayTag Damage_Physical;
+	FGameplayTag Damage_Fire;
+
+
+	// Cheat Attributes
+
+	FGameplayTag Cheat_Immortal;
+	
 
 protected:
  

@@ -91,4 +91,30 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("Attributes.Secondary.ItemDropRate"),
 	FString("Increases the Rate of Item Drop")
 	);
+
+
+	// Damage
+
+	GameplayTags.Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Damage"),
+	FString("Normal Damage")
+	);
+
+	GameplayTags.Damage_Physical = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Damage.Physical"),
+	FString("Physical Damage")
+	);
+
+	GameplayTags.Damage_Fire = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Damage.Fire"),
+	FString("Fire Damage")
+	);
+
+	
+	// Cheat Attributes
+
+	GameplayTags.Cheat_Immortal = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cheat.Immortal"),
+	FString("Immortal Cheat")
+	);
 }
