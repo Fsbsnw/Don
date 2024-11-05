@@ -9,9 +9,6 @@
 #include "NavigationPath.h"
 #include "Components/SplineComponent.h"
 #include "Input/DonInputComponent.h"
-#include "Inventory/InventoryComponent.h"
-#include "Player/DonPlayerState.h"
-#include "UI/HUD/DonHUD.h"
 
 ADonPlayerController::ADonPlayerController()
 {
@@ -88,7 +85,7 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 	}
 
 	// Open Inventory
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_Inventory))
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_Tab))
 	{
 		OpenInventory();
 	}
