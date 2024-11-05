@@ -19,7 +19,9 @@ public:
 
 	FGameplayTag InputTag_LMB;
 	FGameplayTag InputTag_RMB;
-	FGameplayTag InputTag_Inventory;
+	FGameplayTag InputTag_Tab;
+	FGameplayTag InputTag_NumKey_1;
+	FGameplayTag InputTag_NumKey_2;
 
 
 	// Primary Attributes
@@ -51,7 +53,17 @@ public:
 	// Cheat Attributes
 
 	FGameplayTag Cheat_Immortal;
-	
+
+
+	// Abilities
+
+	FGameplayTag Abilities_Attack;
+	FGameplayTag Abilities_FireBolt;
+
+
+	// Meta Attributes
+
+	FGameplayTag Attributes_Meta_IncomingXP;
 
 protected:
  

@@ -22,11 +22,20 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("Right Mouse Button")
 	);
 
-	GameplayTags.InputTag_Inventory = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("InputTag.Inventory"),
+	GameplayTags.InputTag_Tab = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.Tab"),
 	FString("Open / Close Inventory")
 	);
-		
+
+	GameplayTags.InputTag_NumKey_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.NumKey_1"),
+	FString("Number Key 1")
+	);
+
+	GameplayTags.InputTag_NumKey_2 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.NumKey_2"),
+	FString("Number Key 2")
+	);
 	
 	/*
 	 * Primary Attributes 
@@ -116,5 +125,26 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Cheat_Immortal = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Cheat.Immortal"),
 	FString("Immortal Cheat")
+	);
+
+
+	// Abilities
+
+	GameplayTags.Abilities_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Abilities.Attack"),
+	FString("Attack Ability")
+	);
+
+	GameplayTags.Abilities_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Abilities.FireBolt"),
+	FString("FireBolt Ability")
+	);
+	
+
+	// Meta Attributes
+
+	GameplayTags.Attributes_Meta_IncomingXP = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Attributes.Meta.IncomingXP"),
+	FString("IncomingXP Meta Attribute")
 	);
 }
