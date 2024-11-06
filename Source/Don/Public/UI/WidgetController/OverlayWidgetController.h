@@ -7,6 +7,7 @@
 #include "OverlayWidgetController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerLevelChangedSignature, int32, NewLevel, bool, bLevelUp);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTagChangedSignature, const FGameplayTagContainer&, TagContainer);
 
 /**
@@ -32,6 +33,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
 	FOnAttributeChangedSignature OnXPPercentChangedDelegate;
 
+	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
+	FOnPlayerLevelChangedSignature OnPlayerLevelChangedDelegate;
+	
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Abilities")
 	FOnTagChangedSignature OnTagChanged;
 

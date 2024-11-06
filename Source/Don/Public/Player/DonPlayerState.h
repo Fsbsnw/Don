@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerState.h"
 #include "DonPlayerState.generated.h"
 
+class ULevelUpInfo;
 class UInventoryComponent;
 class UAbilitySystemComponent;
 class UAttributeSet;
@@ -34,6 +35,9 @@ public:
 	TArray<FItem>& GetInventory() { return Inventory; }
 
 	const uint8 MaxItemSlots = 20;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<ULevelUpInfo> LevelUpInfo;
 	
 	FOnPlayerStatChanged OnXPChangedDelegate;
 	FOnLevelChanged OnLevelChangedDelegate;

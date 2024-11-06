@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
+#include "Data/LevelUpInfo.h"
 #include "Inventory/InventoryComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -37,7 +38,14 @@ UAbilitySystemComponent* ADonPlayerState::GetAbilitySystemComponent() const
 
 void ADonPlayerState::AddToXP(int32 InXP)
 {
+	const int32 PrevLevel = LevelUpInfo->FindLevelForXP(XP); 
+	
 	XP += InXP;
+
+	const int32 CurrLevel = LevelUpInfo->FindLevelForXP(XP);
+
+	if (PrevLevel < CurrLevel) AddToLevel(CurrLevel - PrevLevel);
+	
 	OnXPChangedDelegate.Broadcast(XP);
 }
 
