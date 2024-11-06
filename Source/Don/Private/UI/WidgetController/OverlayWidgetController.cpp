@@ -5,14 +5,18 @@
 
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
+#include "Data/LevelUpInfo.h"
 #include "Player/DonPlayerState.h"
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
 	const UDonAttributeSet* DonAttributeSet = CastChecked<UDonAttributeSet>(AttributeSet);
+	const ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
 	
 	OnHealthChanged.Broadcast(DonAttributeSet->GetHealth());
 	OnMaxHealthChanged.Broadcast(DonAttributeSet->GetMaxHealth());
+	
+	OnPlayerLevelChangedDelegate.Broadcast(DonPlayerState->GetPlayerLevel(), true);
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
@@ -60,6 +64,12 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	 */
 	
 	Cast<ADonPlayerState>(PlayerState)->OnXPChangedDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
+	Cast<ADonPlayerState>(PlayerState)->OnLevelChangedDelegate.AddLambda(
+	[this](int32 NewLevel, bool bLevelUp)
+		{
+			OnPlayerLevelChangedDelegate.Broadcast(NewLevel, bLevelUp);
+		}
+	);
 }
 
 void UOverlayWidgetController::SetCurrentHealth(float NewHealth)
@@ -72,9 +82,23 @@ void UOverlayWidgetController::SetCurrentHealth(float NewHealth)
 
 void UOverlayWidgetController::OnXPChanged(int32 NewXP)
 {
-	int32 XPBarPercent = NewXP;
-	
-	OnXPPercentChangedDelegate.Broadcast(XPBarPercent);
+	const ULevelUpInfo* LevelUpInfo = CastChecked<ADonPlayerState>(PlayerState)->LevelUpInfo;
+	const int32 CurrLevel = LevelUpInfo->FindLevelForXP(NewXP);
+	const int32 MaxLevel = LevelUpInfo->LevelUpInformation.Num() - 1;
+
+	if (CurrLevel < MaxLevel)
+	{
+		const int32 CurrLevelUpRequirement = LevelUpInfo->LevelUpInformation[CurrLevel].LevelUpRequirement;
+		const int32 NextLevelUpRequirement = LevelUpInfo->LevelUpInformation[CurrLevel + 1].LevelUpRequirement;
+
+		const int32 XPForThisLevel = NewXP - CurrLevelUpRequirement;
+		const int32 DeltaLevelRequirement = NextLevelUpRequirement - CurrLevelUpRequirement;
+		
+		const float XPBarPercent = static_cast<float>(XPForThisLevel) / static_cast<float>(DeltaLevelRequirement);
+		
+		OnXPPercentChangedDelegate.Broadcast(XPBarPercent);
+	}
+	else OnXPPercentChangedDelegate.Broadcast(1.f);
 }
 
 void UOverlayWidgetController::AddXPToPlayer(int32 AddXP)
