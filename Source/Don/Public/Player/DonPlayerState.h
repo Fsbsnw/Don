@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "Data/ItemAsset.h"
+#include "Character/Component/InteractComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "DonPlayerState.generated.h"
 
@@ -58,6 +59,9 @@ public:
 	void SetLevel(int32 InLevel);
 	void SetAttributePoints(int32 InPoints);
 	void SetSkillPoints(int32 InPoints);
+
+	UPROPERTY(BlueprintReadWrite)
+	TMap<FString, FDialogueContainer> CompletedDialogues;
 	
 protected:
 	UPROPERTY(VisibleAnywhere)

@@ -7,6 +7,8 @@
 #include "Data/ItemAsset.h"
 #include "DonItemLibrary.generated.h"
 
+struct FDialogueContainer;
+struct FDialogue;
 class UInventoryWidgetController;
 /**
  * 
@@ -21,4 +23,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
 	static UInventoryWidgetController* GetInventoryWidgetController(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Dialogue")
+	static FDialogue FindDialogueRow(const UObject* WorldContextObject, const FString& NPCName, int32 Progress = 1);
+
+	UFUNCTION(BlueprintCallable, Category = "DonInteractLibrary | Dialogue")
+	static void AddDialogueRow(UPARAM(ref) TMap<FString, FDialogueContainer>& DialogueContainer, const FDialogue& Dialogue);
 };

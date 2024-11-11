@@ -24,7 +24,7 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 
 	GameplayTags.InputTag_Tab = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("InputTag.Tab"),
-	FString("Open / Close Inventory")
+	FString("Keyboard Tab")
 	);
 
 	GameplayTags.InputTag_NumKey_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -35,6 +35,11 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.InputTag_NumKey_2 = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("InputTag.NumKey_2"),
 	FString("Number Key 2")
+	);
+
+	GameplayTags.InputTag_E = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.E"),
+	FString("Keyboard E")
 	);
 	
 	/*
