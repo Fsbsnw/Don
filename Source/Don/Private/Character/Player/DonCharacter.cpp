@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Character/Interface/InteractInterface.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Player/DonPlayerController.h"
 #include "Player/DonPlayerState.h"
@@ -73,4 +74,14 @@ void ADonCharacter::InitAndLoadInventory()
 	}
 
 	// Load Player State Inventory Info
+}
+
+bool ADonCharacter::ExecuteInteract(AActor* Actor)
+{
+	if (Actor->Implements<UInteractInterface>())
+	{
+		Cast<IInteractInterface>(Actor)->Interact(GetPlayerState());
+		return true;
+	}
+	return false;
 }

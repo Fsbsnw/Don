@@ -21,9 +21,15 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void Interact();
+	
 protected:
 	virtual void InitAbilityActorInfo() override;
 	void InitAndLoadInventory();
+
+	UFUNCTION(BlueprintCallable)
+	bool ExecuteInteract(AActor* Actor);
 
 public:
 	UPROPERTY(EditDefaultsOnly)

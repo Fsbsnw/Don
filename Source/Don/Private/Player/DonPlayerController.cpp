@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "Character/Player/DonCharacter.h"
 #include "Components/SplineComponent.h"
 #include "Input/DonInputComponent.h"
 
@@ -88,6 +89,15 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_Tab))
 	{
 		OpenInventory();
+	}
+
+	// Interact with NPC
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_E))
+	{
+		if (ADonCharacter* DonCharacter = Cast<ADonCharacter>(GetPawn()))
+		{
+			DonCharacter->Interact();
+		}
 	}
 }
 

@@ -25,6 +25,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OpenInventory();
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

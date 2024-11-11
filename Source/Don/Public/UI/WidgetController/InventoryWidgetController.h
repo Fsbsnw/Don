@@ -9,9 +9,10 @@
 #include "InventoryWidgetController.generated.h"
 
 class UDonInventorySlotWidget;
+class UDragDropOperation;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdate, FItem, Item);
 
-class UDragDropOperation;
 
 /**
  * 
@@ -22,7 +23,7 @@ class DON_API UInventoryWidgetController : public UDonWidgetController
 	GENERATED_BODY()
 public:
 	virtual void BindCallbacksToDependencies() override;
-
+	
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryUpdate OnInventoryItemAdded;
 

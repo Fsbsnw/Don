@@ -4,6 +4,7 @@
 #include "Inventory/DonItemLibrary.h"
 
 #include "DonGameModeBase.h"
+#include "GameInstance/DonGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
 #include "UI/HUD/DonHUD.h"
@@ -40,4 +41,28 @@ UInventoryWidgetController* UDonItemLibrary::GetInventoryWidgetController(const 
 	}
 	
 	return nullptr;
+}
+
+FDialogue UDonItemLibrary::FindDialogueRow(const UObject* WorldContextObject, const FString& NPCName, int32 Progress)
+{
+	if (UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject)))
+	{
+		TMap<FString, FDialogueContainer> DialogueTable = DonGameInstance->DialogueDataTable;
+		FDialogueContainer* DialoguesForNPC = DialogueTable.Find(NPCName);
+		if (DialoguesForNPC == nullptr || DialoguesForNPC->Dialogues.Num() == 0) return FDialogue();
+		
+		for (FDialogue Dialogue : DialoguesForNPC->Dialogues)
+		{
+			if (Dialogue.DialogueProgress == Progress)
+			{
+				return Dialogue;
+			}
+		}
+	}	
+	return FDialogue();
+}
+
+void UDonItemLibrary::AddDialogueRow(TMap<FString, FDialogueContainer>& DialogueContainer, const FDialogue& Dialogue)
+{
+	DialogueContainer.FindOrAdd(Dialogue.DialogueID).Dialogues.AddUnique(Dialogue);
 }
