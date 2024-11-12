@@ -7,6 +7,18 @@
 #include "Engine/DataTable.h"
 #include "InteractComponent.generated.h"
 
+USTRUCT(BlueprintType)
+struct FResponseOption
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FString Response;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 NextProgress = 1;
+};
+
 UENUM(BlueprintType)
 enum class EConditionType : uint8
 {
@@ -20,14 +32,17 @@ struct FDialogueCondition
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EConditionType ConditionType; 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FName TargetID; 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FName TargetID;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	bool bIsConditionMet; 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FString DialogueID;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 DialogueProgress; 
 };
 
 USTRUCT(BlueprintType)
@@ -40,22 +55,22 @@ struct FDialogue : public FTableRowBase
 		return DialogueID == Other.DialogueID && DialogueProgress == Other.DialogueProgress;
 	}
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FString DialogueID;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 DialogueProgress = 1;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FText DialogueText;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TMap<FString, int32> ResponseOptions;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<FResponseOption> ResponseOptions;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FDialogueCondition> Conditions;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NextDialogueProgress;
 };
 

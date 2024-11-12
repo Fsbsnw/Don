@@ -12,7 +12,6 @@
 UInteractComponent::UInteractComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
 }
 
 UInteractWidgetController* UInteractComponent::GetInteractWidgetController(AActor* Owner, APlayerState* TargetPlayerState)
@@ -43,6 +42,11 @@ void UInteractComponent::OpenDialogue(APlayerState* PlayerState)
 
 	UInteractWidgetController* WidgetController = GetInteractWidgetController(GetOwner(), PlayerState);
 	DialogueWidget->SetWidgetController(WidgetController);
+
+	FVector2d ScreenSize;
+	GEngine->GameViewport->GetViewportSize(ScreenSize);
+	ScreenSize = FVector2d(ScreenSize.X / 5, ScreenSize.Y * 2 / 3);
+	DialogueWidget->SetPositionInViewport(ScreenSize);
 	
 	DialogueWidget->AddToViewport();
 }
