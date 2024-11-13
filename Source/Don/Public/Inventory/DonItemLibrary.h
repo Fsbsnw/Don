@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Data/Dialogue.h"
 #include "Data/ItemAsset.h"
 #include "DonItemLibrary.generated.h"
 
@@ -25,7 +26,7 @@ public:
 	static UInventoryWidgetController* GetInventoryWidgetController(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Dialogue")
-	static FDialogue FindDialogueRow(const UObject* WorldContextObject, const FString& NPCName, int32 Progress = 1);
+	static bool FindDialogueRow(const UObject* WorldContextObject, UPARAM(ref) FDialogue& OutDialogue , const FString& NPCName, int32 Progress = 1);
 
 	UFUNCTION(BlueprintCallable, Category = "DonInteractLibrary | Dialogue")
 	static void AddDialogueRow(UPARAM(ref) TMap<FString, FDialogueContainer>& DialogueContainer, const FDialogue& Dialogue);

@@ -43,23 +43,24 @@ UInventoryWidgetController* UDonItemLibrary::GetInventoryWidgetController(const 
 	return nullptr;
 }
 
-FDialogue UDonItemLibrary::FindDialogueRow(const UObject* WorldContextObject, const FString& NPCName, int32 Progress)
+bool UDonItemLibrary::FindDialogueRow(const UObject* WorldContextObject, FDialogue& OutDialogue , const FString& NPCName, int32 Progress)
 {
 	if (UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject)))
 	{
 		TMap<FString, FDialogueContainer> DialogueTable = DonGameInstance->DialogueDataTable;
 		FDialogueContainer* DialoguesForNPC = DialogueTable.Find(NPCName);
-		if (DialoguesForNPC == nullptr || DialoguesForNPC->Dialogues.Num() == 0) return FDialogue();
+		if (DialoguesForNPC == nullptr || DialoguesForNPC->Dialogues.Num() == 0) return false;
 		
 		for (FDialogue Dialogue : DialoguesForNPC->Dialogues)
 		{
 			if (Dialogue.DialogueProgress == Progress)
 			{
-				return Dialogue;
+				OutDialogue = Dialogue;
+				return true;
 			}
 		}
 	}	
-	return FDialogue();
+	return false;
 }
 
 void UDonItemLibrary::AddDialogueRow(TMap<FString, FDialogueContainer>& DialogueContainer, const FDialogue& Dialogue)

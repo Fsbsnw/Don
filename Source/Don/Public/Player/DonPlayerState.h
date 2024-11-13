@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "Data/ItemAsset.h"
-#include "Character/Component/InteractComponent.h"
+#include "Data/Dialogue.h"
 #include "GameFramework/PlayerState.h"
 #include "DonPlayerState.generated.h"
 
@@ -30,6 +30,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
