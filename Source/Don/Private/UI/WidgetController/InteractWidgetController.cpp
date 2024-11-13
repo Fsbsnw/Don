@@ -5,6 +5,7 @@
 
 #include "Character/Component/InteractComponent.h"
 #include "Character/NPC/NPCCharacterBase.h"
+#include "Data/Dialogue.h"
 #include "Inventory/DonItemLibrary.h"
 #include "Player/DonPlayerState.h"
 
@@ -19,27 +20,30 @@ FDialogue UInteractWidgetController::SetCurrentDialogueProgress()
 	TMap<FString, FDialogueContainer> CompletedDialogues = Cast<ADonPlayerState>(PlayerState)->CompletedDialogues;
 	ANPCCharacterBase* NPCCharacter = Cast<ANPCCharacterBase>(InteractComponent->GetOwner());
 	
-	FDialogueContainer* DialoguesForNPC = CompletedDialogues.Find(NPCCharacter->CharacterName);
+	FDialogueContainer* EndedDialoguesForNPC = CompletedDialogues.Find(NPCCharacter->CharacterName);
 	FDialogue InitialDialogue;
 
-	if (DialoguesForNPC && DialoguesForNPC->Dialogues.Num() > 0)
+	if (EndedDialoguesForNPC && EndedDialoguesForNPC->Dialogues.Num() > 0)
 	{
-		int32 Progress = 0;
-		
-		for (FDialogue Dialogue : DialoguesForNPC->Dialogues)
+		for (FDialogue Dialogue : EndedDialoguesForNPC->Dialogues)
 		{
-			if (Dialogue.DialogueProgress > Progress)
+			if (Dialogue.DialogueType == EDialogueType::ContinueFromLast)
 			{
-				Progress = Dialogue.DialogueProgress;
 				InitialDialogue = Dialogue;
 			}
 		}
-		InitialDialogue = UDonItemLibrary::FindDialogueRow(GetWorld(), InitialDialogue.DialogueID, InitialDialogue.NextDialogueProgress);
 	}
 	else
 	{
-		InitialDialogue = UDonItemLibrary::FindDialogueRow(GetWorld(), NPCCharacter->CharacterName, 1);
+		UDonItemLibrary::FindDialogueRow(GetWorld(), InitialDialogue, NPCCharacter->CharacterName, 1);
 	}
 	
 	return InitialDialogue;
+}
+
+FDialogue UInteractWidgetController::FindDialogueRow(const FString& DialogueID, int32 Progress)
+{
+	FDialogue Dialogue;
+	UDonItemLibrary::FindDialogueRow(GetWorld(), Dialogue, DialogueID, Progress);
+	return Dialogue;
 }

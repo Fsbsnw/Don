@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FDialogue SetCurrentDialogueProgress();
 
+	UFUNCTION(BlueprintCallable)
+	FDialogue FindDialogueRow(const FString& DialogueID, int32 Progress);
+
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UInteractComponent> InteractComponent;

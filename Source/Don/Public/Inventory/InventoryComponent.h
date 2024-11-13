@@ -17,7 +17,9 @@ class DON_API UInventoryComponent : public UActorComponent
 public:	
 	UInventoryComponent();
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void AddItem(APlayerState* PlayerState, FName ItemName);
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void RemoveItem(APlayerState* PlayerState, FName ItemName);
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
