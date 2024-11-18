@@ -12,7 +12,7 @@ struct FItem
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName ItemName = FName("NONE");
+	FName ItemName;
 	
 	UPROPERTY()
 	FGuid ItemID;
@@ -44,7 +44,7 @@ class DON_API UItemAsset : public UDataAsset
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ItemInformation")
 	TArray<FItem> ItemInformation;
-
+	
 	UFUNCTION(BlueprintCallable)
 	FItem FindItemByName(FName ItemName);
 };

@@ -41,7 +41,7 @@ FDialogue UInteractWidgetController::SetCurrentDialogueProgress()
 	return InitialDialogue;
 }
 
-FDialogue UInteractWidgetController::FindDialogueRow(const FString& DialogueID, int32 Progress)
+FDialogue UInteractWidgetController::FindDialogueRow(const FString& DialogueID, const int32 Progress)
 {
 	FDialogue Dialogue;
 	UDonItemLibrary::FindDialogueRow(GetWorld(), Dialogue, DialogueID, Progress);

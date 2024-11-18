@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InteractWidgetController.generated.h"
 
+struct FDataTableRowHandle;
 struct FDialogue;
 class UInteractComponent;
 /**
@@ -21,7 +22,7 @@ public:
 	FDialogue SetCurrentDialogueProgress();
 
 	UFUNCTION(BlueprintCallable)
-	FDialogue FindDialogueRow(const FString& DialogueID, int32 Progress);
+	FDialogue FindDialogueRow(const FString& DialogueID, const int32 Progress);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
