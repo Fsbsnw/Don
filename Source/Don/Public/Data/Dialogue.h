@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "Engine/DataTable.h"
 #include "Dialogue.generated.h"
 
@@ -19,10 +20,7 @@ struct FResponseOption
 	FString Response;
 		
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FString NextDialogueID;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 NextProgress = 1;
+	FDataTableRowHandle NextDialogueHandle;
 };
 
 UENUM(BlueprintType)
@@ -30,11 +28,11 @@ enum class EConditionType : uint8
 {
 	QuestComplete     UMETA(DisplayName = "Quest Complete"),
 	HasItem           UMETA(DisplayName = "Has Item"),
-	ChoiceSatisfied   UMETA(DisplayName = "Choice Satisfied") 
+	DialogueComplete  UMETA(DisplayName = "DialogueComplete ") 
 };
 
 USTRUCT(BlueprintType)
-struct FDialogueCondition
+struct FCondition
 {
 	GENERATED_BODY()
 
@@ -42,13 +40,10 @@ struct FDialogueCondition
 	EConditionType ConditionType; 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FName TargetID;
+	FDataTableRowHandle ConditionDataHandle;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FString DialogueID;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 DialogueProgress; 
+	FName ItemName;
 };
 
 UENUM(BlueprintType)
@@ -88,7 +83,7 @@ struct FDialogue : public FTableRowBase
 	TArray<FResponseOption> ResponseOptions;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<FDialogueCondition> Conditions;
+	TArray<FCondition> Conditions;
 };
 
 USTRUCT(BlueprintType)

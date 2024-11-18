@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "Data/ItemAsset.h"
+#include "Data/Quest.h"
 #include "Data/Dialogue.h"
 #include "GameFramework/PlayerState.h"
 #include "DonPlayerState.generated.h"
@@ -64,6 +65,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	TMap<FString, FDialogueContainer> CompletedDialogues;
+
+	UPROPERTY(BlueprintReadWrite)
+	TMap<FString, FQuestContainer> PlayerQuests;
 	
 protected:
 	UPROPERTY(VisibleAnywhere)
