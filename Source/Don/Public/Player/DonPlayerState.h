@@ -15,6 +15,8 @@ class UInventoryComponent;
 class UAbilitySystemComponent;
 class UAttributeSet;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuestListChanged, FQuest, Quest);
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChanged, int32 /*StatValue*/)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLevelChanged, int32 /*StatValue*/, bool /*bLevelUp*/)
 
@@ -42,12 +44,18 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<ULevelUpInfo> LevelUpInfo;
+
+	// Delegates
 	
 	FOnPlayerStatChanged OnXPChangedDelegate;
 	FOnLevelChanged OnLevelChangedDelegate;
 	FOnPlayerStatChanged OnAttributePointsChangedDelegate;
 	FOnPlayerStatChanged OnSkillPointsChangedDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Quest")
+	FOnQuestListChanged OnQuestListChanged;
 
+	// Delegates
+	
 	FORCEINLINE int32 GetPlayerLevel() const { return Level; }
 	FORCEINLINE int32 GetXP() const { return XP; }
 	FORCEINLINE int32 GetAttributePoints() const { return AttributePoints; }
@@ -64,10 +72,15 @@ public:
 	void SetSkillPoints(int32 InPoints);
 
 	UPROPERTY(BlueprintReadWrite)
-	TMap<FString, FDialogueContainer> CompletedDialogues;
+	TMap<ENPCName, FDialogueContainer> CompletedDialogues;
 
 	UPROPERTY(BlueprintReadWrite)
-	TMap<FString, FQuestContainer> PlayerQuests;
+	TMap<ENPCName, FQuestContainer> PlayerQuests;
+	
+	void CheckQuestObjectives();
+	bool IsItemConditionMet(const FObjective& Objective);
+	bool IsDialogueConditionMet(const FObjective& Objective);
+	bool IsQuestConditionMet(const FObjective& Objective);
 	
 protected:
 	UPROPERTY(VisibleAnywhere)

@@ -23,6 +23,7 @@ public:
 	FGameplayTag InputTag_NumKey_1;
 	FGameplayTag InputTag_NumKey_2;
 	FGameplayTag InputTag_E;
+	FGameplayTag InputTag_Q;
 
 
 	// Primary Attributes

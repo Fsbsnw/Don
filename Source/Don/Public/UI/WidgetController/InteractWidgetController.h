@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Dialogue.h"
+#include "Data/Quest.h"
+#include "Data/ItemAsset.h"
 #include "InteractWidgetController.generated.h"
 
 struct FDataTableRowHandle;
-struct FDialogue;
 class UInteractComponent;
 /**
  * 
@@ -15,14 +17,23 @@ UCLASS(BlueprintType, Blueprintable)
 class DON_API UInteractWidgetController : public UObject
 {
 	GENERATED_BODY()
-public:
+public:	
 	void SetWidgetControllerParams(UInteractComponent* InInteractComponent, APlayerState* TargetPlayerState);
 
 	UFUNCTION(BlueprintCallable)
-	FDialogue SetCurrentDialogueProgress();
+	FDialogue SetCurrentDialogueProgress() const;
 
 	UFUNCTION(BlueprintCallable)
-	FDialogue FindDialogueRow(const FString& DialogueID, const int32 Progress);
+	FDialogue FindDialogueRow(const ENPCName& NPCName, const EDialogueFlow& DialogueFlow, const int32 Branch, const int32 Progress) const;
+
+	UFUNCTION(BlueprintCallable)
+	void AddItemToPlayerState(const FItem& Item, int32 Amount);
+	
+	UFUNCTION(BlueprintCallable)
+	void AddDialogueToPlayerState(const FDialogue& Dialogue);
+
+	UFUNCTION(BlueprintCallable)
+	void AddQuestToPlayerState(FQuest Quest, EQuestState QuestState = EQuestState::InProgress);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")

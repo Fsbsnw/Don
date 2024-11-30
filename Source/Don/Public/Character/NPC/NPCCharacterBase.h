@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Dialogue.h"
 #include "Character/Interface/InteractInterface.h"
 #include "GameFramework/Character.h"
 #include "NPCCharacterBase.generated.h"
@@ -20,7 +21,7 @@ public:
 	virtual void Interact(APlayerState* TargetPlayerState) override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "NPC")
-	FString CharacterName;
+	ENPCName NPCName = ENPCName::Normal;
 	
 protected:
 	UPROPERTY(VisibleDefaultsOnly)

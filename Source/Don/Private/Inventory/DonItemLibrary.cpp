@@ -9,6 +9,7 @@
 #include "Player/DonPlayerState.h"
 #include "UI/HUD/DonHUD.h"
 #include "UI/WidgetController/DonWidgetController.h"
+#include "UI/WidgetController/QuestListWidgetController.h"
 
 FItem UDonItemLibrary::FindItemByName(const UObject* WorldContextObject, FName ItemName)
 {
@@ -43,17 +44,34 @@ UInventoryWidgetController* UDonItemLibrary::GetInventoryWidgetController(const 
 	return nullptr;
 }
 
-bool UDonItemLibrary::FindDialogueRow(const UObject* WorldContextObject, FDialogue& OutDialogue , const FString& NPCName, int32 Progress)
+UQuestListWidgetController* UDonItemLibrary::GetQuestListWidgetController(const UObject* WorldContextObject)
 {
-	if (UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject)))
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
 	{
-		TMap<FString, FDialogueContainer> DialogueTable = DonGameInstance->DialogueDataTable;
+		if (ADonHUD* DonHUD = Cast<ADonHUD>(PC->GetHUD()))
+		{
+			ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>();
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet* AS = PS->GetAttributeSet();
+			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
+			return DonHUD->GetQuestListWidgetController(WidgetControllerParams);
+		}
+	}
+	
+	return nullptr;
+}
+
+bool UDonItemLibrary::FindDialogueRow(const UObject* WorldContextObject, FDialogue& OutDialogue , const ENPCName& NPCName, const EDialogueFlow& Flow, int32 Branch, int32 Progress)
+{
+	if (const UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject)))
+	{
+		TMap<ENPCName, FDialogueContainer> DialogueTable = DonGameInstance->DialogueDataTable;
 		FDialogueContainer* DialoguesForNPC = DialogueTable.Find(NPCName);
 		if (DialoguesForNPC == nullptr || DialoguesForNPC->Dialogues.Num() == 0) return false;
 		
 		for (FDialogue Dialogue : DialoguesForNPC->Dialogues)
 		{
-			if (Dialogue.DialogueProgress == Progress)
+			if (Dialogue.DialogueFlow == Flow && Dialogue.DialogueBranch == Branch && Dialogue.DialogueProgress == Progress)
 			{
 				OutDialogue = Dialogue;
 				return true;
@@ -61,9 +79,4 @@ bool UDonItemLibrary::FindDialogueRow(const UObject* WorldContextObject, FDialog
 		}
 	}	
 	return false;
-}
-
-void UDonItemLibrary::AddDialogueRow(TMap<FString, FDialogueContainer>& DialogueContainer, const FDialogue& Dialogue)
-{
-	DialogueContainer.FindOrAdd(Dialogue.DialogueID).Dialogues.AddUnique(Dialogue);
 }

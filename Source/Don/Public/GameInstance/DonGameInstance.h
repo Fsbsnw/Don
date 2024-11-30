@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "Character/Component/InteractComponent.h"
+#include "Data/Dialogue.h"
 #include "DonGameInstance.generated.h"
 
 class UDataTable;
@@ -19,5 +19,5 @@ public:
 	virtual void Init() override;
 	
 	UPROPERTY(BlueprintReadOnly)
-	TMap<FString, FDialogueContainer> DialogueDataTable;
+	TMap<ENPCName, FDialogueContainer> DialogueDataTable;
 };

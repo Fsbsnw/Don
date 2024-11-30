@@ -6,6 +6,7 @@
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
 #include "Data/LevelUpInfo.h"
+#include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -89,6 +90,109 @@ void ADonPlayerState::SetSkillPoints(int32 InPoints)
 {
 	SkillPoints = InPoints;
 	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
+}
+
+void ADonPlayerState::CheckQuestObjectives()
+{
+	for (TTuple<ENPCName, FQuestContainer> QuestsForNPC : PlayerQuests)
+	{
+		for (FQuest Quest : QuestsForNPC.Value.Quests)
+		{
+			bool bAllObjectivesMet = true;
+			
+			// Check Objectives
+			for (FObjective Objective : Quest.QuestObjectives)
+			{
+				// Too much time to update quest progress, so we have to use async function
+				switch (Objective.ObjectiveType)
+				{
+				case EObjectiveType::HasItem:
+					if (!IsItemConditionMet(Objective)) bAllObjectivesMet = false;
+						break;
+				case EObjectiveType::DialogueComplete:
+					if (!IsDialogueConditionMet(Objective)) bAllObjectivesMet = false;
+						break;
+				case EObjectiveType::QuestComplete:
+					if (!IsQuestConditionMet(Objective)) bAllObjectivesMet = false;
+						break;
+				}
+			}
+
+			// Do Next Function
+			if (bAllObjectivesMet)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("All Objectives Met"));
+			}
+		}
+	}
+}
+
+
+// Check Item
+bool ADonPlayerState::IsItemConditionMet(const FObjective& Objective)
+{
+	// Check Inventory
+	FItem ItemToFind = UDonItemLibrary::FindItemByName(GetWorld(), Objective.ItemID);
+	int32 ItemIndex = Inventory.Find(ItemToFind);
+	if (!Inventory.Contains(ItemToFind) ||
+		ItemIndex == INDEX_NONE ||
+		Inventory[ItemIndex].Amount != Objective.ItemAmount)
+	{
+		return false;
+	}
+	return true;
+}
+
+
+// Check Dialogue
+bool ADonPlayerState::IsDialogueConditionMet(const FObjective& Objective)
+{
+	if (Objective.ObjectiveDataHandle.DataTable)
+	{
+		const UDataTable* DialogueTable = Objective.ObjectiveDataHandle.DataTable;
+		const FName DialogueName = Objective.ObjectiveDataHandle.RowName;
+
+		const FDialogue* Dialogue = DialogueTable->FindRow<FDialogue>(DialogueName, TEXT(""));
+		const FDialogueContainer* DialogueContainer = CompletedDialogues.Find(Dialogue->NPCName); 
+		if (DialogueContainer)
+		{
+			if (!DialogueContainer->Dialogues.Find(*Dialogue))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// Check Quest
+bool ADonPlayerState::IsQuestConditionMet(const FObjective& Objective)
+{
+	if (Objective.ObjectiveDataHandle.DataTable)
+	{
+		const UDataTable* QuestTable = Objective.ObjectiveDataHandle.DataTable;
+		const FName QuestName = Objective.ObjectiveDataHandle.RowName;
+
+		const FQuest* Quest = QuestTable->FindRow<FQuest>(QuestName, TEXT(""));
+		const FQuestContainer* QuestContainer = PlayerQuests.Find(Quest->QuestNPC);
+		if (QuestContainer)
+		{
+			if (!QuestContainer->Quests.Find(*Quest))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 void ADonPlayerState::OnRep_Level(int32 OldLevel)
