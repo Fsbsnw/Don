@@ -11,6 +11,7 @@
 struct FDialogueContainer;
 struct FDialogue;
 class UInventoryWidgetController;
+class UQuestListWidgetController;
 /**
  * 
  */
@@ -25,9 +26,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
 	static UInventoryWidgetController* GetInventoryWidgetController(const UObject* WorldContextObject);
 
-	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Dialogue")
-	static bool FindDialogueRow(const UObject* WorldContextObject, UPARAM(ref) FDialogue& OutDialogue , const FString& NPCName, int32 Progress = 1);
+	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Quest")
+	static UQuestListWidgetController* GetQuestListWidgetController(const UObject* WorldContextObject);
 
-	UFUNCTION(BlueprintCallable, Category = "DonInteractLibrary | Dialogue")
-	static void AddDialogueRow(UPARAM(ref) TMap<FString, FDialogueContainer>& DialogueContainer, const FDialogue& Dialogue);
+	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Dialogue")
+	static bool FindDialogueRow(const UObject* WorldContextObject, FDialogue& OutDialogue , const ENPCName& NPCName, const EDialogueFlow& Flow, int32 Branch = 0, int32 Progress = 1);
 };

@@ -17,6 +17,6 @@ void UDonGameInstance::Init()
 	
 	for (FDialogue* Dialogue : AllDialogues)
 	{
-		DialogueDataTable.FindOrAdd(Dialogue->DialogueID).Dialogues.AddUnique(*Dialogue);		
+		DialogueDataTable.FindOrAdd(Dialogue->NPCName).Dialogues.AddUnique(*Dialogue);		
 	}
 }

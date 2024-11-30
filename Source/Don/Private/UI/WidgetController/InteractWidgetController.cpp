@@ -15,12 +15,12 @@ void UInteractWidgetController::SetWidgetControllerParams(UInteractComponent* In
 	PlayerState = TargetPlayerState;
 }
 
-FDialogue UInteractWidgetController::SetCurrentDialogueProgress()
+FDialogue UInteractWidgetController::SetCurrentDialogueProgress() const
 {
-	TMap<FString, FDialogueContainer> CompletedDialogues = Cast<ADonPlayerState>(PlayerState)->CompletedDialogues;
-	ANPCCharacterBase* NPCCharacter = Cast<ANPCCharacterBase>(InteractComponent->GetOwner());
+	TMap<ENPCName, FDialogueContainer> CompletedDialogues = Cast<ADonPlayerState>(PlayerState)->CompletedDialogues;
+	const ANPCCharacterBase* NPCCharacter = Cast<ANPCCharacterBase>(InteractComponent->GetOwner());
 	
-	FDialogueContainer* EndedDialoguesForNPC = CompletedDialogues.Find(NPCCharacter->CharacterName);
+	FDialogueContainer* EndedDialoguesForNPC = CompletedDialogues.Find(NPCCharacter->NPCName);
 	FDialogue InitialDialogue;
 
 	if (EndedDialoguesForNPC && EndedDialoguesForNPC->Dialogues.Num() > 0)
@@ -35,15 +35,61 @@ FDialogue UInteractWidgetController::SetCurrentDialogueProgress()
 	}
 	else
 	{
-		UDonItemLibrary::FindDialogueRow(GetWorld(), InitialDialogue, NPCCharacter->CharacterName, 1);
+		UDonItemLibrary::FindDialogueRow(GetWorld(), InitialDialogue, NPCCharacter->NPCName, EDialogueFlow::Normal, 0, 1);
 	}
 	
 	return InitialDialogue;
 }
 
-FDialogue UInteractWidgetController::FindDialogueRow(const FString& DialogueID, const int32 Progress)
+FDialogue UInteractWidgetController::FindDialogueRow(const ENPCName& NPCName, const EDialogueFlow& DialogueFlow, const int32 Branch, const int32 Progress) const
 {
 	FDialogue Dialogue;
-	UDonItemLibrary::FindDialogueRow(GetWorld(), Dialogue, DialogueID, Progress);
+	UDonItemLibrary::FindDialogueRow(GetWorld(), Dialogue, NPCName, DialogueFlow, Branch ,Progress);
 	return Dialogue;
+}
+
+void UInteractWidgetController::AddItemToPlayerState(const FItem& Item, int32 Amount)
+{
+	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
+	if (DonPlayerState)
+	{
+		TArray<FItem>& Inventory = DonPlayerState->GetInventory();
+		if (Item.ItemType == EItemType::Equipable || Inventory.Contains(Item))
+		{
+			Inventory.Add(Item);
+		}
+		else
+		{
+			int32 ItemIndex = Inventory.Find(Item);
+			if (ItemIndex != INDEX_NONE) 
+			{
+				Inventory[ItemIndex].Amount += Amount;
+			}
+		}
+
+		
+	}
+}
+
+void UInteractWidgetController::AddDialogueToPlayerState(const FDialogue& Dialogue)
+{
+	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
+	if (DonPlayerState)
+	{
+		DonPlayerState->CompletedDialogues.FindOrAdd(Dialogue.NPCName).Dialogues.AddUnique(Dialogue);
+	}
+}
+
+void UInteractWidgetController::AddQuestToPlayerState(FQuest Quest, EQuestState QuestState)
+{
+	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
+	if (DonPlayerState)
+	{
+		Quest.QuestState = QuestState;
+		if (!DonPlayerState->PlayerQuests.FindOrAdd(Quest.QuestNPC).Quests.Contains(Quest))
+		{
+			DonPlayerState->OnQuestListChanged.Broadcast(Quest);
+		}
+		DonPlayerState->PlayerQuests.FindOrAdd(Quest.QuestNPC).Quests.AddUnique(Quest);
+	}
 }

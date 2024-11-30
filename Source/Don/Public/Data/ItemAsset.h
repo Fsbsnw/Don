@@ -6,11 +6,25 @@
 #include "Engine/DataAsset.h"
 #include "ItemAsset.generated.h"
 
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	Equipable   UMETA(DisplayName = "Equipable Item"),  
+	Consumable  UMETA(DisplayName = "Consumable Item"), 
+	Miscellaneous UMETA(DisplayName = "Miscellaneous"), 
+	Quest       UMETA(DisplayName = "Quest Item")       
+};
+
 USTRUCT(BlueprintType)
 struct FItem
 {
 	GENERATED_BODY()
 
+	bool operator==(const FItem& Other) const
+	{
+		return Other.ItemName == this->ItemName && Other.ItemType == this->ItemType;
+	}
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName ItemName;
 	
@@ -18,7 +32,7 @@ struct FItem
 	FGuid ItemID;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Amount = 1.f;
+	int32 Amount = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Durability = 100.f;
@@ -31,6 +45,9 @@ struct FItem
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UTexture2D* Icon = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	EItemType ItemType = EItemType::Miscellaneous;
 };
 
 

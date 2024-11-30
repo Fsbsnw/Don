@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "DonHUD.generated.h"
 
+class UQuestListWidgetController;
 class UAttributeSet;
 class UAbilitySystemComponent;
 struct FWidgetControllerParams;
@@ -23,6 +24,7 @@ public:
 
 	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams& WCParams);
 	UInventoryWidgetController* GetInventoryWidgetController(const FWidgetControllerParams& WCParams);
+	UQuestListWidgetController* GetQuestListWidgetController(const FWidgetControllerParams& WCParams);
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
@@ -47,4 +49,10 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UInventoryWidgetController> InventoryWidgetControllerClass;
+
+	UPROPERTY()
+	TObjectPtr<UQuestListWidgetController> QuestListWidgetController;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UQuestListWidgetController> QuestListWidgetControllerClass;
 };

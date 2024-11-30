@@ -9,11 +9,11 @@
 #include "Quest.generated.h"
 
 /**
- * 
+ * Begin ENUM
  */
 
 UENUM(BlueprintType)
-enum class EQuestState
+enum class EQuestState : uint8
 {
 	NotStarted	UMETA(DisplayName = "Not Started"),
 	InProgress	UMETA(DisplayName = "In Progress"),
@@ -21,11 +21,19 @@ enum class EQuestState
 };
 
 UENUM(BlueprintType)
-enum class EQuestReward
+enum class EQuestRewardType : uint8
 {
 	XP		UMETA(DisplayName = "XP"),
 	Item	UMETA(DisplayName = "Item")
 };
+
+/*
+ * End ENUM
+ */
+
+/*
+ * Begin STRUCT
+ */
 
 USTRUCT(BlueprintType)
 struct FQuestReward
@@ -33,7 +41,7 @@ struct FQuestReward
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	EQuestReward RewardType = EQuestReward::XP;
+	EQuestRewardType RewardType = EQuestRewardType::XP;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FName ItemID;
@@ -49,14 +57,11 @@ struct FQuest
 
 	bool operator==(const FQuest& Other) const
 	{
-		return Other.QuestNPC == this->QuestNPC && Other.QuestID == this->QuestID;
+		return Other.QuestNPC == this->QuestNPC && Other.QuestTitle == this->QuestTitle;
 	}
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FString QuestNPC;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FName QuestID;
+	ENPCName QuestNPC = ENPCName::Normal;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EQuestState QuestState = EQuestState::NotStarted;
@@ -68,7 +73,7 @@ struct FQuest
 	FString QuestDescription;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<FCondition> QuestObjectives;
+	TArray<FObjective> QuestObjectives;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FQuestReward> QuestRewards;
@@ -80,10 +85,10 @@ struct FQuestRow : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FString QuestNPC;
+	ENPCName QuestNPC = ENPCName::Normal;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<FQuest> Quests;
+	FQuest Quest;
 };
 
 USTRUCT(BlueprintType)

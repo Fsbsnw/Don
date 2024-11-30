@@ -6,6 +6,7 @@
 #include "UI/Widget/DonUserWidget.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "UI/WidgetController/InventoryWidgetController.h"
+#include "UI/WidgetController/QuestListWidgetController.h"
 
 UOverlayWidgetController* ADonHUD::GetOverlayWidgetController(const FWidgetControllerParams& WCParams)
 {
@@ -31,6 +32,19 @@ UInventoryWidgetController* ADonHUD::GetInventoryWidgetController(const FWidgetC
 		return InventoryWidgetController;
 	}
 	return InventoryWidgetController;
+}
+
+UQuestListWidgetController* ADonHUD::GetQuestListWidgetController(const FWidgetControllerParams& WCParams)
+{
+	if (QuestListWidgetController == nullptr)
+	{
+		QuestListWidgetController = NewObject<UQuestListWidgetController>(this, QuestListWidgetControllerClass);
+		QuestListWidgetController->SetWidgetControllerParams(WCParams);
+		QuestListWidgetController->BindCallbacksToDependencies();
+		
+		return QuestListWidgetController;
+	}
+	return QuestListWidgetController;
 }
 
 void ADonHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)

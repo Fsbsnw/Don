@@ -41,7 +41,12 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("InputTag.E"),
 	FString("Keyboard E")
 	);
-	
+
+	GameplayTags.InputTag_Q = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.Q"),
+	FString("Keyboard Q")
+	);
+		
 	/*
 	 * Primary Attributes 
 	 */
