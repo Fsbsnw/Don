@@ -16,6 +16,7 @@ class UAbilitySystemComponent;
 class UAttributeSet;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuestListChanged, FQuest, Quest);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnQuestObjectivesMet, FQuest /*StatValue*/)
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChanged, int32 /*StatValue*/)
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLevelChanged, int32 /*StatValue*/, bool /*bLevelUp*/)
@@ -30,17 +31,13 @@ class DON_API ADonPlayerState : public APlayerState, public IAbilitySystemInterf
 public:
 	ADonPlayerState();
 
+	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
-	
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	TArray<FItem>& GetInventory() { return Inventory; }
-
-	const uint8 MaxItemSlots = 20;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<ULevelUpInfo> LevelUpInfo;
@@ -51,8 +48,10 @@ public:
 	FOnLevelChanged OnLevelChangedDelegate;
 	FOnPlayerStatChanged OnAttributePointsChangedDelegate;
 	FOnPlayerStatChanged OnSkillPointsChangedDelegate;
+	FOnPlayerStatChanged OnMoneyChangedDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Quest")
 	FOnQuestListChanged OnQuestListChanged;
+	FOnQuestObjectivesMet OnQuestObjectivesMet;
 
 	// Delegates
 	
@@ -60,26 +59,35 @@ public:
 	FORCEINLINE int32 GetXP() const { return XP; }
 	FORCEINLINE int32 GetAttributePoints() const { return AttributePoints; }
 	FORCEINLINE int32 GetSpellPoints() const { return SkillPoints; }
+	FORCEINLINE int32 GetMoney() const { return Money; }
 
 	void AddToXP(int32 InXP);
 	void AddToLevel(int32 InLevel);
 	void AddToAttributePoints(int32 InPoints);
 	void AddToSkillPoints(int32 InPoints);
+	void AddToMoney(int32 InMoney);
 	
 	void SetXP(int32 InXP);
 	void SetLevel(int32 InLevel);
 	void SetAttributePoints(int32 InPoints);
 	void SetSkillPoints(int32 InPoints);
+	void SetMoney(int32 InMoney);
 
 	UPROPERTY(BlueprintReadWrite)
 	TMap<ENPCName, FDialogueContainer> CompletedDialogues;
 
 	UPROPERTY(BlueprintReadWrite)
 	TMap<ENPCName, FQuestContainer> PlayerQuests;
-	
+
+	void SetQuestState(FQuest Quest, EQuestState State);
 	void CheckQuestObjectives();
+	bool HasQuest(FQuest Quest);
+
+	UFUNCTION(BlueprintCallable)
 	bool IsItemConditionMet(const FObjective& Objective);
+	UFUNCTION(BlueprintCallable)
 	bool IsDialogueConditionMet(const FObjective& Objective);
+	UFUNCTION(BlueprintCallable)
 	bool IsQuestConditionMet(const FObjective& Objective);
 	
 protected:
@@ -91,9 +99,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UInventoryComponent> InventoryComponent;
-	
-	UPROPERTY()
-	TArray<FItem> Inventory;
 	
 private:
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Level)
@@ -108,6 +113,8 @@ private:
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_SkillPoints)
 	int32 SkillPoints = 0;
 
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Money)
+	int32 Money = 0;
 	
 	UFUNCTION()
 	void OnRep_Level(int32 OldLevel);
@@ -120,4 +127,7 @@ private:
 	
 	UFUNCTION()
 	void OnRep_SkillPoints(int32 OldSkillPoints);
+
+	UFUNCTION()
+	void OnRep_Money(int32 OldMoney);
 };

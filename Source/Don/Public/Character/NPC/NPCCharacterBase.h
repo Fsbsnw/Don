@@ -5,8 +5,11 @@
 #include "CoreMinimal.h"
 #include "Data/Dialogue.h"
 #include "Character/Interface/InteractInterface.h"
+#include "Data/Quest.h"
 #include "GameFramework/Character.h"
 #include "NPCCharacterBase.generated.h"
+
+class UWidgetComponent;
 
 UCLASS()
 class DON_API ANPCCharacterBase : public ACharacter, public IInteractInterface
@@ -22,8 +25,27 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "NPC")
 	ENPCName NPCName = ENPCName::Normal;
+
+	void NotifyQuestCompletionOnScreen(FQuest Quest);
+	void RemoveCompletedQuest(FQuest Quest);
+	
+	TArray<FQuest> CompletableQuests;
+	
+	UPROPERTY(EditAnywhere)
+	float NormalPriceRate = 1.f;
+	
+	UPROPERTY(EditAnywhere)
+	float EquipmentPriceRate = 1.f;
+
+	UPROPERTY(EditAnywhere)
+	float ConsumablePriceRate = 1.f;
+
 	
 protected:
+	virtual void BeginPlay() override;
+	
 	UPROPERTY(VisibleDefaultsOnly)
 	TObjectPtr<UInteractComponent> InteractComponent;
+	UPROPERTY(VisibleDefaultsOnly)
+	TObjectPtr<UWidgetComponent> QuestNotification;
 };

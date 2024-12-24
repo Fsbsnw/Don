@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Data/Quest.h"
 #include "InteractComponent.generated.h"
 
+class UStoreWidgetController;
 class UInteractWidgetController;
 class UDonUserWidget;
 
@@ -18,26 +20,35 @@ public:
 	UInteractComponent();
 
 	UInteractWidgetController* GetInteractWidgetController(AActor* Owner, APlayerState* TargetPlayerState);
+	UStoreWidgetController* GetStoreWidgetController(AActor* Owner, APlayerState* TargetPlayerState);
+	void BindCallbacksToDependencies();
 	
 	void OpenStore(APlayerState* PlayerState);
 	void OpenDialogue(APlayerState* PlayerState);
+	void BroadcastQuestUpdate(FQuest Quest);
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	UPROPERTY(VisibleDefaultsOnly, Category = "Interaction")
 	TObjectPtr<UDonUserWidget> StoreWidget;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
 	TSubclassOf<UDonUserWidget> StoreWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	UPROPERTY(VisibleDefaultsOnly, Category = "Interaction")
 	TObjectPtr<UDonUserWidget> DialogueWidget;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
 	TSubclassOf<UDonUserWidget> DialogueWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	UPROPERTY(VisibleDefaultsOnly, Category = "Interaction")
 	TObjectPtr<UInteractWidgetController> InteractWidgetController;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
 	TSubclassOf<UInteractWidgetController> InteractWidgetControllerClass;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Interaction")
+	TObjectPtr<UStoreWidgetController> StoreWidgetController;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	TSubclassOf<UStoreWidgetController> StoreWidgetControllerClass;
 };

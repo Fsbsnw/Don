@@ -57,21 +57,51 @@ UQuestListWidgetController* UDonItemLibrary::GetQuestListWidgetController(const 
 			return DonHUD->GetQuestListWidgetController(WidgetControllerParams);
 		}
 	}
-	
 	return nullptr;
 }
 
-bool UDonItemLibrary::FindDialogueRow(const UObject* WorldContextObject, FDialogue& OutDialogue , const ENPCName& NPCName, const EDialogueFlow& Flow, int32 Branch, int32 Progress)
+bool UDonItemLibrary::FindQuestRow(const UObject* WorldContextObject, FQuest& OutQuest, ENPCName NPCName, FString QuestTitle)
+{
+	if (const UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject)))
+	{
+		TMap<ENPCName, FQuestContainer> QuestTable = DonGameInstance->QuestDataTable;
+		
+		FQuestContainer* QuestsForNPC = QuestTable.Find(NPCName);
+		if (QuestsForNPC == nullptr || QuestsForNPC->Quests.Num() == 0) return false;
+		
+		for (FQuest Quest : QuestsForNPC->Quests)
+		{
+			if (Quest.QuestNPC == NPCName && Quest.QuestTitle == QuestTitle)
+			{
+				OutQuest = Quest;
+				return true;
+			}
+		}
+	}	
+	return false;
+}
+
+bool UDonItemLibrary::FindDialogueRow(const UObject* WorldContextObject, FDialogue& OutDialogue, FDonDialogueContext& DialogueContext)
 {
 	if (const UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject)))
 	{
 		TMap<ENPCName, FDialogueContainer> DialogueTable = DonGameInstance->DialogueDataTable;
+	
+		const ENPCName NPCName = DialogueContext.NPCName;
+		const int32 Chapter = DialogueContext.Chapter;
+		const FString Topic = DialogueContext.Topic;
+		const FString Branch = DialogueContext.Branch;
+		const int32 Progress = DialogueContext.Progress;
+		
 		FDialogueContainer* DialoguesForNPC = DialogueTable.Find(NPCName);
 		if (DialoguesForNPC == nullptr || DialoguesForNPC->Dialogues.Num() == 0) return false;
 		
 		for (FDialogue Dialogue : DialoguesForNPC->Dialogues)
 		{
-			if (Dialogue.DialogueFlow == Flow && Dialogue.DialogueBranch == Branch && Dialogue.DialogueProgress == Progress)
+			if (Dialogue.Chapter == Chapter &&
+				Dialogue.Topic == Topic &&
+				Dialogue.Branch == Branch &&
+				Dialogue.Progress == Progress)
 			{
 				OutDialogue = Dialogue;
 				return true;

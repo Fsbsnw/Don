@@ -28,7 +28,6 @@ void ADonCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	InitAbilityActorInfo();
-	InitAndLoadInventory();
 }
 
 void ADonCharacter::OnRep_PlayerState()
@@ -36,7 +35,6 @@ void ADonCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	InitAbilityActorInfo();
-	InitAndLoadInventory();
 }
 
 void ADonCharacter::InitAbilityActorInfo()
@@ -59,21 +57,6 @@ void ADonCharacter::InitAbilityActorInfo()
 	}
 
 	InitializeDefaultAttributes();
-}
-
-void ADonCharacter::InitAndLoadInventory()
-{
-	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
-	check(DonPlayerState);
-
-	uint8 MaxSlotSize = DonPlayerState->MaxItemSlots;
-	DonPlayerState->GetInventory().SetNum(MaxSlotSize);
-	for (uint8 i = 0; i < MaxSlotSize; i++)
-	{
-		DonPlayerState->GetInventory()[i].InventorySlotIndex = i;
-	}
-
-	// Load Player State Inventory Info
 }
 
 bool ADonCharacter::ExecuteInteract(AActor* Actor)

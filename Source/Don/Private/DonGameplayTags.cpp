@@ -157,4 +157,16 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("Attributes.Meta.IncomingXP"),
 	FString("IncomingXP Meta Attribute")
 	);
+
+	// Store State
+
+	GameplayTags.Store_Normal_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Store.Normal.Open"),
+	FString("Normal Store Open")
+	);
+
+	GameplayTags.Store_Normal_Closed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Store.Normal.Closed"),
+	FString("Normal Store Closed")
+	);
 }
