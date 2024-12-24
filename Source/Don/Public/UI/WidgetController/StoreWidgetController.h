@@ -1,0 +1,34 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
+#include "StoreWidgetController.generated.h"
+
+struct FItem;
+class UInteractComponent;
+/**
+ * 
+ */
+UCLASS(BlueprintType, Blueprintable)
+class DON_API UStoreWidgetController : public UObject
+{
+	GENERATED_BODY()
+public:	
+	void SetWidgetControllerParams(UInteractComponent* InInteractComponent, APlayerState* TargetPlayerState);
+	void BindCallbacksToDependencies();
+	
+	UFUNCTION(BlueprintCallable)
+    void PlayerBuyItem(FItem Item, int32 Amount = 1);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerSellItem(int32 SlotIndex);
+
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<UInteractComponent> InteractComponent;
+
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<APlayerState> PlayerState;
+};

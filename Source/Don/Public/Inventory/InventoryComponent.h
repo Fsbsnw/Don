@@ -8,6 +8,7 @@
 #include "InventoryComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryChanged, FItem, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemSold, int32, SlotIndex);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DON_API UInventoryComponent : public UActorComponent
@@ -18,12 +19,29 @@ public:
 	UInventoryComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void AddItem(APlayerState* PlayerState, FName ItemName);
+	TArray<FItem>& GetInventory() { return Inventory; }
+
+	int32 FindItemInInventory(const FItem& Item) const;
+	void SwapInventoryItems(int32 IndexA, int32 IndexB);
+
+	const uint8 MaxItemSlots = 20;
+
+	void InitAndLoadInventory();
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void RemoveItem(APlayerState* PlayerState, FName ItemName);
+	void AddItem(FItem Item, int32 Amount = 1);
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void RemoveItem(FItem Item, int32 Amount = 1);
+	UFUNCTION()
+	void OnRequestSellItem(int32 SlotIndex);
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryChanged OnInventoryItemAdded;
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryChanged OnInventoryItemRemoved;
+	FOnInventoryItemSold OnInventoryItemSold;
+
+private:
+	UPROPERTY()
+	TArray<FItem> Inventory;
 };

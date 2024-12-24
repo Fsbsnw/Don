@@ -22,6 +22,13 @@ ADonPlayerState::ADonPlayerState()
 	NetUpdateFrequency = 100.f;
 }
 
+void ADonPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	InventoryComponent->InitAndLoadInventory();
+}
+
 void ADonPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -30,6 +37,7 @@ void ADonPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ADonPlayerState, XP);
 	DOREPLIFETIME(ADonPlayerState, AttributePoints);
 	DOREPLIFETIME(ADonPlayerState, SkillPoints);
+	DOREPLIFETIME(ADonPlayerState, Money);
 }
 
 UAbilitySystemComponent* ADonPlayerState::GetAbilitySystemComponent() const
@@ -58,14 +66,20 @@ void ADonPlayerState::AddToLevel(int32 InLevel)
 
 void ADonPlayerState::AddToAttributePoints(int32 InPoints)
 {
-	AttributePoints = InPoints;
+	AttributePoints += InPoints;
 	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
 }
 
 void ADonPlayerState::AddToSkillPoints(int32 InPoints)
 {
-	SkillPoints = InPoints;
+	SkillPoints += InPoints;
 	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
+}
+
+void ADonPlayerState::AddToMoney(int32 InMoney)
+{
+	Money += InMoney;
+	OnMoneyChangedDelegate.Broadcast(Money);
 }
 
 void ADonPlayerState::SetXP(int32 InXP)
@@ -92,12 +106,43 @@ void ADonPlayerState::SetSkillPoints(int32 InPoints)
 	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
 }
 
+void ADonPlayerState::SetMoney(int32 InMoney)
+{
+	SkillPoints = InMoney;
+	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
+}
+
+void ADonPlayerState::SetQuestState(FQuest Quest, EQuestState State)
+{
+	TArray<FQuest>& QuestList = PlayerQuests.Find(Quest.QuestNPC)->Quests;
+	int32 Index = QuestList.Find(Quest);
+	if (Index == INDEX_NONE) return;
+	
+	QuestList[Index].QuestState = State;
+	if (State == EQuestState::Completed && Quest.QuestType == EQuestType::MainQuest)
+	{
+		const UDataTable* DialogueTable = Quest.DialogueAfterQuestCompletion.DataTable;
+		const FName DialogueName = Quest.DialogueAfterQuestCompletion.RowName;
+		const FDialogue* Dialogue = DialogueTable->FindRow<FDialogue>(DialogueName, "");
+		CompletedDialogues.Find(Quest.QuestNPC)->Dialogues.AddUnique(*Dialogue);
+	}
+	
+	UE_LOG(LogTemp, Warning,
+		TEXT("NPC : %s, Title : %s, State : %s"),
+		*UEnum::GetValueAsString(QuestList[Index].QuestNPC),
+		*QuestList[Index].QuestTitle,
+		*UEnum::GetValueAsString(QuestList[Index].QuestState)
+	);
+}
+
 void ADonPlayerState::CheckQuestObjectives()
 {
 	for (TTuple<ENPCName, FQuestContainer> QuestsForNPC : PlayerQuests)
 	{
 		for (FQuest Quest : QuestsForNPC.Value.Quests)
 		{
+			if (Quest.QuestState == EQuestState::Completed) continue;
+			
 			bool bAllObjectivesMet = true;
 			
 			// Check Objectives
@@ -115,16 +160,31 @@ void ADonPlayerState::CheckQuestObjectives()
 				case EObjectiveType::QuestComplete:
 					if (!IsQuestConditionMet(Objective)) bAllObjectivesMet = false;
 						break;
+				default:
+					UE_LOG(LogTemp, Warning, TEXT("Unhandled ObjectiveType!"));
+						break;
 				}
 			}
 
 			// Do Next Function
 			if (bAllObjectivesMet)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("All Objectives Met"));
+				UE_LOG(LogTemp, Warning, TEXT("All Objectives Met of Quest : %s"), *Quest.QuestTitle);
+				OnQuestObjectivesMet.Broadcast(Quest);
 			}
 		}
 	}
+}
+
+bool ADonPlayerState::HasQuest(FQuest Quest)
+{
+	if (PlayerQuests.Find(Quest.QuestNPC) == nullptr) return false;
+	
+	for (FQuest PlayerQuest : PlayerQuests.Find(Quest.QuestNPC)->Quests)
+	{
+		if (PlayerQuest == Quest) return true;
+	}
+	return false;
 }
 
 
@@ -133,14 +193,9 @@ bool ADonPlayerState::IsItemConditionMet(const FObjective& Objective)
 {
 	// Check Inventory
 	FItem ItemToFind = UDonItemLibrary::FindItemByName(GetWorld(), Objective.ItemID);
-	int32 ItemIndex = Inventory.Find(ItemToFind);
-	if (!Inventory.Contains(ItemToFind) ||
-		ItemIndex == INDEX_NONE ||
-		Inventory[ItemIndex].Amount != Objective.ItemAmount)
-	{
-		return false;
-	}
-	return true;
+	int32 Index = GetInventoryComponent()->FindItemInInventory(ItemToFind);
+	
+	return Index != INDEX_NONE && GetInventoryComponent()->GetInventory()[Index].Amount >= Objective.ItemAmount;
 }
 
 
@@ -153,20 +208,11 @@ bool ADonPlayerState::IsDialogueConditionMet(const FObjective& Objective)
 		const FName DialogueName = Objective.ObjectiveDataHandle.RowName;
 
 		const FDialogue* Dialogue = DialogueTable->FindRow<FDialogue>(DialogueName, TEXT(""));
-		const FDialogueContainer* DialogueContainer = CompletedDialogues.Find(Dialogue->NPCName); 
-		if (DialogueContainer)
-		{
-			if (!DialogueContainer->Dialogues.Find(*Dialogue))
-			{
-				return false;
-			}
-		}
-		else
-		{
-			return false;
-		}
+		const FDialogueContainer* DialogueContainer = CompletedDialogues.Find(Dialogue->NPCName);
+		
+		return DialogueContainer && DialogueContainer->Dialogues.Contains(*Dialogue);
 	}
-	return true;
+	return false;
 }
 
 
@@ -182,17 +228,11 @@ bool ADonPlayerState::IsQuestConditionMet(const FObjective& Objective)
 		const FQuestContainer* QuestContainer = PlayerQuests.Find(Quest->QuestNPC);
 		if (QuestContainer)
 		{
-			if (!QuestContainer->Quests.Find(*Quest))
-			{
-				return false;
-			}
-		}
-		else
-		{
-			return false;
-		}
+			const int32 Index = QuestContainer->Quests.Find(*Quest);
+			return Index != INDEX_NONE && QuestContainer->Quests[Index].QuestState == EQuestState::Completed;
+		}		
 	}
-	return true;
+	return false;
 }
 
 void ADonPlayerState::OnRep_Level(int32 OldLevel)
@@ -213,4 +253,9 @@ void ADonPlayerState::OnRep_AttributePoints(int32 OldAttributePoints)
 void ADonPlayerState::OnRep_SkillPoints(int32 OldSkillPoints)
 {
 	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
+}
+
+void ADonPlayerState::OnRep_Money(int32 OldMoney)
+{
+	OnMoneyChangedDelegate.Broadcast(Money);
 }

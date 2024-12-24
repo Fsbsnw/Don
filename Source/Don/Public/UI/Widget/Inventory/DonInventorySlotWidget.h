@@ -16,39 +16,23 @@ class DON_API UDonInventorySlotWidget : public UDonUserWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintReadWrite)
-	FName ItemName = FName("NONE");
-	
-	UPROPERTY(BlueprintReadWrite)
-	FGuid ItemID;
-	
-	UPROPERTY(BlueprintReadWrite)
-	int32 Amount = 0;
-
-	UPROPERTY(BlueprintReadWrite)
-	float Durability = 0.f;
-
-	UPROPERTY(BlueprintReadWrite)
-	int32 Upgrade = 0;
+	virtual void SetWidgetController(UObject* InWidgetController) override;
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 InventorySlotIndex = -1;
 
-	UPROPERTY(BlueprintReadWrite)
-	UTexture2D* Icon = nullptr;
-
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
 	void UpdateSlotInfo(FItem ItemInfo);
 
-	UFUNCTION(BlueprintNativeEvent)
-	void NotifyUpdateSlot();
+	UFUNCTION(BlueprintNativeEvent, Category = "Inventory Slot")
+	void NotifyUpdateSlot(const FItem& Item);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
 	void CachingDraggedSlotInfo(UDonInventorySlotWidget* InSlotWidget);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
 	void SwapSlotInfo(UDonInventorySlotWidget* InSlotWidget);
 
-	UFUNCTION(BlueprintCallable)
-	void RemoveItem(int32 SlotIndex);
+	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
+	void RemoveItem(FItem Item, int32 AmountToRemove = 1);
 };

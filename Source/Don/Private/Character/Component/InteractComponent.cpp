@@ -6,7 +6,11 @@
 #include "UI/Widget/DonUserWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Character/NPC/NPCCharacterBase.h"
+#include "Inventory/InventoryComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Player/DonPlayerState.h"
 #include "UI/WidgetController/InteractWidgetController.h"
+#include "UI/WidgetController/StoreWidgetController.h"
 
 UInteractComponent::UInteractComponent()
 {
@@ -23,12 +27,32 @@ UInteractWidgetController* UInteractComponent::GetInteractWidgetController(AActo
 	return InteractWidgetController;
 }
 
+UStoreWidgetController* UInteractComponent::GetStoreWidgetController(AActor* Owner, APlayerState* TargetPlayerState)
+{
+	if (StoreWidgetController == nullptr)
+	{
+		StoreWidgetController = NewObject<UStoreWidgetController>(this, StoreWidgetControllerClass);
+		StoreWidgetController->SetWidgetControllerParams(Cast<ANPCCharacterBase>(Owner)->GetInteractComponent(), TargetPlayerState);
+		StoreWidgetController->BindCallbacksToDependencies();
+	}
+	return StoreWidgetController;
+}
+
+void UInteractComponent::BindCallbacksToDependencies()
+{
+	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(UGameplayStatics::GetPlayerState(GetWorld(), 0));
+	if (DonPlayerState)
+	{
+		DonPlayerState->OnQuestObjectivesMet.AddUObject(this, &UInteractComponent::BroadcastQuestUpdate);
+	}
+}
+
 void UInteractComponent::OpenStore(APlayerState* PlayerState)
 {
 	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), StoreWidgetClass);
 	StoreWidget = Cast<UDonUserWidget>(Widget);
 	
-	UInteractWidgetController* WidgetController = GetInteractWidgetController(GetOwner(), PlayerState);
+	UStoreWidgetController* WidgetController = GetStoreWidgetController(GetOwner(), PlayerState);
 	StoreWidget->SetWidgetController(WidgetController);
 
 	StoreWidget->AddToViewport();
@@ -48,4 +72,13 @@ void UInteractComponent::OpenDialogue(APlayerState* PlayerState)
 	DialogueWidget->SetPositionInViewport(ScreenSize);
 	
 	DialogueWidget->AddToViewport();
+}
+
+void UInteractComponent::BroadcastQuestUpdate(FQuest Quest)
+{
+	ANPCCharacterBase* NPC = Cast<ANPCCharacterBase>(GetOwner());
+	if (NPC && NPC->NPCName == Quest.QuestNPC)
+	{
+		NPC->NotifyQuestCompletionOnScreen(Quest);
+	}
 }

@@ -6,10 +6,9 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Data/Dialogue.h"
 #include "Data/ItemAsset.h"
+#include "Data/Quest.h"
 #include "DonItemLibrary.generated.h"
 
-struct FDialogueContainer;
-struct FDialogue;
 class UInventoryWidgetController;
 class UQuestListWidgetController;
 /**
@@ -26,9 +25,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
 	static UInventoryWidgetController* GetInventoryWidgetController(const UObject* WorldContextObject);
 
-	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Quest")
+	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Quest")
 	static UQuestListWidgetController* GetQuestListWidgetController(const UObject* WorldContextObject);
+	
+	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Quest")
+	static bool FindQuestRow(const UObject* WorldContextObject, FQuest& OutQuest, ENPCName NPCName, FString QuestTitle);
 
 	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Dialogue")
-	static bool FindDialogueRow(const UObject* WorldContextObject, FDialogue& OutDialogue , const ENPCName& NPCName, const EDialogueFlow& Flow, int32 Branch = 0, int32 Progress = 1);
+	static bool FindDialogueRow(const UObject* WorldContextObject, FDialogue& OutDialogue, FDonDialogueContext& DialogueContext);
 };

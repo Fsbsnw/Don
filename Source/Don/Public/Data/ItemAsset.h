@@ -48,6 +48,9 @@ struct FItem
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	EItemType ItemType = EItemType::Miscellaneous;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 ItemPrice = 0;
 };
 
 

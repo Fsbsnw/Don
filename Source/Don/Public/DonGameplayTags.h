@@ -45,6 +45,11 @@ public:
 	FGameplayTag Attributes_Secondary_ItemDropRate;
 
 
+	// Meta Attributes
+
+	FGameplayTag Attributes_Meta_IncomingXP;
+	
+
 	// Damage
 
 	FGameplayTag Damage;
@@ -63,9 +68,10 @@ public:
 	FGameplayTag Abilities_FireBolt;
 
 
-	// Meta Attributes
+	// Store State
 
-	FGameplayTag Attributes_Meta_IncomingXP;
+	FGameplayTag Store_Normal_Open;
+	FGameplayTag Store_Normal_Closed;
 
 protected:
  

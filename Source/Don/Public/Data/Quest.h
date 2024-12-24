@@ -4,13 +4,20 @@
 
 #include "CoreMinimal.h"
 
-#include "Dialogue.h"
+#include "Data/DialogueQuestCommon.h"
 #include "Engine/DataTable.h"
 #include "Quest.generated.h"
 
 /**
  * Begin ENUM
  */
+
+UENUM(BlueprintType)
+enum class EQuestType : uint8
+{
+	MainQuest	UMETA(DisplayName = "Main Quest"),
+	SideQuest	UMETA(DisplayName = "Side Quest")
+};
 
 UENUM(BlueprintType)
 enum class EQuestState : uint8
@@ -47,13 +54,17 @@ struct FQuestReward
 	FName ItemID;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 XPAmount;
+	int32 Amount;
 };
 
 USTRUCT(BlueprintType)
 struct FQuest
 {
 	GENERATED_BODY()
+
+	FQuest(){}
+	FQuest(const ENPCName InNPCName, const FString& InTitle)
+		: QuestNPC(InNPCName), QuestTitle(InTitle){}
 
 	bool operator==(const FQuest& Other) const
 	{
@@ -77,6 +88,15 @@ struct FQuest
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FQuestReward> QuestRewards;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FDataTableRowHandle DialogueOnQuestCompletion;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	EQuestType QuestType = EQuestType::MainQuest;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FDataTableRowHandle DialogueAfterQuestCompletion;
 };
 
 USTRUCT(BlueprintType)

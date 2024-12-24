@@ -26,7 +26,6 @@ public:
 	
 protected:
 	virtual void InitAbilityActorInfo() override;
-	void InitAndLoadInventory();
 
 	UFUNCTION(BlueprintCallable)
 	bool ExecuteInteract(AActor* Actor);
