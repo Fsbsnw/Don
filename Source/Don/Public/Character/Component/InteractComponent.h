@@ -26,6 +26,7 @@ public:
 	void OpenStore(APlayerState* PlayerState);
 	void OpenDialogue(APlayerState* PlayerState);
 	void BroadcastQuestUpdate(FQuest Quest);
+	void ResetWidgets();
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Interaction")

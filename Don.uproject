@@ -13,7 +13,9 @@
 				"EnhancedInput",
 				"GameplayAbilities",
 				"UMG",
-				"CoreUObject"
+				"CoreUObject",
+				"AIModule",
+				"GameplayTasks"
 			]
 		}
 	],
@@ -27,6 +29,10 @@
 		},
 		{
 			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "NiagaraFluids",
 			"Enabled": true
 		}
 	]

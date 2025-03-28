@@ -5,6 +5,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
+#include "Character/Interface/CombatInterface.h"
 
 ADonEffectActor::ADonEffectActor()
 {
@@ -21,9 +22,11 @@ void ADonEffectActor::BeginPlay()
 
 void ADonEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
 {
+	if (TargetActor->Implements<UCombatInterface>() && ICombatInterface::Execute_IsDead(TargetActor)) return;
+	
 	UDonAbilitySystemComponent* TargetASC = Cast<UDonAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor));
 	if (TargetASC == nullptr) return;
-
+	
 	check(GameplayEffectClass);
 	FGameplayEffectContextHandle EffectContextHandle = TargetASC->MakeEffectContext();
 	EffectContextHandle.AddSourceObject(this);

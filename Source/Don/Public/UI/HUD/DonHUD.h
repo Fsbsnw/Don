@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "DonHUD.generated.h"
 
+class UAttributeMenuWidgetController;
 class UQuestListWidgetController;
 class UAttributeSet;
 class UAbilitySystemComponent;
@@ -23,6 +24,7 @@ class DON_API ADonHUD : public AHUD
 public:
 
 	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams& WCParams);
+	UAttributeMenuWidgetController* GetAttributeMenuWidgetController(const FWidgetControllerParams& WCParams);
 	UInventoryWidgetController* GetInventoryWidgetController(const FWidgetControllerParams& WCParams);
 	UQuestListWidgetController* GetQuestListWidgetController(const FWidgetControllerParams& WCParams);
 
@@ -30,6 +32,18 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	UDonUserWidget* GetOverlayWidget() const { return OverlayWidget; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OpenInventory();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OpenQuests();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OpenAttributeMenu();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OpenSkillMenu();
 
 private:
 	UPROPERTY()
@@ -55,4 +69,10 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UQuestListWidgetController> QuestListWidgetControllerClass;
+
+	UPROPERTY()
+	TObjectPtr<UAttributeMenuWidgetController> AttributeMenuWidgetController;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UAttributeMenuWidgetController> AttributeMenuWidgetControllerClass;
 };

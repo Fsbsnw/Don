@@ -4,6 +4,7 @@
 #include "UI/HUD/DonHUD.h"
 
 #include "UI/Widget/DonUserWidget.h"
+#include "UI/WidgetController/AttributeMenuWidgetController.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "UI/WidgetController/InventoryWidgetController.h"
 #include "UI/WidgetController/QuestListWidgetController.h"
@@ -15,10 +16,19 @@ UOverlayWidgetController* ADonHUD::GetOverlayWidgetController(const FWidgetContr
 		OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
 		OverlayWidgetController->SetWidgetControllerParams(WCParams);
 		OverlayWidgetController->BindCallbacksToDependencies();
-
-		return OverlayWidgetController;
 	}
 	return OverlayWidgetController;
+}
+
+UAttributeMenuWidgetController* ADonHUD::GetAttributeMenuWidgetController(const FWidgetControllerParams& WCParams)
+{
+	if (AttributeMenuWidgetController == nullptr)
+	{
+		AttributeMenuWidgetController = NewObject<UAttributeMenuWidgetController>(this, AttributeMenuWidgetControllerClass);
+		AttributeMenuWidgetController->SetWidgetControllerParams(WCParams);
+		AttributeMenuWidgetController->BindCallbacksToDependencies();
+	}
+	return AttributeMenuWidgetController;
 }
 
 UInventoryWidgetController* ADonHUD::GetInventoryWidgetController(const FWidgetControllerParams& WCParams)
@@ -28,8 +38,6 @@ UInventoryWidgetController* ADonHUD::GetInventoryWidgetController(const FWidgetC
 		InventoryWidgetController = NewObject<UInventoryWidgetController>(this, InventoryWidgetControllerClass);
 		InventoryWidgetController->SetWidgetControllerParams(WCParams);
 		InventoryWidgetController->BindCallbacksToDependencies();
-		
-		return InventoryWidgetController;
 	}
 	return InventoryWidgetController;
 }
@@ -41,8 +49,6 @@ UQuestListWidgetController* ADonHUD::GetQuestListWidgetController(const FWidgetC
 		QuestListWidgetController = NewObject<UQuestListWidgetController>(this, QuestListWidgetControllerClass);
 		QuestListWidgetController->SetWidgetControllerParams(WCParams);
 		QuestListWidgetController->BindCallbacksToDependencies();
-		
-		return QuestListWidgetController;
 	}
 	return QuestListWidgetController;
 }

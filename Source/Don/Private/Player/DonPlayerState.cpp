@@ -8,6 +8,7 @@
 #include "Data/LevelUpInfo.h"
 #include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 ADonPlayerState::ADonPlayerState()
@@ -45,71 +46,12 @@ UAbilitySystemComponent* ADonPlayerState::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
-void ADonPlayerState::AddToXP(int32 InXP)
+void ADonPlayerState::PlayInteractionSound2D(USoundBase* SoundSource)
 {
-	const int32 PrevLevel = LevelUpInfo->FindLevelForXP(XP); 
-	
-	XP += InXP;
-
-	const int32 CurrLevel = LevelUpInfo->FindLevelForXP(XP);
-
-	if (PrevLevel < CurrLevel) AddToLevel(CurrLevel - PrevLevel);
-	
-	OnXPChangedDelegate.Broadcast(XP);
-}
-
-void ADonPlayerState::AddToLevel(int32 InLevel)
-{
-	Level += InLevel;
-	OnLevelChangedDelegate.Broadcast(Level, true);
-}
-
-void ADonPlayerState::AddToAttributePoints(int32 InPoints)
-{
-	AttributePoints += InPoints;
-	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
-}
-
-void ADonPlayerState::AddToSkillPoints(int32 InPoints)
-{
-	SkillPoints += InPoints;
-	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
-}
-
-void ADonPlayerState::AddToMoney(int32 InMoney)
-{
-	Money += InMoney;
-	OnMoneyChangedDelegate.Broadcast(Money);
-}
-
-void ADonPlayerState::SetXP(int32 InXP)
-{
-	XP = InXP;
-	OnXPChangedDelegate.Broadcast(XP);
-}
-
-void ADonPlayerState::SetLevel(int32 InLevel)
-{
-	Level = InLevel;
-	OnLevelChangedDelegate.Broadcast(Level, false);
-}
-
-void ADonPlayerState::SetAttributePoints(int32 InPoints)
-{
-	AttributePoints = InPoints;
-	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
-}
-
-void ADonPlayerState::SetSkillPoints(int32 InPoints)
-{
-	SkillPoints = InPoints;
-	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
-}
-
-void ADonPlayerState::SetMoney(int32 InMoney)
-{
-	SkillPoints = InMoney;
-	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
+	if (SoundSource)
+	{
+		UGameplayStatics::PlaySound2D(this, SoundSource, 1);
+	}
 }
 
 void ADonPlayerState::SetQuestState(FQuest Quest, EQuestState State)
@@ -235,6 +177,100 @@ bool ADonPlayerState::IsQuestConditionMet(const FObjective& Objective)
 	return false;
 }
 
+
+void ADonPlayerState::AddToXP(int32 InXP)
+{
+	const int32 PrevLevel = LevelUpInfo->FindLevelForXP(XP); 
+	
+	XP += InXP;
+
+	const int32 CurrLevel = LevelUpInfo->FindLevelForXP(XP);
+
+	if (PrevLevel < CurrLevel) AddToLevel(CurrLevel - PrevLevel);
+	
+	OnXPChangedDelegate.Broadcast(XP);
+	PlayInteractionSound2D(XPGainSound);
+}
+
+void ADonPlayerState::AddToLevel(int32 InLevel)
+{
+	Level += InLevel;
+	if (UDonAbilitySystemComponent* DonASC = Cast<UDonAbilitySystemComponent>(GetAbilitySystemComponent()))
+	{
+		DonASC->UpdateAbilityStatuses(Level);
+	}	
+	OnLevelChangedDelegate.Broadcast(Level, true);
+}
+
+void ADonPlayerState::AddToAttributePoints(int32 InPoints)
+{
+	AttributePoints += InPoints;
+	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
+}
+
+void ADonPlayerState::AddToSkillPoints(int32 InPoints)
+{
+	SkillPoints += InPoints;
+	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
+}
+
+void ADonPlayerState::AddToMoney(int32 InMoney)
+{
+	Money += InMoney;
+	OnMoneyChangedDelegate.Broadcast(Money);
+	PlayInteractionSound2D(MoneyGainSound);
+}
+
+void ADonPlayerState::AddToMemoryFragment(int32 InMemoryFragment)
+{
+	MemoryFragment += InMemoryFragment;
+	OnMemoryFragmentChangedDelegate.Broadcast(MemoryFragment);
+}
+
+void ADonPlayerState::SetXP(int32 InXP)
+{
+	XP = InXP;
+	OnXPChangedDelegate.Broadcast(XP);
+}
+
+void ADonPlayerState::SetLevel(int32 InLevel)
+{
+	Level = InLevel;
+	OnLevelChangedDelegate.Broadcast(Level, false);
+}
+
+void ADonPlayerState::SetAttributePoints(int32 InPoints)
+{
+	AttributePoints = InPoints;
+	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
+}
+
+void ADonPlayerState::SetSkillPoints(int32 InPoints)
+{
+	SkillPoints = InPoints;
+	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
+}
+
+void ADonPlayerState::SetMoney(int32 InMoney)
+{
+	SkillPoints = InMoney;
+	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
+}
+
+void ADonPlayerState::SetMemoryFragment(int32 InMemoryFragment)
+{
+	MemoryFragment = InMemoryFragment;
+	OnMemoryFragmentChangedDelegate.Broadcast(MemoryFragment);
+}
+
+bool ADonPlayerState::RestoreMemory(int32 MemoryCost)
+{
+	if (MemoryFragment < MemoryCost) return false;
+
+	AddToMemoryFragment(-MemoryCost);
+	return true;
+}
+
 void ADonPlayerState::OnRep_Level(int32 OldLevel)
 {
 	OnLevelChangedDelegate.Broadcast(Level, true);
@@ -258,4 +294,9 @@ void ADonPlayerState::OnRep_SkillPoints(int32 OldSkillPoints)
 void ADonPlayerState::OnRep_Money(int32 OldMoney)
 {
 	OnMoneyChangedDelegate.Broadcast(Money);
+}
+
+void ADonPlayerState::OnRep_MemoryFragment(int32 OldMemoryFragment)
+{
+	OnMemoryFragmentChangedDelegate.Broadcast(MemoryFragment);
 }
