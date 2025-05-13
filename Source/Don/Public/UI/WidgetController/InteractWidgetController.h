@@ -19,6 +19,9 @@ class DON_API UInteractWidgetController : public UObject
 public:	
 	void SetWidgetControllerParams(UInteractComponent* InInteractComponent, APlayerState* TargetPlayerState);
 
+	UFUNCTION(BlueprintCallable)
+	void ResetInteractWidgets();
+
 	/*
 	 * Dialogue Functions
 	 */

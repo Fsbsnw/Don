@@ -13,7 +13,7 @@ class UDonInventorySlotWidget;
 class UDragDropOperation;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdate, FItem, Item);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMoneyChanged, int32, Money);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceChanged, int32, Money);
 
 
 /**
@@ -25,9 +25,10 @@ class DON_API UInventoryWidgetController : public UDonWidgetController
 	GENERATED_BODY()
 public:
 	virtual void BindCallbacksToDependencies() override;
-	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitialValues() override;
 
+	UInventoryComponent* GetInventoryComponent();
+	
 	UFUNCTION(BlueprintCallable)
 	void InitAndLoadInventory();
 
@@ -37,7 +38,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void HandleSlotSellEvent(int32 SlotIndex = -1);
 
-	UInventoryComponent* GetInventoryComponent();
+	/*
+	 * Delegates
+	 */
 	
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryUpdate OnInventoryItemAdded;
@@ -46,8 +49,16 @@ public:
 	FOnInventoryUpdate OnInventoryItemRemoved;
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
-	FOnMoneyChanged OnMoneyChanged;
+	FOnResourceChanged OnMoneyChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnResourceChanged OnMemoryFragmentChanged;
+
+	/*
+	 * Delegates
+	 */
+
+	
 	// Item functions
 	
 	UFUNCTION()
@@ -71,11 +82,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveItemFromPlayer(FItem Item, int32 Amount = 1);
 
-	// Money functions
+	UFUNCTION(BlueprintCallable)
+	void EquipItem(int32 SlotIndex);
+
+	UFUNCTION(BlueprintCallable)
+	void UnequipAllItems();
+	
+
+	
+	// Resource functions
 	
 	UFUNCTION()
 	void OnMoneyAdded(int32 Money);
 	
+	UFUNCTION()
+	void OnMemoryFragmentAdded(int32 MemoryFragment);
+
+	UFUNCTION(BlueprintCallable)
+	void AddMemoryFragment(int32 InMemoryFragment);
 private:
 	UDonInventorySlotWidget* DraggedSlot = nullptr;
 };

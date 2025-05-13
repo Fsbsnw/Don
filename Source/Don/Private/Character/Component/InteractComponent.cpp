@@ -49,6 +49,8 @@ void UInteractComponent::BindCallbacksToDependencies()
 
 void UInteractComponent::OpenStore(APlayerState* PlayerState)
 {
+	if (StoreWidget != nullptr) return;
+	
 	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), StoreWidgetClass);
 	StoreWidget = Cast<UDonUserWidget>(Widget);
 	
@@ -60,6 +62,8 @@ void UInteractComponent::OpenStore(APlayerState* PlayerState)
 
 void UInteractComponent::OpenDialogue(APlayerState* PlayerState)
 {
+	if (DialogueWidget != nullptr) return;
+	
 	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), DialogueWidgetClass);
 	DialogueWidget = Cast<UDonUserWidget>(Widget);
 
@@ -81,4 +85,10 @@ void UInteractComponent::BroadcastQuestUpdate(FQuest Quest)
 	{
 		NPC->NotifyQuestCompletionOnScreen(Quest);
 	}
+}
+
+void UInteractComponent::ResetWidgets()
+{
+	StoreWidget = nullptr;
+	DialogueWidget = nullptr;
 }

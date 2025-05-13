@@ -6,6 +6,9 @@
 #include "UI/WidgetController/DonWidgetController.h"
 #include "OverlayWidgetController.generated.h"
 
+struct FDonAbilityInfo;
+class UDonAbilitySystemComponent;
+class UAbilityInfo;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerLevelChangedSignature, int32, NewLevel, bool, bLevelUp);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTagChangedSignature, const FGameplayTagContainer&, TagContainer);
@@ -24,6 +27,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetCurrentHealth(float NewHealth);
 
+	UFUNCTION(BlueprintCallable)
+	void ResetAbilityInputTag(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag = FGameplayTag());
+
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
 	
@@ -38,7 +44,6 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Abilities")
 	FOnTagChangedSignature OnTagChanged;
-
 	
 	void OnXPChanged(int32 NewXP);
 

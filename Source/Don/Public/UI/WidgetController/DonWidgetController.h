@@ -6,8 +6,12 @@
 #include "AbilitySystemComponent.h"
 #include "DonWidgetController.generated.h"
 
+class UAbilityInfo;
+class UDonAbilitySystemComponent;
 class UAttributeSet;
 class UAbilitySystemComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FDonAbilityInfo&, Info);
 
 USTRUCT(BlueprintType)
 struct FWidgetControllerParams
@@ -41,8 +45,17 @@ class DON_API UDonWidgetController : public UObject
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);
+	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitialValues();
 	virtual void BindCallbacksToDependencies();
+
+	UPROPERTY(BlueprintAssignable, Category="GAS|Messages")
+	FAbilityInfoSignature AbilityInfoDelegate;
+
+	UFUNCTION(BlueprintCallable)
+	void BroadcastAbilityInfo();
+
+	UDonAbilitySystemComponent* GetDonASC();
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
@@ -56,4 +69,10 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UAttributeSet> AttributeSet;
+
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<UDonAbilitySystemComponent> DonAbilitySystemComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAbilityInfo> AbilityInfo;
 };

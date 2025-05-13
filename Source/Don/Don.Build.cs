@@ -8,9 +8,9 @@ public class Don : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "AIModule", "NavigationSystem", "GameplayAbilities", "Niagara" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "AIModule", "NavigationSystem", "GameplayAbilities", "Niagara", "GameplayTasks" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTasks", "GameplayTags" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags", "Niagara" });
 		
 		PublicIncludePaths.AddRange(new string[] { "Don" });
 

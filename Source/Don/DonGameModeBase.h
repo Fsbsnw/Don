@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "DonGameModeBase.generated.h"
 
+class ULootableActorDataAsset;
 class UItemAsset;
 
 /**
@@ -18,4 +19,7 @@ class DON_API ADonGameModeBase : public AGameModeBase
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
 	TObjectPtr<UItemAsset> ItemInfoAsset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lootable Actor Information")
+	TObjectPtr<ULootableActorDataAsset> LootableActorAsset;
 };

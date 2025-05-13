@@ -3,6 +3,8 @@
 
 #include "UI/WidgetController/InventoryWidgetController.h"
 
+#include "DonGameplayTags.h"
+#include "Character/Player/DonCharacter.h"
 #include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Player/DonPlayerState.h"
@@ -13,13 +15,15 @@ void UInventoryWidgetController::BindCallbacksToDependencies()
 	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
 	
 	DonPlayerState->OnMoneyChangedDelegate.AddUObject(this, &UInventoryWidgetController::OnMoneyAdded);
+	DonPlayerState->OnMemoryFragmentChangedDelegate.AddUObject(this, &UInventoryWidgetController::OnMemoryFragmentAdded);
 }
 
 void UInventoryWidgetController::BroadcastInitialValues()
 {
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
 	{
-		OnMoneyChanged.Broadcast(DonPlayerState->GetMoney()); 
+		OnMoneyChanged.Broadcast(DonPlayerState->GetMoney());
+		OnMemoryFragmentChanged.Broadcast(DonPlayerState->GetMemoryFragment());
 	}
 }
 
@@ -102,11 +106,44 @@ void UInventoryWidgetController::RemoveItemFromPlayer(FItem Item, int32 Amount)
 {
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
 	{
-		DonPlayerState->GetInventoryComponent()->RemoveItem(Item, Amount);
+		DonPlayerState->GetInventoryComponent()->RemoveItem(Item, Item.InventorySlotIndex, Amount);
+	}
+}
+
+void UInventoryWidgetController::EquipItem(int32 SlotIndex)
+{
+	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
+	{
+		DonPlayerState->GetInventoryComponent()->EquipArmorItem(SlotIndex);
+	}
+}
+
+void UInventoryWidgetController::UnequipAllItems()
+{
+	if (APawn* ControlledPawn = Cast<APawn>(PlayerController->GetPawn()))
+	{
+		if (ControlledPawn && ControlledPawn->Implements<UCombatInterface>())
+		{
+			ICombatInterface::Execute_UnequipAllItems(ControlledPawn);
+		}
 	}
 }
 
 void UInventoryWidgetController::OnMoneyAdded(int32 Money)
 {
 	OnMoneyChanged.Broadcast(Money);
+}
+
+void UInventoryWidgetController::OnMemoryFragmentAdded(int32 MemoryFragment)
+{
+	OnMemoryFragmentChanged.Broadcast(MemoryFragment);
+}
+
+void UInventoryWidgetController::AddMemoryFragment(int32 InMemoryFragment)
+{
+	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
+	if (DonPlayerState)
+	{
+		DonPlayerState->AddToMemoryFragment(InMemoryFragment);
+	}
 }

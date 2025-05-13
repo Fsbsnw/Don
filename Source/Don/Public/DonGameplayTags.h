@@ -22,8 +22,14 @@ public:
 	FGameplayTag InputTag_Tab;
 	FGameplayTag InputTag_NumKey_1;
 	FGameplayTag InputTag_NumKey_2;
+	FGameplayTag InputTag_NumKey_3;
+	FGameplayTag InputTag_NumKey_4;
+	FGameplayTag InputTag_NumKey_5;
+	FGameplayTag InputTag_NumKey_6;
 	FGameplayTag InputTag_E;
 	FGameplayTag InputTag_Q;
+	FGameplayTag InputTag_J;
+	FGameplayTag InputTag_K;
 
 
 	// Primary Attributes
@@ -48,11 +54,13 @@ public:
 	// Meta Attributes
 
 	FGameplayTag Attributes_Meta_IncomingXP;
+	FGameplayTag Attributes_Meta_IncomingMoney;
 	
 
 	// Damage
 
 	FGameplayTag Damage;
+	FGameplayTag Damage_CriticalHit;
 	FGameplayTag Damage_Physical;
 	FGameplayTag Damage_Fire;
 
@@ -63,9 +71,32 @@ public:
 
 
 	// Abilities
-
+	
 	FGameplayTag Abilities_Attack;
+	FGameplayTag Abilities_ComboAttack;
+	FGameplayTag Abilities_ComboAttack_1;
+	FGameplayTag Abilities_ComboAttack_2;
+	FGameplayTag Abilities_ComboAttack_3;
 	FGameplayTag Abilities_FireBolt;
+	FGameplayTag Abilities_ThrowBoomerangAxe;
+	FGameplayTag Abilities_ArcSlash;
+	FGameplayTag Abilities_ChronoBreak;
+	FGameplayTag Abilities_Lightning;
+	FGameplayTag Abilities_Dash;
+	FGameplayTag Request_Abilities_Lightning;
+	
+	FGameplayTag Cooldown_Attack;
+	FGameplayTag Cooldown_FireBolt;
+
+	FGameplayTag Abilities_HitReact;
+
+	FGameplayTag Abilities_Status_Locked;
+	FGameplayTag Abilities_Status_Unlocked;
+	FGameplayTag Abilities_Status_Equipped;
+
+	FGameplayTag Abilities_Type_Offensive;
+	FGameplayTag Abilities_Type_Passive;
+	FGameplayTag Abilities_Type_None;
 
 
 	// Store State
@@ -73,6 +104,29 @@ public:
 	FGameplayTag Store_Normal_Open;
 	FGameplayTag Store_Normal_Closed;
 
+	
+	// Item
+
+	FGameplayTag Item;
+	FGameplayTag Item_Consumable;
+	FGameplayTag Item_Quest;
+	FGameplayTag Item_Miscellaneous;
+	FGameplayTag Item_Equippable;
+	FGameplayTag Item_Equippable_Weapon;
+	FGameplayTag Item_Equippable_Armor;
+	FGameplayTag Item_Equippable_Armor_Helmet;
+	FGameplayTag Item_Equippable_Armor_Chest;
+	FGameplayTag Item_Equippable_Armor_Hands;
+	FGameplayTag Item_Equippable_Armor_Legs;
+	FGameplayTag Item_Equippable_Armor_Boots;
+	
+	
+	// Rewards
+
+	FGameplayTag Reward;
+	FGameplayTag Reward_XP;
+	FGameplayTag Reward_Money;
+	
 protected:
  
 private:

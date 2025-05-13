@@ -3,13 +3,21 @@
 
 #include "Player/DonPlayerController.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "DonGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "AbilitySystem/DonAbilitySystemComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "Character/Player/DonCharacter.h"
 #include "Components/SplineComponent.h"
 #include "Input/DonInputComponent.h"
+#include "Inventory/InventoryComponent.h"
+#include "Player/DonPlayerState.h"
+#include "UI/HUD/DonHUD.h"
+#include "UI/Widget/DamageTextComponent.h"
 
 ADonPlayerController::ADonPlayerController()
 {
@@ -38,6 +46,18 @@ void ADonPlayerController::PlayerTick(float DeltaTime)
 	AutoRun();
 }
 
+void ADonPlayerController::ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter, bool bCriticalHit)
+{
+	if (IsValid(TargetCharacter) && DamageTextComponentClass)
+	{
+		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
+		DamageText->RegisterComponent();
+		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		DamageText->SetDamageText(DamageAmount, bCriticalHit);
+	}
+}
+
 void ADonPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -54,6 +74,8 @@ void ADonPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 	{
 		bAutoRunning = false;
 	}
+	
+	if (GetASC()) GetASC()->AbilityInputTagPressed(InputTag);
 }
 
 void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
@@ -88,7 +110,38 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 	// Open Inventory
 	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_Tab))
 	{
-		OpenInventory();
+		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
+		{
+			DonHUD->OpenInventory();
+		}		
+	}
+
+	// Open Attribute Menu
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_J))
+	{
+		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
+		{
+			DonHUD->OpenAttributeMenu();
+		}		
+	}
+
+	
+	// Open Skill Menu
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_K))
+	{
+		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
+		{
+			DonHUD->OpenSkillMenu();
+		}		
+	}
+
+	// Open Quests
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_Q))
+	{
+		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
+		{
+			DonHUD->OpenQuests();
+		}		
 	}
 
 	// Interact with NPC
@@ -99,6 +152,60 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 			DonCharacter->Interact();
 		}
 	}
+
+	// Use Quick Slot 1
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_NumKey_1))
+	{
+		ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
+		if (DonPlayerState)
+		{
+			if (DonPlayerState->GetInventoryComponent()->FindQuickSlotItemByInputTag(InputTag))
+			{
+				DonPlayerState->GetInventoryComponent()->UseQuickSlotItem(InputTag);
+			}
+		}
+	}
+
+	// Use Quick Slot 2
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_NumKey_2))
+	{
+		ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
+		if (DonPlayerState)
+		{
+			if (DonPlayerState->GetInventoryComponent()->FindQuickSlotItemByInputTag(InputTag))
+			{
+				DonPlayerState->GetInventoryComponent()->UseQuickSlotItem(InputTag);
+			}
+		}
+	}
+
+	// Use Quick Slot 3
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_NumKey_3))
+	{
+		ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
+		if (DonPlayerState)
+		{
+			if (DonPlayerState->GetInventoryComponent()->FindQuickSlotItemByInputTag(InputTag))
+			{
+				DonPlayerState->GetInventoryComponent()->UseQuickSlotItem(InputTag);
+			}
+		}
+	}
+
+	// Use Quick Slot 4
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_NumKey_4))
+	{
+		ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
+		if (DonPlayerState)
+		{
+			if (DonPlayerState->GetInventoryComponent()->FindQuickSlotItemByInputTag(InputTag))
+			{
+				DonPlayerState->GetInventoryComponent()->UseQuickSlotItem(InputTag);
+			}
+		}
+	}
+
+	if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
 }
 
 void ADonPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
@@ -115,6 +222,8 @@ void ADonPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 			ControlledPawn->AddMovementInput(Direction);
 		}
 	}
+
+	if (GetASC()) GetASC()->AbilityInputTagHeld(InputTag);
 }
 
 void ADonPlayerController::CursorTrace()
@@ -127,15 +236,24 @@ void ADonPlayerController::AutoRun()
 	if (!bAutoRunning) return;
 	
 	if (APawn* ControlledPawn = GetPawn())
-	{
+	{		
 		const FVector LocationOnSpline = Spline->FindLocationClosestToWorldLocation(ControlledPawn->GetActorLocation(), ESplineCoordinateSpace::World);
 		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(LocationOnSpline, ESplineCoordinateSpace::World);
 		ControlledPawn->AddMovementInput(Direction);
-
+		
 		const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();
 		if (DistanceToDestination <= AutoRunAcceptanceRadius)
 		{
 			bAutoRunning = false;
 		}
 	}
+}
+
+UDonAbilitySystemComponent* ADonPlayerController::GetASC()
+{
+	if (DonAbilitySystemComponent == nullptr)
+	{
+		DonAbilitySystemComponent = Cast<UDonAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
+	}
+	return DonAbilitySystemComponent;
 }

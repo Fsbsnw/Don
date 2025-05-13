@@ -3,8 +3,10 @@
 
 #include "UI/WidgetController/OverlayWidgetController.h"
 
+#include "DonGameplayTags.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
+#include "AbilitySystem/Data/AbilityInfo.h"
 #include "Data/LevelUpInfo.h"
 #include "Player/DonPlayerState.h"
 
@@ -17,17 +19,16 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	OnMaxHealthChanged.Broadcast(DonAttributeSet->GetMaxHealth());
 	
 	OnPlayerLevelChangedDelegate.Broadcast(DonPlayerState->GetPlayerLevel(), true);
+	OnXPPercentChangedDelegate.Broadcast(DonPlayerState->GetXP());
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
-	const UDonAttributeSet* DonAttributeSet = CastChecked<UDonAttributeSet>(AttributeSet);
-	
-
 	/*
 	 * Bind Attribute Set
 	 */
 
+	const UDonAttributeSet* DonAttributeSet = CastChecked<UDonAttributeSet>(AttributeSet);
 	
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 	DonAttributeSet->GetHealthAttribute()).AddLambda(
@@ -45,26 +46,45 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		}
 	);
 
-	Cast<UDonAbilitySystemComponent>(AbilitySystemComponent)->EffectAssetTags.AddLambda(
-		[this](const FGameplayTagContainer& AssetTags)
-		{
-			for (const FGameplayTag& Tag : AssetTags)
-			{
-				const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
-				GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue, Msg);
+	/*
+	 * Bind AbilitySystemComponent
+	 */
 
-			}
-			OnTagChanged.Broadcast(AssetTags);
+	if (GetDonASC())
+	{
+		if (GetDonASC()->bStartupAbilitiesGiven)
+		{
+			BroadcastAbilityInfo();
 		}
-	);
+		else
+		{
+			GetDonASC()->AbilitiesGivenDelegate.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
+			GetDonASC()->AbilitiesChangedDelegate.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
+		}
+		
+		GetDonASC()->EffectAssetTags.AddLambda(
+			[this](const FGameplayTagContainer& AssetTags)
+			{
+				for (const FGameplayTag& Tag : AssetTags)
+				{
+					const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
+					GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue, Msg);
+
+				}
+				OnTagChanged.Broadcast(AssetTags);
+			}
+		);
+	}
 
 
 	/*
 	 * Bind Player State
 	 */
+
+	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
 	
-	Cast<ADonPlayerState>(PlayerState)->OnXPChangedDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
-	Cast<ADonPlayerState>(PlayerState)->OnLevelChangedDelegate.AddLambda(
+	DonPlayerState->OnXPChangedDelegate.AddUObject(this, &UOverlayWidgetController::OnXPChanged);
+	DonPlayerState->OnLevelChangedDelegate.AddLambda(
 	[this](int32 NewLevel, bool bLevelUp)
 		{
 			OnPlayerLevelChangedDelegate.Broadcast(NewLevel, bLevelUp);
@@ -78,6 +98,11 @@ void UOverlayWidgetController::SetCurrentHealth(float NewHealth)
 
 	DonAttributeSet->SetHealth(NewHealth);
 	UE_LOG(LogTemp, Warning, TEXT("Set Health : %f"), NewHealth);
+}
+
+void UOverlayWidgetController::ResetAbilityInputTag(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag)
+{
+	GetDonASC()->SetAbilityInputTag(AbilityTag, NewInputTag);
 }
 
 void UOverlayWidgetController::OnXPChanged(int32 NewXP)

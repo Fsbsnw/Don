@@ -16,6 +16,11 @@ void UInteractWidgetController::SetWidgetControllerParams(UInteractComponent* In
 	PlayerState = TargetPlayerState;
 }
 
+void UInteractWidgetController::ResetInteractWidgets()
+{
+	InteractComponent->ResetWidgets();
+}
+
 bool UInteractWidgetController::HasCompletableQuestsInNPC(TArray<FQuest>& OutQuests)
 {
 	const ANPCCharacterBase* NPC = Cast<ANPCCharacterBase>(InteractComponent->GetOwner());

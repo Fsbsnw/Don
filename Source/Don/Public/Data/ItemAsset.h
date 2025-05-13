@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
 #include "ItemAsset.generated.h"
 
@@ -51,6 +52,12 @@ struct FItem
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	int32 ItemPrice = 0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<AActor> ItemActorClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag ItemTag;
 };
 
 

@@ -3,11 +3,17 @@
 
 #include "Character/Player/DonCharacter.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "DonGameplayTags.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
+#include "AbilitySystem/Abilities/DonDamageGameplayAbility.h"
 #include "Camera/CameraComponent.h"
 #include "Character/Interface/InteractInterface.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Inventory/DonItemLibrary.h"
+#include "Inventory/InventoryComponent.h"
 #include "Player/DonPlayerController.h"
 #include "Player/DonPlayerState.h"
 #include "UI/HUD/DonHUD.h"
@@ -21,6 +27,24 @@ ADonCharacter::ADonCharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(SpringArm);
+
+	Axe = CreateDefaultSubobject<USkeletalMeshComponent>("Axe Mesh");
+	Axe->SetupAttachment(GetMesh(), "ik_hand_gun");
+	Axe->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	AxeCollision = CreateDefaultSubobject<USphereComponent>("Axe Collision");
+	AxeCollision->SetupAttachment(Axe);
+	AxeCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
+	AxeCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	AxeCollision->SetGenerateOverlapEvents(false);
+	AxeCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ADonCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AxeCollision->OnComponentBeginOverlap.AddDynamic(this, &ADonCharacter::OnWeaponBeginOverlap);
 }
 
 void ADonCharacter::PossessedBy(AController* NewController)
@@ -28,13 +52,97 @@ void ADonCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	InitAbilityActorInfo();
+	AddCharacterAbilities();
 }
 
 void ADonCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	InitAbilityActorInfo();
+}
+
+void ADonCharacter::OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!OtherActor || OtherActor == this) return;
+	if (IgnoreActors.Contains(OtherActor)) return;
+
+	IgnoreActors.Add(OtherActor);
+
+	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
+	{
+		DamageEffectParams.TargetAbilitySystemComponent = TargetASC;
+		FRotator Rotation = GetActorRotation();
+		Rotation.Pitch = 20.f;
+		
+		const FVector DirForce = Rotation.Vector() * DamageEffectParams.KnockbackForceMagnitude;
+		DamageEffectParams.KnockbackForce = DirForce;
+		
+		FGameplayEventData Payload;
+		Payload.Instigator = this;
+		Payload.Target = OtherActor;
+		Payload.EventMagnitude = LightningDamage;
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, FDonGameplayTags::Get().Request_Abilities_Lightning, Payload);
+		UE_LOG(LogTemp, Warning, TEXT("%f : Event Magnitude"), Payload.EventMagnitude);
+		
+		UDonItemLibrary::ApplyDamageEffect(DamageEffectParams);
+	}
+}
+
+void ADonCharacter::UpdateAbilityTypeAndCollision(FGameplayTag AbilityTag, bool bEnableCollision)
+{
+	if (!AxeCollision) return;
+
+	if (bEnableCollision && AbilityTag.IsValid())
+	{
+		AxeCollision->SetGenerateOverlapEvents(true);
+		AxeCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		AxeAbilityType = AbilityTag;
+	}
+	else
+	{
+		AxeCollision->SetGenerateOverlapEvents(false);
+		AxeCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		AxeAbilityType = FGameplayTag();
+		IgnoreActors.Empty();
+		DamageEffectParams = FDamageEffectParams();
+	}
+}
+
+int32 ADonCharacter::GetAttributePoints_Implementation() const
+{
+	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
+	check(DonPlayerState);
+	return DonPlayerState->GetAttributePoints();
+}
+
+void ADonCharacter::AddToAttributePoints_Implementation(int32 InAttributePoints)
+{
+	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
+	check(DonPlayerState);
+	DonPlayerState->AddToAttributePoints(InAttributePoints);
+}
+
+void ADonCharacter::AddToXP_Implementation(int32 InXP)
+{
+	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
+	check(DonPlayerState);
+	DonPlayerState->AddToXP(InXP);
+}
+
+void ADonCharacter::AddToMoney_Implementation(int32 InMoney)
+{
+	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
+	check(DonPlayerState);
+	DonPlayerState->AddToMoney(InMoney);
+}
+
+bool ADonCharacter::AddItemToInventory_Implementation(FItem Item)
+{
+	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
+	check(DonPlayerState);
+	DonPlayerState->GetInventoryComponent()->AddItem(Item, 1);
+	return true;
 }
 
 void ADonCharacter::InitAbilityActorInfo()

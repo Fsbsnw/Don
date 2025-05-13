@@ -11,6 +11,7 @@ void UDonGameInstance::Init()
 
 	if (!InitDialogueDataTable()) UE_LOG(LogTemp, Warning, TEXT("Cannot initialize Dialogue Data Table"));
 	if (!InitQuestDataTable()) UE_LOG(LogTemp, Warning, TEXT("Cannot initialize Quest Data Table"));
+	if (!InitEquipmentDataTable()) UE_LOG(LogTemp, Warning, TEXT("Cannot initialize Equipment Data Table"));
 }
 
 bool UDonGameInstance::InitDialogueDataTable()
@@ -40,5 +41,21 @@ bool UDonGameInstance::InitQuestDataTable()
 	{
 		QuestDataTable.FindOrAdd(QuestRow->QuestNPC).Quests.AddUnique(QuestRow->Quest);
 	}
+	return true;
+}
+
+bool UDonGameInstance::InitEquipmentDataTable()
+{
+	UDataTable* LoadedEquipmentTable = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/Blueprints/Data/Equipment/DT_Equipment.DT_Equipment'"));
+	if (LoadedEquipmentTable == nullptr) return false;
+	
+	TArray<FEquipmentAttributes*> AllEquipments;
+	LoadedEquipmentTable->GetAllRows(TEXT(""), AllEquipments);
+
+	for (FEquipmentAttributes* Equipment : AllEquipments)
+	{
+		EquipmentDataTable.Add(Equipment->EquipmentName, *Equipment); 
+	}
+	
 	return true;
 }

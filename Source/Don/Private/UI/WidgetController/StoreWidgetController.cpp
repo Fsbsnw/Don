@@ -4,8 +4,8 @@
 #include "UI/WidgetController/StoreWidgetController.h"
 
 #include "Character/Component/InteractComponent.h"
+#include "Character/NPC/MerchantNPC.h"
 #include "Character/NPC/NPCCharacterBase.h"
-#include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Player/DonPlayerState.h"
 
@@ -23,6 +23,33 @@ void UStoreWidgetController::BindCallbacksToDependencies()
 	}
 }
 
+void UStoreWidgetController::ResetInteractWidgets()
+{
+	InteractComponent->ResetWidgets();
+}
+
+TArray<FItem> UStoreWidgetController::GetNPCMerchandise()
+{
+	AMerchantNPC* MerchantNPC = Cast<AMerchantNPC>(InteractComponent->GetOwner());
+	if (MerchantNPC)
+	{
+		return MerchantNPC->GetMerchandise();
+	}
+	return TArray<FItem>();
+}
+
+void UStoreWidgetController::NPCSellMerchandise(int32 SlotIndex)
+{
+	if (AMerchantNPC* MerchantNPC = Cast<AMerchantNPC>(InteractComponent->GetOwner()))
+	{
+		FItem MerchandiseToSell = MerchantNPC->GetMerchandise()[SlotIndex];
+		MerchantNPC->RemoveMerchandise(MerchandiseToSell, 1);
+		PlayerBuyItem(MerchandiseToSell, 1);
+		// Broadcast delegate for UI blueprint
+		OnMerchandiseUpdate.Broadcast(GetNPCMerchandise()[SlotIndex]);
+	}
+}
+
 void UStoreWidgetController::PlayerBuyItem(FItem Item, int32 Amount)
 {
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
@@ -37,9 +64,7 @@ void UStoreWidgetController::PlayerSellItem(int32 SlotIndex)
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
 	{
 		FItem ItemToSell = DonPlayerState->GetInventoryComponent()->GetInventory()[SlotIndex];
-		DonPlayerState->GetInventoryComponent()->RemoveItem(ItemToSell);
-
-		DonPlayerState->GetInventoryComponent()
+		DonPlayerState->GetInventoryComponent()->RemoveItem(ItemToSell, SlotIndex);
 
 		int32 AdjustedPrice = ItemToSell.ItemPrice;
 
@@ -61,4 +86,9 @@ void UStoreWidgetController::PlayerSellItem(int32 SlotIndex)
 		
 		DonPlayerState->AddToMoney(AdjustedPrice);
 	}
+}
+
+AActor* UStoreWidgetController::GetNPCCharacter()
+{
+	return InteractComponent->GetOwner() ? InteractComponent->GetOwner() : nullptr;
 }

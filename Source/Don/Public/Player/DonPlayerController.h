@@ -7,6 +7,8 @@
 #include "GameplayTags.h"
 #include "DonPlayerController.generated.h"
 
+class UDamageTextComponent;
+class UDonAbilitySystemComponent;
 class UDonInputConfig;
 class USplineComponent;
 class UInputMappingContext;
@@ -23,9 +25,8 @@ public:
 
 	virtual void PlayerTick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void OpenInventory();
-	
+	UFUNCTION()
+	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter, bool bCriticalHit);
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -41,7 +42,10 @@ private:
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
 
-
+	UDonAbilitySystemComponent* GetASC();
+	
+	UPROPERTY()
+	TObjectPtr<UDonAbilitySystemComponent> DonAbilitySystemComponent;
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;
@@ -61,4 +65,7 @@ private:
 	bool bAutoRunning = false;
 	
 	void AutoRun();
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 };
