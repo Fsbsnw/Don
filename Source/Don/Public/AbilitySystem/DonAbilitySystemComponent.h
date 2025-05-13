@@ -27,6 +27,7 @@ public:
 	virtual FActiveGameplayEffectHandle ApplyGameplayEffectSpecToSelf(const FGameplayEffectSpec& GameplayEffect, FPredictionKey PredictionKey = FPredictionKey()) override;
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& Abilities);
 	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& Abilities);
+	void AddCharacterStartupAbilities(const TArray<TSubclassOf<UGameplayAbility>>& Abilities);
 
 	void SetAbilityInputTag(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag = FGameplayTag());
 

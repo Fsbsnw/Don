@@ -81,9 +81,7 @@ void ADonCharacter::OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponen
 		FGameplayEventData Payload;
 		Payload.Instigator = this;
 		Payload.Target = OtherActor;
-		Payload.EventMagnitude = LightningDamage;
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, FDonGameplayTags::Get().Request_Abilities_Lightning, Payload);
-		UE_LOG(LogTemp, Warning, TEXT("%f : Event Magnitude"), Payload.EventMagnitude);
 		
 		UDonItemLibrary::ApplyDamageEffect(DamageEffectParams);
 	}

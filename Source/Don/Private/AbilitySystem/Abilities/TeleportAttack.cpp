@@ -30,6 +30,7 @@ bool UTeleportAttack::FindCombatTarget()
 	);
 
 	if (!IsTargetInRange) return false;
+	if (OverlappedActors.Num() > 6) OverlappedActors.SetNum(6);
 
 	TeleportSpeed = OverlappedActors.Num() <= 3 ? 5.f : TeleportSpeed * OverlappedActors.Num();
 	DelayMultiplier = OverlappedActors.Num() <= 3 ? 0.018f : (0.018f / OverlappedActors.Num()); 
@@ -66,7 +67,9 @@ void UTeleportAttack::SetTeleportTarget()
 void UTeleportAttack::SetTransformToTarget(float Value)
 {
 	const FVector& NewLocation = FMath::Lerp(StartLocation, FinalLocation, Value);
-	const FRotator& NewRotation = (TargetLocation - NewLocation).Rotation();
+	FRotator NewRotation = (TargetLocation - NewLocation).Rotation();
+	NewRotation.Roll = 0.f;
+	NewRotation.Pitch = 0.f;
 	GetAvatarActorFromActorInfo()->SetActorLocationAndRotation(NewLocation, NewRotation);
 
 	if (Value > 1.f)

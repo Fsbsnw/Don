@@ -3,21 +3,28 @@
 
 #include "AbilitySystem/Abilities/DonSweepingAttack.h"
 
-#include "Character/Enemy/DonEnemy.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "Inventory/DonItemLibrary.h"
 
 void UDonSweepingAttack::CauseDamage(AActor* TargetActor)
 {
-	Super::CauseDamage(TargetActor);
+	if (TargetActor == GetAvatarActorFromActorInfo()) return;
 
-	const FVector OwnerLocation = GetAvatarActorFromActorInfo()->GetActorLocation();
-	const FVector TargetLocation = TargetActor->GetActorLocation();
-
-	FRotator Rotation = (TargetLocation - OwnerLocation).Rotation();
-	Rotation.Pitch = Pitch;
-
-	if (ADonEnemy* DonEnemy = Cast<ADonEnemy>(TargetActor))
+	// Super::CauseDamage(TargetActor);
+	
+	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor))
 	{
-		DonEnemy->GetCharacterMovement()->AddImpulse((Rotation.Vector() * Force * 100.f));
-	}
+		const FVector OwnerLocation = GetAvatarActorFromActorInfo()->GetActorLocation();
+		const FVector TargetLocation = TargetActor->GetActorLocation();
+
+		FRotator Rotation = (TargetLocation - OwnerLocation).Rotation();
+		Rotation.Pitch = Pitch;
+
+		DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();
+		DamageEffectParams.KnockbackForceMagnitude = Force;
+		DamageEffectParams.KnockbackForce = Rotation.Vector() * DamageEffectParams.KnockbackForceMagnitude * 100.f;
+		DamageEffectParams.TargetAbilitySystemComponent = TargetASC;
+		
+		FGameplayEffectContextHandle ContextHandle = UDonItemLibrary::ApplyDamageEffect(DamageEffectParams);
+	}	
 }

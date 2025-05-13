@@ -7,7 +7,7 @@
 FDonGameplayTags FDonGameplayTags::GameplayTags;
 
 void FDonGameplayTags::InitializeNativeGameplayTags()
-{
+{	
 	/*
 	 * Inputs
 	 */
@@ -22,9 +22,21 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("Right Mouse Button")
 	);
 
+		
+	GameplayTags.InputTag_SpaceBar = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.SpaceBar"),
+	FString("Space Bar Button")
+	);
+
 	GameplayTags.InputTag_Tab = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("InputTag.Tab"),
 	FString("Keyboard Tab")
+	);
+
+	
+	GameplayTags.InputTag_ESC = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.ESC"),
+	FString("Keyboard ESC")
 	);
 
 	GameplayTags.InputTag_NumKey_1 = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -165,6 +177,16 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	
+	// Effects
+
+	
+	GameplayTags.Effects_HitReact = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Effects.HitReact"),
+	FString("Hit React Effect")
+	);
+
+
+	
 	// Cheat Attributes
 
 	GameplayTags.Cheat_Immortal = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -234,6 +256,12 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("Dash Ability")
 	);
 
+	
+	GameplayTags.Abilities_DodgeRolling = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Abilities.DodgeRolling"),
+	FString("DodgeRolling Ability")
+	);
+
 	GameplayTags.Request_Abilities_Lightning = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Request.Abilities.Lightning"),
 	FString("Request Lightning Ability")
@@ -276,6 +304,76 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	);
 
 
+	// Boss Abilities
+
+
+	
+	GameplayTags.Boss_Rampage_Abilities_HoldingRock = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Boss.Rampage.HoldingRock"),
+	FString("Boss Rampage Holding Rock")
+	);
+
+	
+	GameplayTags.Boss_Rampage_Abilities_NormalAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Boss.Rampage.NormalAttack"),
+	FString("Boss Rampage Normal Attack")
+	);
+
+	
+	GameplayTags.Boss_Rampage_Abilities_ThrowingRock = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Boss.Rampage.ThrowingRock"),
+	FString("Boss Rampage Throwing Rock")
+	);
+
+		
+	GameplayTags.Boss_Rampage_Abilities_BackDash = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Boss.Rampage.BackDash"),
+	FString("Boss Rampage Back Dash")
+	);
+
+		
+	GameplayTags.Boss_Rampage_Abilities_PushAway = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Boss.Rampage.PushAway"),
+	FString("Boss Rampage Push Away")
+	);
+
+
+	// Boss Cooldown
+			
+	GameplayTags.Cooldown_Boss_Rampage_ThrowingRock = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Boss.Rampage.ThrowingRock"),
+	FString("Cooldown Boss Rampage Throwing Rock")
+	);
+
+
+			
+	GameplayTags.Cooldown_Boss_Rampage_BackDash = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Boss.Rampage.BackDash"),
+	FString("Cooldown Boss Rampage Back Dash")
+	);
+
+
+			
+	GameplayTags.Cooldown_Boss_Rampage_NormalAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Boss.Rampage.NormalAttack"),
+	FString("Cooldown Boss Rampage Normal Attack")
+	);
+
+
+			
+	GameplayTags.Cooldown_Boss_Rampage_HoldingRock = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Boss.Rampage.HoldingRock"),
+	FString("Cooldown Boss Rampage Holding Rock")
+	);
+
+
+			
+	GameplayTags.Cooldown_Boss_Rampage_PushAway = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Boss.Rampage.PushAway"),
+	FString("Cooldown Boss Rampage Push Away")
+	);
+
+	
 	// Cooldown
 
 	GameplayTags.Cooldown_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -393,4 +491,9 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("Reward.Money"),
 	FString("Reward Money")
 	);
+
+	GameplayTags.FindCooldownTags.Add(GameplayTags.Boss_Rampage_Abilities_BackDash, GameplayTags.Cooldown_Boss_Rampage_BackDash);
+	GameplayTags.FindCooldownTags.Add(GameplayTags.Boss_Rampage_Abilities_HoldingRock, GameplayTags.Cooldown_Boss_Rampage_HoldingRock);
+	GameplayTags.FindCooldownTags.Add(GameplayTags.Boss_Rampage_Abilities_PushAway, GameplayTags.Cooldown_Boss_Rampage_PushAway);
+	GameplayTags.FindCooldownTags.Add(GameplayTags.Boss_Rampage_Abilities_ThrowingRock, GameplayTags.Cooldown_Boss_Rampage_ThrowingRock);
 }

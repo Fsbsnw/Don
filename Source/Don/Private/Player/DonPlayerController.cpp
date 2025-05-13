@@ -107,6 +107,16 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		}
 	}
 
+	// Open Menu
+	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_ESC))
+	{
+		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
+		{
+			DonHUD->OpenMenu();
+		}		
+	}
+
+	
 	// Open Inventory
 	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_Tab))
 	{

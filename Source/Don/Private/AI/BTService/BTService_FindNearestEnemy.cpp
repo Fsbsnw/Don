@@ -3,6 +3,7 @@
 
 #include "AI/BTService/BTService_FindNearestEnemy.h"
 
+#include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -15,6 +16,9 @@ void UBTService_FindNearestEnemy::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
+	APawn* AIPawn = OwnerComp.GetAIOwner() ? OwnerComp.GetAIOwner()->GetPawn() : nullptr;
+	if (AIPawn == nullptr) return;
+	
 	TArray<AActor*> FoundActors;
 
 	if (OwnerComp.GetOwner()->ActorHasTag(FName("Player")))
@@ -27,8 +31,7 @@ void UBTService_FindNearestEnemy::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 	}
 
 	AActor* NearestEnemy = nullptr;
-	const AActor* AIEnemy = OwnerComp.GetOwner();
-	const FVector SourceLocation = AIEnemy->GetActorLocation();
+	const FVector SourceLocation = AIPawn->GetActorLocation();
 	
 	float NearestDistance = 10000.f;
 	for (AActor* FoundActor : FoundActors)
@@ -47,10 +50,13 @@ void UBTService_FindNearestEnemy::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 		if (NearestEnemy)
 		{
 			BlackboardComponent->SetValueAsObject(TEXT("TargetEnemy"), NearestEnemy);
+			BlackboardComponent->SetValueAsFloat(TEXT("DistanceToFollow"), NearestDistance);
+			UE_LOG(LogTemp, Warning, TEXT("Distance : %f"), NearestDistance);
 		}
 		else
 		{
 			BlackboardComponent->ClearValue(TEXT("TargetEnemy"));
+			BlackboardComponent->ClearValue(TEXT("DistanceToFollow"));
 		}
 	}
 }
