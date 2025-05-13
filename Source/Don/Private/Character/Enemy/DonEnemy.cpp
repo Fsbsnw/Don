@@ -3,6 +3,7 @@
 
 #include "Character/Enemy/DonEnemy.h"
 
+#include "DonGameplayTags.h"
 #include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
@@ -43,7 +44,7 @@ void ADonEnemy::SetMeshInitState()
 
 void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 {
-	if (GetCapsuleComponent() == nullptr || GetMesh() == nullptr) return;
+	if (GetCapsuleComponent() == nullptr || GetMesh() == nullptr || bBossEnemy) return;
 	
 	if (NewState)
 	{
@@ -95,7 +96,6 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 
 		// 7️⃣ 애니메이션 실행
 		SetKnockback(false);
-		TestAnimation();
 	}
 }
 

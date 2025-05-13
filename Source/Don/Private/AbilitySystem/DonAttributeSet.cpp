@@ -113,10 +113,7 @@ void UDonAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
 
 			const bool bFatal = NewHealth <= 0.f;
-			if (bFatal && Props.TargetCharacter->Implements<UCombatInterface>())
-			{
-				ICombatInterface::Execute_Die(Props.TargetCharacter, FVector());
-			}
+			if (bFatal)	ICombatInterface::Execute_Die(Props.TargetCharacter, FVector());
 
 			if (Props.EffectContextHandle.IsValid() && Props.EffectContextHandle.Get()) 
 			{
@@ -126,10 +123,14 @@ void UDonAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 					
 					const FVector& KnockbackForce = DonEffectContext->GetKnockbackForce();
 
+					UE_LOG(LogTemp, Warning, TEXT("%s"), *KnockbackForce.ToString());
 					if (!KnockbackForce.IsNearlyZero())
 					{
-						UE_LOG(LogTemp, Warning, TEXT("%s"), *KnockbackForce.ToString());
 						ICombatInterface::Execute_SetKnockbackState(Props.TargetCharacter, true, KnockbackForce);
+					}
+					else
+					{
+						Props.TargetASC->TryActivateAbilitiesByTag(FDonGameplayTags::Get().Effects_HitReact.GetSingleTagContainer());
 					}
 				}
 			}

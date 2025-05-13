@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "DonAbilityTypes.h"
-#include "AbilitySystem/Abilities/DonDamageGameplayAbility.h"
 #include "Character/DonCharacterBase.h"
 #include "Interface/PlayerInterface.h"
 #include "Engine/EngineTypes.h"
@@ -66,11 +65,9 @@ public:
 	TObjectPtr<USphereComponent> AxeCollision;
 
 	FGameplayTag AxeAbilityType;
+	
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
 	FDamageEffectParams DamageEffectParams;
-
-	UPROPERTY(EditAnywhere)
-	float LightningDamage = 0.f;
 
 	TArray<AActor*> IgnoreActors;
 private:

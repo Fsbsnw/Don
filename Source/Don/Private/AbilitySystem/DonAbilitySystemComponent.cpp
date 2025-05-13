@@ -127,7 +127,17 @@ void UDonAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<TSubc
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
 		
 		AbilitySpec.DynamicAbilityTags.AddTag(FDonGameplayTags::Get().Abilities_Status_Equipped);
-		GiveAbilityAndActivateOnce(AbilitySpec);		
+		GiveAbilityAndActivateOnce(AbilitySpec);
+	}
+}
+
+void UDonAbilitySystemComponent::AddCharacterStartupAbilities(const TArray<TSubclassOf<UGameplayAbility>>& Abilities)
+{
+	for (const TSubclassOf<UGameplayAbility> AbilityClass : Abilities)
+	{
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
+		
+		GiveAbility(AbilitySpec);
 	}
 }
 

@@ -20,11 +20,21 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
-	void SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag, bool bOverridePitch = false, float PitchOverride = 0.f);
+	ADonProjectile* SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag, bool bOverridePitch = false, float PitchOverride = 0.f);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<ADonProjectile> ProjectileClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 NumProjectiles = 5;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bArcType = false;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AActor* TargetActor = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	float AngleDegrees = 30.f;
 };

@@ -7,9 +7,11 @@
 #include "Don.h"
 #include "DonGameplayTags.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
+#include "AbilitySystem/DonAttributeSet.h"
 #include "Actor/DonEquipmentActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Data/ItemAsset.h"
+#include "Player/DonPlayerState.h"
 
 ADonCharacterBase::ADonCharacterBase()
 {
@@ -78,14 +80,6 @@ bool ADonCharacterBase::IsItemEquipped_Implementation(FItem& Item)
 
 	UE_LOG(LogTemp, Warning, TEXT("Item '%s' is NOT equipped."), *Item.ItemName.ToString());
 	return false;
-	// return (
-	// 	(Weapon && Item.ItemName == Weapon->EquipmentName) ||
-	// 	(ArmorHelmet && Item.ItemName == ArmorHelmet->EquipmentName) ||
-	// 	(ArmorChest && Item.ItemName == ArmorChest->EquipmentName) ||
-	// 	(ArmorRightHand && Item.ItemName == ArmorRightHand->EquipmentName) ||
-	// 	(ArmorLegs && Item.ItemName == ArmorLegs->EquipmentName) ||
-	// 	(ArmorRightBoot && Item.ItemName == ArmorRightBoot->EquipmentName)
-	// );
 }
 
 void ADonCharacterBase::UnequipAllItems_Implementation()
@@ -281,6 +275,18 @@ float ADonCharacterBase::GetWeaponDamage_Implementation()
 	return 0.f;
 }
 
+float ADonCharacterBase::GetCharacterLevel_Implementation() const
+{
+	if (const ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetPlayerState()))
+	{
+		return DonPlayerState->GetPlayerLevel();
+	}
+	else
+	{
+		return CharacterLevel;
+	}
+}
+
 void ADonCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -330,16 +336,19 @@ void ADonCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayE
 	
 	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
 	ContextHandle.AddSourceObject(this);
-	const FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(GameplayEffectClass, 1.0f, ContextHandle);
+	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(GameplayEffectClass, Level, ContextHandle);
+	// SpecHandle.Data->SetSetByCallerMagnitude(
+	// 	FDonGameplayTags::Get().
+	// )
 	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
 }
 
 void ADonCharacterBase::InitializeDefaultAttributes() const
 {
-	ApplyEffectToSelf(DefaultPrimaryAttributes, 1.f);
-	ApplyEffectToSelf(DefaultSecondaryAttributes, 1.f);
-	ApplyEffectToSelf(DefaultMaxVitalAttributes, 1.f);
-	ApplyEffectToSelf(DefaultVitalAttributes, 1.f);
+	ApplyEffectToSelf(DefaultPrimaryAttributes, GetCharacterLevel_Implementation());
+	ApplyEffectToSelf(DefaultSecondaryAttributes, GetCharacterLevel_Implementation());
+	ApplyEffectToSelf(DefaultMaxVitalAttributes, GetCharacterLevel_Implementation());
+	ApplyEffectToSelf(DefaultVitalAttributes, GetCharacterLevel_Implementation());
 }
 
 void ADonCharacterBase::AddCharacterAbilities()
@@ -349,4 +358,5 @@ void ADonCharacterBase::AddCharacterAbilities()
 
 	ASC->AddCharacterAbilities(StartupAbilities);
 	ASC->AddCharacterPassiveAbilities(StartupPassiveAbilities);
+	ASC->AddCharacterStartupAbilities(StartupCommonAbilities);
 }

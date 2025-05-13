@@ -34,6 +34,9 @@ public:
 	UDonUserWidget* GetOverlayWidget() const { return OverlayWidget; }
 
 	UFUNCTION(BlueprintImplementableEvent)
+	void OpenMenu();
+	
+	UFUNCTION(BlueprintImplementableEvent)
 	void OpenInventory();
 
 	UFUNCTION(BlueprintImplementableEvent)

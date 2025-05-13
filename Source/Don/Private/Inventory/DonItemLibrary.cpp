@@ -17,6 +17,7 @@
 #include "UI/WidgetController/QuestListWidgetController.h"
 #include "Actor/LootableActor.h"
 #include "Character/DonCharacterBase.h"
+#include "Data/NPCInfo.h"
 
 FItem UDonItemLibrary::FindItemByName(const UObject* WorldContextObject, FName ItemName)
 {
@@ -213,6 +214,16 @@ bool UDonItemLibrary::FindDialogueRow(const UObject* WorldContextObject, FDialog
 		}
 	}	
 	return false;
+}
+
+UTexture2D* UDonItemLibrary::GetNPCImage(const UObject* WorldContextObject, ENPCName NPCName)
+{
+	ADonGameModeBase* GameModeBase = Cast<ADonGameModeBase>(WorldContextObject->GetWorld()->GetAuthGameMode());
+	if (GameModeBase && GameModeBase->NPCInfoAsset)
+	{
+		return GameModeBase->NPCInfoAsset->GetNPCImage(NPCName);
+	}
+	return nullptr;
 }
 
 

@@ -48,6 +48,17 @@ void ADonProjectile::OnHit()
 	if (bCriticalHit) UGameplayStatics::PlaySoundAtLocation(this, ImpactCriticalSound, GetActorLocation(), FRotator::ZeroRotator);
 	else UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
+	if (ImpactParticleEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			ImpactParticleEffect,
+			GetActorLocation(),
+			GetActorRotation(),
+			FVector(1.f)
+		);
+	}
+	
 	if (LoopingSoundComponent)
 	{
 		LoopingSoundComponent->Stop();
@@ -58,6 +69,11 @@ void ADonProjectile::OnHit()
 
 void ADonProjectile::Destroyed()
 {
+	if (WeaponType)
+	{
+		Super::Destroyed();
+		return;
+	}
 	if (LoopingSoundComponent)
 	{
 		LoopingSoundComponent->Stop();

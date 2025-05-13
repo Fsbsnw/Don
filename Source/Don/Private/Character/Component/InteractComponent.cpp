@@ -72,7 +72,7 @@ void UInteractComponent::OpenDialogue(APlayerState* PlayerState)
 
 	FVector2d ScreenSize;
 	GEngine->GameViewport->GetViewportSize(ScreenSize);
-	ScreenSize = FVector2d(ScreenSize.X / 5, ScreenSize.Y * 2 / 3);
+	ScreenSize = FVector2d(ScreenSize.X / 5, ScreenSize.Y * 1 / 2);
 	DialogueWidget->SetPositionInViewport(ScreenSize);
 	
 	DialogueWidget->AddToViewport();

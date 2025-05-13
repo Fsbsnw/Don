@@ -7,7 +7,7 @@
 
 void UDonDirectionalSweepingAttack::CauseDamage(AActor* TargetActor)
 {
-	if (TargetActor) Super::CauseDamage(TargetActor);
+	// if (TargetActor) Super::CauseDamage(TargetActor);
 
 	ADonCharacter* DonCharacter = Cast<ADonCharacter>(GetAvatarActorFromActorInfo());
 	if (DonCharacter)

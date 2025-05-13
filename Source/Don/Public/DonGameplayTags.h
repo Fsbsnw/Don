@@ -19,7 +19,9 @@ public:
 
 	FGameplayTag InputTag_LMB;
 	FGameplayTag InputTag_RMB;
+	FGameplayTag InputTag_SpaceBar;
 	FGameplayTag InputTag_Tab;
+	FGameplayTag InputTag_ESC;
 	FGameplayTag InputTag_NumKey_1;
 	FGameplayTag InputTag_NumKey_2;
 	FGameplayTag InputTag_NumKey_3;
@@ -65,6 +67,10 @@ public:
 	FGameplayTag Damage_Fire;
 
 
+	// Effects
+
+	FGameplayTag Effects_HitReact;
+
 	// Cheat Attributes
 
 	FGameplayTag Cheat_Immortal;
@@ -83,6 +89,7 @@ public:
 	FGameplayTag Abilities_ChronoBreak;
 	FGameplayTag Abilities_Lightning;
 	FGameplayTag Abilities_Dash;
+	FGameplayTag Abilities_DodgeRolling;
 	FGameplayTag Request_Abilities_Lightning;
 	
 	FGameplayTag Cooldown_Attack;
@@ -98,6 +105,22 @@ public:
 	FGameplayTag Abilities_Type_Passive;
 	FGameplayTag Abilities_Type_None;
 
+
+	// Boss Abilities
+
+
+	FGameplayTag Boss_Rampage_Abilities_HoldingRock;
+	FGameplayTag Boss_Rampage_Abilities_NormalAttack;
+	FGameplayTag Boss_Rampage_Abilities_ThrowingRock;
+	FGameplayTag Boss_Rampage_Abilities_BackDash;
+	FGameplayTag Boss_Rampage_Abilities_PushAway;
+
+	FGameplayTag Cooldown_Boss_Rampage_NormalAttack;
+	FGameplayTag Cooldown_Boss_Rampage_ThrowingRock;
+	FGameplayTag Cooldown_Boss_Rampage_BackDash;
+	FGameplayTag Cooldown_Boss_Rampage_PushAway;
+	FGameplayTag Cooldown_Boss_Rampage_HoldingRock;
+	
 
 	// Store State
 
@@ -126,6 +149,9 @@ public:
 	FGameplayTag Reward;
 	FGameplayTag Reward_XP;
 	FGameplayTag Reward_Money;
+
+
+	TMap<FGameplayTag, FGameplayTag> FindCooldownTags;
 	
 protected:
  

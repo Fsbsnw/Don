@@ -72,3 +72,10 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Unreal content assets (optional if not using Git LFS)
+Content/**/*.uasset
+Content/**/*.umap
+Content/**/*.uexp
+Content/**/*.ubulk
+Content/**/*.bink

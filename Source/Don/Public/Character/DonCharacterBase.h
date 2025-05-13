@@ -74,6 +74,7 @@ public:
 	virtual void EquipArmorLegs_Implementation(FItem& Item) override;
 	virtual void EquipArmorBoots_Implementation(FItem& Item) override;
 	virtual float GetWeaponDamage_Implementation() override;
+	virtual float GetCharacterLevel_Implementation() const override;
 	// End Combat Interface
 
 protected:
@@ -157,10 +158,14 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bKnockback = false;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CharacterLevel = 1.f;
 	
 	UPROPERTY(EditDefaultsOnly)
 	ECharacterClass CharacterClass = ECharacterClass::Fighter;
 public:
+	void SetCharacterLevel(float InLevel) { CharacterLevel = InLevel; }
 	void ResetMaterials();
 	void AddCharacterAbilities();
 	UFUNCTION(BlueprintCallable)
@@ -173,6 +178,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupPassiveAbilities;
+
+	UPROPERTY(EditAnywhere, Category = "Abilities")
+	TArray<TSubclassOf<UGameplayAbility>> StartupCommonAbilities;
 
 	UPROPERTY(EditAnywhere, Category = "Looting")
 	TSubclassOf<ALootableActor> LootableXPClass;

@@ -83,4 +83,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	float GetWeaponDamage();
+
+	UFUNCTION(BlueprintNativeEvent)
+	float GetCharacterLevel() const;
 };

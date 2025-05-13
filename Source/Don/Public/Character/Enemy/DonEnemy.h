@@ -32,9 +32,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetKnockbackState(bool NewState, FVector Force = FVector::ZeroVector);
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void TestAnimation();
-
 	UPROPERTY(EditAnywhere)
 	float ForceMultiplier = 15.f;
 
@@ -43,6 +40,19 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsForwardRagdoll() { return bForwardRagdoll; }
+
+	/*
+	 * Boss
+	 */
+
+	UFUNCTION(BlueprintCallable)
+	void SetIsHoldingRock(bool NewState) { bIsHoldingRock = NewState; }
+
+	UFUNCTION(BlueprintCallable)
+	bool GetIsHoldingRock() const { return bIsHoldingRock; }
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bBossEnemy = false;
 
 protected:
 	virtual void BeginPlay() override;
@@ -62,4 +72,5 @@ protected:
 
 private:
 	bool bForwardRagdoll = false;
+	bool bIsHoldingRock = false;
 };

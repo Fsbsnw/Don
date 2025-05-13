@@ -19,7 +19,7 @@ UAbilityTask_Timeline* UAbilityTask_Timeline::AbilityTaskOnTick(UGameplayAbility
 void UAbilityTask_Timeline::Activate()
 {
 	Super::Activate();
-
+	
 	SetWaitingOnAvatar();
 }
 

@@ -63,6 +63,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Dialogue")
 	static bool FindDialogueRow(const UObject* WorldContextObject, FDialogue& OutDialogue, FDonDialogueContext& DialogueContext);
 
+	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Dialogue")
+	static UTexture2D* GetNPCImage(const UObject* WorldContextObject, ENPCName NPCName);
+
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary | DamageEffect")
 	static FGameplayEffectContextHandle ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams);
 };
