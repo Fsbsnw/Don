@@ -15,9 +15,10 @@ enum class ENPCName : uint8
 UENUM(BlueprintType)
 enum class EObjectiveType : uint8
 {
-	QuestComplete     UMETA(DisplayName = "Quest Complete"),
-	HasItem           UMETA(DisplayName = "Has Item"),
-	DialogueComplete  UMETA(DisplayName = "DialogueComplete ") 
+	QuestComplete		UMETA(DisplayName = "Quest Complete"),
+	HasItem				UMETA(DisplayName = "Has Item"),
+	DialogueComplete	UMETA(DisplayName = "DialogueComplete"),
+	KillCount			UMETA(DisplayName = "KillCount")
 };
 
 

@@ -65,6 +65,7 @@ public:
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
 	void ShowFloatingText(const FEffectProperties& Props, float Damage, bool bCriticalHit) const;
+	void ShowEvadeText(const FEffectProperties& Props, bool bEvade) const;
 	
 	TMap<FGameplayTag, TStaticFuncPtr<FGameplayAttribute()>> TagsToAttributes;
 	

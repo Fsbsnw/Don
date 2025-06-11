@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Data/ItemAsset.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/Actor.h"
 #include "DonEquipmentActor.generated.h"
@@ -55,12 +56,16 @@ public:
 	FName EquipmentName;
 	FGameplayTag EquipmentType;
 	float EquipmentUpgrade;
-	
+
+	void UpdateUpgradedPoint(int32 InPoint);
+	void SetEquipmentInfo(const FItem& NewItem) { EquipmentInfo = NewItem; }
+	FItem GetEquipmentInfo() const { return EquipmentInfo; }
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USkeletalMeshComponent> SkeletalMeshComponent;
 	
 	int32 EquipmentBaseDamage;
 	int32 EquipmentBaseDefense;
-	float EquipmentUpgradedBonus;	
+	float EquipmentUpgradedBonus;
+	FItem EquipmentInfo;
 };

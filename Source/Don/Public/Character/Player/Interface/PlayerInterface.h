@@ -34,5 +34,9 @@ public:
 	void AddToMoney(int32 InMoney);
 
 	UFUNCTION(BlueprintNativeEvent)
+	void AddToScore(int32 InScore);
+
+	UFUNCTION(BlueprintNativeEvent)
 	bool AddItemToInventory(FItem Item);
+	
 };

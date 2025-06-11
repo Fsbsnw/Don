@@ -59,6 +59,12 @@ void UAttributeMenuWidgetController::AddAttributePointsTest()
 	DonASC->AddAttributePointsTest();
 }
 
+bool UAttributeMenuWidgetController::UpgradeWeapon()
+{
+	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
+	return DonPlayerState->UpgradeAxe();
+}
+
 void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute)
 {
 	FDonAttributeInfo Info = AttributeInfo->FindAttributeInfoForTag(AttributeTag);

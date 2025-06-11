@@ -40,7 +40,7 @@ bool UInteractWidgetController::HasCompletedQuestInPlayerState(FObjective& Objec
 	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
 	if (DonPlayerState)
 	{
-		return DonPlayerState->IsQuestConditionMet(Objective);
+		return DonPlayerState->IsQuestConditionMet(FString("Normal"), Objective);
 	}	
 	return false;
 }
@@ -50,7 +50,7 @@ bool UInteractWidgetController::HasDialogueInPlayerState(FObjective& Objective)
 	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
 	if (DonPlayerState)
 	{
-		return DonPlayerState->IsQuestConditionMet(Objective);
+		return DonPlayerState->IsQuestConditionMet(FString("Normal"), Objective);
 	}
 	return false;
 }
@@ -182,7 +182,7 @@ bool UInteractWidgetController::HasItemInPlayerState(FObjective& Objective)
 	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
 	if (DonPlayerState)
 	{
-		return DonPlayerState->IsItemConditionMet(Objective);
+		return DonPlayerState->IsItemConditionMet(FString("Normal"), Objective);
 	}
 	return false;
 }
@@ -195,7 +195,7 @@ void UInteractWidgetController::AddDialogueToPlayerState(const FDialogue& Dialog
 	if (DonPlayerState)
 	{
 		DonPlayerState->CompletedDialogues.FindOrAdd(Dialogue.NPCName).Dialogues.AddUnique(Dialogue);
-		DonPlayerState->CheckQuestObjectives();
+		DonPlayerState->CheckAllQuestObjectives();
 	}
 }
 
@@ -210,6 +210,6 @@ void UInteractWidgetController::AddQuestToPlayerState(FQuest Quest, EQuestState 
 			DonPlayerState->OnQuestListChanged.Broadcast(Quest);
 		}
 		DonPlayerState->PlayerQuests.FindOrAdd(Quest.QuestNPC).Quests.AddUnique(Quest);
-		DonPlayerState->CheckQuestObjectives();
+		DonPlayerState->CheckAllQuestObjectives();
 	}
 }

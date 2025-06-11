@@ -51,10 +51,15 @@ public:
 	TArray<FItem>& GetMerchandise() { return Merchandise; }
 
 	void RemoveMerchandise(FItem Item, int32 Amount);
-
 	void LoadMerchandise();
-	
+
+	UPROPERTY(EditAnywhere)
+	bool bLoadBonusMerchandise = true;
+	float LifeTimer = 10.f;
 private:
 	UPROPERTY(EditAnywhere)
 	TArray<FItem> Merchandise;
+	
+	UPROPERTY(EditAnywhere)
+	TMap<FName, int32> ItemsToAdd;
 };

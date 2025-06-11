@@ -25,7 +25,7 @@ public:
 	bool IsDead();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void Die(const FVector& DeathImpulse);
+	void Die(const FVector& DeathImpulse, float ItemDropRate);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void ApplyHitEffect();
@@ -82,8 +82,20 @@ public:
 	void UnequipArmorBoots();
 
 	UFUNCTION(BlueprintNativeEvent)
+	void UpdateUpgradedItemInfo(const FItem& Item);
+
+	UFUNCTION(BlueprintNativeEvent)
+	int32 GetRewardScore();
+	
+	UFUNCTION(BlueprintNativeEvent)
 	float GetWeaponDamage();
 
 	UFUNCTION(BlueprintNativeEvent)
+	float GetArmorDefense();
+	
+	UFUNCTION(BlueprintNativeEvent)
 	float GetCharacterLevel() const;
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	int32 GetEquippedArmorCount();
 };

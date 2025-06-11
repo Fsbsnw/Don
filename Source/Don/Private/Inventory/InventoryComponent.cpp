@@ -3,11 +3,13 @@
 
 #include "Inventory/InventoryComponent.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "DonGameplayTags.h"
-#include "Actor/DonEquipmentActor.h"
 #include "Character/Interface/CombatInterface.h"
 #include "Character/Player/DonCharacter.h"
 #include "Data/ItemAsset.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
 
 UInventoryComponent::UInventoryComponent()
@@ -28,6 +30,19 @@ void UInventoryComponent::UnassignQuickSlotItem(const FGameplayTag& InputTag)
 int32 UInventoryComponent::FindItemInInventory(const FItem& Item) const
 {
 	return Inventory.Find(Item);
+}
+
+bool UInventoryComponent::HasEnoughItems(TArray<FItem> Items)
+{
+	for (FItem Item : Items)
+	{
+		int32 ItemIndex = FindItemInInventory(Item);
+		if (ItemIndex < 0 || ItemIndex >= 0 && Inventory[ItemIndex].Amount < Item.Amount)
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 void UInventoryComponent::SwapInventoryItems(int32 IndexA, int32 IndexB)
@@ -64,40 +79,9 @@ void UInventoryComponent::AddItem(FItem Item, int32 Amount)
 		if (Item.ItemName.IsNone()) return;
 
 		Item.Amount = Amount;
-		
-		// Item == EItemType::Consumable
-		if (Item.ItemType == EItemType::Consumable)
-		{
-			int32 Index = Inventory.Find(Item);
 
-			// Found Item
-			if (Index != INDEX_NONE)
-			{
-				Inventory[Index].Amount += Amount;
-				OnInventoryItemAdded.Broadcast(Inventory[Index]);
-				OnInventorySlotChanged.Broadcast(Inventory);
-				DonPlayerState->CheckQuestObjectives();
-			}
-			// Cannot Found Item
-			else
-			{
-				for (uint8 i = 0; i < MaxItemSlots; i++)
-				{
-					if (Inventory[i].ItemName.IsNone())
-					{
-						Item.Amount = Amount;
-						Item.InventorySlotIndex = i;
-						Inventory[i] = Item;
-						OnInventoryItemAdded.Broadcast(Inventory[i]);
-						OnInventorySlotChanged.Broadcast(Inventory);
-						DonPlayerState->CheckQuestObjectives();
-						return;
-					}
-				}
-			}
-		}
-		// ItemType != EItemType::Consumable
-		else
+		// ItemType == EItemType::Equipable
+		if (Item.ItemType == EItemType::Equipable)
 		{
 			for (uint8 i = 0; i < MaxItemSlots; i++)
 			{
@@ -112,7 +96,38 @@ void UInventoryComponent::AddItem(FItem Item, int32 Amount)
 					OnInventorySlotChanged.Broadcast(Inventory);
 				}
 			}
-			DonPlayerState->CheckQuestObjectives();
+			DonPlayerState->CheckAllQuestObjectives();
+		}
+		// ItemType != EItemType::Equipable
+		else
+		{
+			int32 Index = Inventory.Find(Item);
+
+			// Found Item
+			if (Index != INDEX_NONE)
+			{
+				Inventory[Index].Amount += Amount;
+				OnInventoryItemAdded.Broadcast(Inventory[Index]);
+				OnInventorySlotChanged.Broadcast(Inventory);
+				DonPlayerState->CheckAllQuestObjectives();
+			}
+			// Cannot Found Item
+			else
+			{
+				for (uint8 i = 0; i < MaxItemSlots; i++)
+				{
+					if (Inventory[i].ItemName.IsNone())
+					{
+						Item.Amount = Amount;
+						Item.InventorySlotIndex = i;
+						Inventory[i] = Item;
+						OnInventoryItemAdded.Broadcast(Inventory[i]);
+						OnInventorySlotChanged.Broadcast(Inventory);
+						DonPlayerState->CheckAllQuestObjectives();
+						return;
+					}
+				}
+			}
 		}
 	}
 }
@@ -121,15 +136,6 @@ void UInventoryComponent::RemoveItem(FItem Item, int32 SlotIndex, int32 Amount)
 {
 	if (SlotIndex != INDEX_NONE)
 	{
-		// if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
-		// {
-		// 	ADonCharacter* ControlledCharacter = Cast<ADonCharacter>(DonPlayerState->GetPawn());
-		// 	if (ControlledCharacter && ControlledCharacter->Implements<UCombatInterface>() && ICombatInterface::Execute_IsItemEquipped(ControlledCharacter, Inventory[SlotIndex]))
-		// 	{
-		// 		ICombatInterface::Execute_UnequipItem(ControlledCharacter, Inventory[SlotIndex]);
-		// 	}
-		// }
-		
 		if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
 		{
 			if (!DonPlayerState)
@@ -233,6 +239,23 @@ void UInventoryComponent::EquipArmorItem(int32 SlotIndex)
 
 void UInventoryComponent::UseConsumableItem(int32 SlotIndex)
 {
+	if (Inventory[SlotIndex].ItemType != EItemType::Consumable) return;
+	
+	if (Inventory[SlotIndex].ItemTag.MatchesTag(FDonGameplayTags::Get().Item_Consumable_Potion))
+	{
+		if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner()))
+		{
+			if (Inventory[SlotIndex].ItemEffectClass)
+			{
+				FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
+				FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(Inventory[SlotIndex].ItemEffectClass, 1.0f, EffectContext);
+
+				ASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), ASC);
+				if (DrinkPotion) UGameplayStatics::PlaySound2D(this, DrinkPotion);
+				RemoveItem(Inventory[SlotIndex], SlotIndex, 1);
+			}
+		}
+	}
 	UE_LOG(LogTemp, Warning, TEXT("Use Consumable Item : %s"), *Inventory[SlotIndex].ItemName.ToString());
 }
 
@@ -247,4 +270,28 @@ void UInventoryComponent::UseQuickSlotItem(const FGameplayTag& InputTag)
 	{
 		EquipArmorItem(FoundInventoryIndex);
 	}
+}
+
+void UInventoryComponent::UpgradeArmorItem(int32 SlotIndex, int32 Amount)
+{
+	Inventory[SlotIndex].Upgrade += Amount;
+
+	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
+	{
+		ADonCharacter* ControlledCharacter = Cast<ADonCharacter>(DonPlayerState->GetPawn());
+		
+		if (ControlledCharacter && ControlledCharacter->Implements<UCombatInterface>())
+		{
+			ICombatInterface::Execute_UpdateUpgradedItemInfo(ControlledCharacter, Inventory[SlotIndex]);
+		}
+	}
+}
+
+bool UInventoryComponent::CanAffordItem(int32 Cost)
+{
+	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
+	{
+		return DonPlayerState->GetMoney() >= Cost;
+	}
+	return false;
 }

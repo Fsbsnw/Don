@@ -110,15 +110,17 @@ void ADonEnemy::PossessedBy(AController* NewController)
 	DonAIController->RunBehaviorTree(BehaviorTree);
 }
 
-void ADonEnemy::Die_Implementation(const FVector& DeathImpulse)
+void ADonEnemy::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
 {
-	Super::Die_Implementation(DeathImpulse);
+	Super::Die_Implementation(DeathImpulse, ItemDropRate);
 
 	FCharacterClassInfo CharacterClassInfo = UDonItemLibrary::FindCharacterClassInfo(this, CharacterClass);
 	UDonItemLibrary::SpawnLootableXP(this, CharacterClassInfo.DroppableXP, GetActorLocation(), GetActorRotation());
-	UDonItemLibrary::SpawnLootableMoney(this, CharacterClassInfo.DroppableMoney, 3, GetActorLocation(), GetActorRotation());
+	UDonItemLibrary::SpawnLootableMoney(this, CharacterClassInfo.DroppableMoney, FMath::RandRange(0, 3), GetActorLocation(), GetActorRotation());
 
-	UE_LOG(LogTemp, Warning, TEXT("Enemy Dead"));
+	float AdjustedRate = ItemDropRate * 0.01f * CrystalDropRate; 
+	UDonItemLibrary::SpawnLootableItem(this, LootableItems, GetActorLocation(), GetActorRotation(), AdjustedRate);
+
 	if (DeathEffect) UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, DeathEffect, GetActorLocation());
 	Destroy();
 }

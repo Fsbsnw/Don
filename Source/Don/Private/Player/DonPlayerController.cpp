@@ -54,7 +54,19 @@ void ADonPlayerController::ShowDamageNumber(float DamageAmount, ACharacter* Targ
 		DamageText->RegisterComponent();
 		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		DamageText->SetDamageText(DamageAmount, bCriticalHit);
+		DamageText->SetDamageText(DamageAmount, bCriticalHit, false);
+	}
+}
+
+void ADonPlayerController::ShowEvadeText(ACharacter* TargetCharacter, bool bEvade)
+{
+	if (IsValid(TargetCharacter) && DamageTextComponentClass)
+	{
+		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
+		DamageText->RegisterComponent();
+		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		DamageText->SetDamageText(0, false, bEvade);
 	}
 }
 

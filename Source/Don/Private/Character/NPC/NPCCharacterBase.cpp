@@ -4,6 +4,7 @@
 #include "Character/NPC/NPCCharacterBase.h"
 
 #include "Character/Component/InteractComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 
 ANPCCharacterBase::ANPCCharacterBase()
@@ -13,6 +14,7 @@ ANPCCharacterBase::ANPCCharacterBase()
 	InteractComponent = CreateDefaultSubobject<UInteractComponent>("Interact Component");
 	QuestNotification = CreateDefaultSubobject<UWidgetComponent>("Quest Notification");
 	QuestNotification->SetVisibility(false);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 }
 
 UInteractComponent* ANPCCharacterBase::GetInteractComponent()

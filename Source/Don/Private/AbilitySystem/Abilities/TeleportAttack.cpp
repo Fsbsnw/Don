@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/Abilities/AbilityTasks/AbilityTask_Timeline.h"
 #include "Character/Enemy/DonEnemy.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 bool UTeleportAttack::FindCombatTarget()
@@ -33,7 +34,11 @@ bool UTeleportAttack::FindCombatTarget()
 	if (OverlappedActors.Num() > 6) OverlappedActors.SetNum(6);
 
 	TeleportSpeed = OverlappedActors.Num() <= 3 ? 5.f : TeleportSpeed * OverlappedActors.Num();
-	DelayMultiplier = OverlappedActors.Num() <= 3 ? 0.018f : (0.018f / OverlappedActors.Num()); 
+	DelayMultiplier = OverlappedActors.Num() <= 3 ? 0.018f : (0.018f / OverlappedActors.Num());
+	if (ACharacter* Player = Cast<ACharacter>(GetAvatarActorFromActorInfo()))
+	{
+		Player->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	}
 	SetTeleportTarget();
 	
 	return true;
@@ -43,6 +48,10 @@ void UTeleportAttack::SetTeleportTarget()
 {
 	if (TargetIndex >= OverlappedActors.Num())
 	{
+		if (ACharacter* Player = Cast<ACharacter>(GetAvatarActorFromActorInfo()))
+		{
+			Player->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		}
 		RequestEndAbility();
 		return;
 	}
@@ -51,6 +60,7 @@ void UTeleportAttack::SetTeleportTarget()
 
 	StartLocation = Avatar->GetActorLocation();
 	TargetLocation = OverlappedActors[TargetIndex]->GetActorLocation();
+	TargetLocation.Z = StartLocation.Z;
 	const FRotator Direction = (TargetLocation - StartLocation).Rotation();
 
 	FinalLocation = TargetLocation + (Direction.Vector() * OverDistance);
@@ -70,7 +80,7 @@ void UTeleportAttack::SetTransformToTarget(float Value)
 	FRotator NewRotation = (TargetLocation - NewLocation).Rotation();
 	NewRotation.Roll = 0.f;
 	NewRotation.Pitch = 0.f;
-	GetAvatarActorFromActorInfo()->SetActorLocationAndRotation(NewLocation, NewRotation);
+	GetAvatarActorFromActorInfo()->SetActorLocationAndRotation(NewLocation, NewRotation, false, nullptr, ETeleportType::None);
 
 	if (Value > 1.f)
 	{

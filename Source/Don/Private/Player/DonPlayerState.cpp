@@ -3,6 +3,8 @@
 
 #include "Player/DonPlayerState.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
 #include "Data/LevelUpInfo.h"
@@ -15,7 +17,7 @@ ADonPlayerState::ADonPlayerState()
 {
 	AbilitySystemComponent = CreateDefaultSubobject<UDonAbilitySystemComponent>("AbilitySystemComponent");
 	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
 	AttributeSet = CreateDefaultSubobject<UDonAttributeSet>("AttributeSet");
 
@@ -39,6 +41,8 @@ void ADonPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(ADonPlayerState, AttributePoints);
 	DOREPLIFETIME(ADonPlayerState, SkillPoints);
 	DOREPLIFETIME(ADonPlayerState, Money);
+	DOREPLIFETIME(ADonPlayerState, MemoryFragment);
+	DOREPLIFETIME(ADonPlayerState, GameScore);
 }
 
 UAbilitySystemComponent* ADonPlayerState::GetAbilitySystemComponent() const
@@ -52,6 +56,36 @@ void ADonPlayerState::PlayInteractionSound2D(USoundBase* SoundSource)
 	{
 		UGameplayStatics::PlaySound2D(this, SoundSource, 1);
 	}
+}
+
+void ADonPlayerState::ShowNiagaraEffect(UNiagaraSystem* NiagaraSystem)
+{
+	if (NiagaraSystem)
+	{
+		ACharacter* Character = Cast<ACharacter>(GetPawn());
+		
+		UNiagaraComponent* NiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			NiagaraSystem,
+			Character->GetMesh(),
+			FName("root"),
+			FVector::ZeroVector,
+			FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget,
+			true,
+			false
+		);
+		NiagaraComponent->SetWorldScale3D(FVector(2.f));
+		NiagaraComponent->Activate(true);
+	}
+}
+
+void ADonPlayerState::AddQuest(FQuest NewQuest)
+{
+	if (!PlayerQuests.FindOrAdd(NewQuest.QuestNPC).Quests.Contains(NewQuest))
+	{
+		OnQuestListChanged.Broadcast(NewQuest);
+	}
+	PlayerQuests.FindOrAdd(NewQuest.QuestNPC).Quests.AddUnique(NewQuest);
 }
 
 void ADonPlayerState::SetQuestState(FQuest Quest, EQuestState State)
@@ -77,45 +111,49 @@ void ADonPlayerState::SetQuestState(FQuest Quest, EQuestState State)
 	);
 }
 
-void ADonPlayerState::CheckQuestObjectives()
+void ADonPlayerState::CheckAllQuestObjectives()
 {
-	for (TTuple<ENPCName, FQuestContainer> QuestsForNPC : PlayerQuests)
+	for (TTuple<ENPCName, FQuestContainer> QuestRow : PlayerQuests)
 	{
-		for (FQuest Quest : QuestsForNPC.Value.Quests)
+		for (FQuest Quest : QuestRow.Value.Quests)
 		{
-			if (Quest.QuestState == EQuestState::Completed) continue;
-			
-			bool bAllObjectivesMet = true;
-			
-			// Check Objectives
-			for (FObjective Objective : Quest.QuestObjectives)
-			{
-				// Too much time to update quest progress, so we have to use async function
-				switch (Objective.ObjectiveType)
-				{
-				case EObjectiveType::HasItem:
-					if (!IsItemConditionMet(Objective)) bAllObjectivesMet = false;
-						break;
-				case EObjectiveType::DialogueComplete:
-					if (!IsDialogueConditionMet(Objective)) bAllObjectivesMet = false;
-						break;
-				case EObjectiveType::QuestComplete:
-					if (!IsQuestConditionMet(Objective)) bAllObjectivesMet = false;
-						break;
-				default:
-					UE_LOG(LogTemp, Warning, TEXT("Unhandled ObjectiveType!"));
-						break;
-				}
-			}
-
-			// Do Next Function
+			bool bAllObjectivesMet = IsQuestObjectiveCompleted(Quest);
 			if (bAllObjectivesMet)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("All Objectives Met of Quest : %s"), *Quest.QuestTitle);
 				OnQuestObjectivesMet.Broadcast(Quest);
 			}
 		}
 	}
+}
+
+bool ADonPlayerState::IsQuestObjectiveCompleted(FQuest Quest)
+{	
+	bool bAllObjectivesMet = true;
+	
+	// Check Objectives
+	for (FObjective Objective : Quest.QuestObjectives)
+	{
+		// Too much time to update quest progress, so we have to use async function
+		switch (Objective.ObjectiveType)
+		{
+			case EObjectiveType::HasItem:
+				if (!IsItemConditionMet(Quest.QuestTitle, Objective)) bAllObjectivesMet = false;
+					break;
+			case EObjectiveType::DialogueComplete:
+				if (!IsDialogueConditionMet(Quest.QuestTitle, Objective)) bAllObjectivesMet = false;
+					break;
+			case EObjectiveType::QuestComplete:
+				if (!IsQuestConditionMet(Quest.QuestTitle, Objective)) bAllObjectivesMet = false;
+					break;
+			case EObjectiveType::KillCount:
+				if (!IsKillCountConditionMet(Quest.QuestTitle, Objective)) bAllObjectivesMet = false;
+				break;
+			default:
+				break;
+		}
+	}
+
+	return bAllObjectivesMet;
 }
 
 bool ADonPlayerState::HasQuest(FQuest Quest)
@@ -129,9 +167,22 @@ bool ADonPlayerState::HasQuest(FQuest Quest)
 	return false;
 }
 
+FQuest ADonPlayerState::GetPlayerQuestInfo(FString QuestTitle)
+{
+	FQuestContainer* QuestContainer = PlayerQuests.Find(ENPCName::Normal);
+	if (QuestContainer)
+	{
+		for (FQuest Quest : QuestContainer->Quests)
+		{
+			if (QuestTitle == Quest.QuestTitle) return Quest;
+		}
+	}
+	return FQuest();
+}
+
 
 // Check Item
-bool ADonPlayerState::IsItemConditionMet(const FObjective& Objective)
+bool ADonPlayerState::IsItemConditionMet(FString QuestTitle, const FObjective& Objective)
 {
 	// Check Inventory
 	FItem ItemToFind = UDonItemLibrary::FindItemByName(GetWorld(), Objective.ItemID);
@@ -142,7 +193,7 @@ bool ADonPlayerState::IsItemConditionMet(const FObjective& Objective)
 
 
 // Check Dialogue
-bool ADonPlayerState::IsDialogueConditionMet(const FObjective& Objective)
+bool ADonPlayerState::IsDialogueConditionMet(FString QuestTitle, const FObjective& Objective)
 {
 	if (Objective.ObjectiveDataHandle.DataTable)
 	{
@@ -159,7 +210,7 @@ bool ADonPlayerState::IsDialogueConditionMet(const FObjective& Objective)
 
 
 // Check Quest
-bool ADonPlayerState::IsQuestConditionMet(const FObjective& Objective)
+bool ADonPlayerState::IsQuestConditionMet(FString QuestTitle, const FObjective& Objective)
 {
 	if (Objective.ObjectiveDataHandle.DataTable)
 	{
@@ -178,6 +229,11 @@ bool ADonPlayerState::IsQuestConditionMet(const FObjective& Objective)
 }
 
 
+bool ADonPlayerState::IsKillCountConditionMet(FString QuestTitle, const FObjective& Objective)
+{
+	return (Objective.ItemAmount <= KillCount);
+}
+
 void ADonPlayerState::AddToXP(int32 InXP)
 {
 	const int32 PrevLevel = LevelUpInfo->FindLevelForXP(XP); 
@@ -186,7 +242,12 @@ void ADonPlayerState::AddToXP(int32 InXP)
 
 	const int32 CurrLevel = LevelUpInfo->FindLevelForXP(XP);
 
-	if (PrevLevel < CurrLevel) AddToLevel(CurrLevel - PrevLevel);
+	if (PrevLevel < CurrLevel)
+	{
+		AddToLevel(CurrLevel - PrevLevel);
+		int32 Rewards = LevelUpInfo->FindAttributeRewardForLevelUp(PrevLevel, CurrLevel);
+		AddToAttributePoints(Rewards);
+	}
 	
 	OnXPChangedDelegate.Broadcast(XP);
 	PlayInteractionSound2D(XPGainSound);
@@ -198,7 +259,11 @@ void ADonPlayerState::AddToLevel(int32 InLevel)
 	if (UDonAbilitySystemComponent* DonASC = Cast<UDonAbilitySystemComponent>(GetAbilitySystemComponent()))
 	{
 		DonASC->UpdateAbilityStatuses(Level);
-	}	
+	}
+
+	
+	ShowNiagaraEffect(LevelUpEffect);
+	PlayInteractionSound2D(LevelUpSound);
 	OnLevelChangedDelegate.Broadcast(Level, true);
 }
 
@@ -225,6 +290,41 @@ void ADonPlayerState::AddToMemoryFragment(int32 InMemoryFragment)
 {
 	MemoryFragment += InMemoryFragment;
 	OnMemoryFragmentChangedDelegate.Broadcast(MemoryFragment);
+}
+
+void ADonPlayerState::AddToScore(int32 InGameScore)
+{
+	GameScore += InGameScore;
+	OnGameScoreChangedDelegate.Broadcast(GameScore);
+}
+
+void ADonPlayerState::AddToKillCount(int32 InKillCount)
+{
+	KillCount += InKillCount;
+	OnKillCountChangedDelegate.Broadcast(KillCount);
+}
+
+bool ADonPlayerState::UpgradeAxe()
+{
+	FItem Item;
+	Item.ItemName = FName("Upgrade Crystal");
+	Item.Amount = 1;
+	TArray<FItem> Items;
+	Items.Add(Item);
+	if (InventoryComponent->HasEnoughItems(Items))
+	{
+		int32 Index = InventoryComponent->FindItemInInventory(Item);
+		InventoryComponent->RemoveItem(Item, Index, Item.Amount);
+		AddToAxeUpgrade(1);
+		return true;
+	}
+	return false;
+}
+
+void ADonPlayerState::AddToAxeUpgrade(int32 InAxeUpgrade)
+{
+	AxeUpgrade += InAxeUpgrade;
+	OnAxeUpgradeChangedDelegate.Broadcast(AxeUpgrade);
 }
 
 void ADonPlayerState::SetXP(int32 InXP)
@@ -263,6 +363,19 @@ void ADonPlayerState::SetMemoryFragment(int32 InMemoryFragment)
 	OnMemoryFragmentChangedDelegate.Broadcast(MemoryFragment);
 }
 
+void ADonPlayerState::SetGameScore(int32 InGameScore)
+{
+	GameScore = InGameScore;
+	OnGameScoreChangedDelegate.Broadcast(GameScore);
+}
+
+void ADonPlayerState::SetKillCount(int32 InKillCount)
+{
+	KillCount = InKillCount;
+	OnKillCountChangedDelegate.Broadcast(KillCount);
+}
+
+
 bool ADonPlayerState::RestoreMemory(int32 MemoryCost)
 {
 	if (MemoryFragment < MemoryCost) return false;
@@ -299,4 +412,14 @@ void ADonPlayerState::OnRep_Money(int32 OldMoney)
 void ADonPlayerState::OnRep_MemoryFragment(int32 OldMemoryFragment)
 {
 	OnMemoryFragmentChangedDelegate.Broadcast(MemoryFragment);
+}
+
+void ADonPlayerState::OnRep_GameScore(int32 OldGameScore)
+{
+	OnGameScoreChangedDelegate.Broadcast(GameScore);
+}
+
+void ADonPlayerState::OnRep_KillCount(int32 OldKillCount)
+{
+	OnKillCountChangedDelegate.Broadcast(KillCount);
 }

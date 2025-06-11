@@ -55,7 +55,7 @@ public:
 	static void SpawnLootableMoney(const UObject* WorldContextObject, int32 Amount, int32 Quantity, FVector SpawnLocation, FRotator SpawnRotation);
 
 	UFUNCTION(BlueprintCallable, Category = "DonItemLibrary | Item")
-	static void SpawnLootableItem(const UObject* WorldContextObject, FName ItemName, FVector SpawnLocation, FRotator SpawnRotation);
+	static void SpawnLootableItem(const UObject* WorldContextObject, TArray<FLootableItem> Items, FVector SpawnLocation, FRotator SpawnRotation, float ItemDropRate);
 	
 	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Quest")
 	static bool FindQuestRow(const UObject* WorldContextObject, FQuest& OutQuest, ENPCName NPCName, FString QuestTitle);

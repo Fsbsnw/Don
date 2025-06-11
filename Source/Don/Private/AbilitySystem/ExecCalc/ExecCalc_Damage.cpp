@@ -72,7 +72,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		}
 	}
 
-	int32 FinalDamage = 0.f;
+	float FinalDamage = 0.f;
 	
 	if (bCriticalHit)
 	{
@@ -85,7 +85,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		UE_LOG(LogTemp, Warning, TEXT("Normal Hit"));
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Incoming Damage : %f, Source Vigor : %f, Source CriticalHitDamage : %f"), IncomingDamage, SourceVigor, CriticalHitDamage);
+	UE_LOG(LogTemp, Warning, TEXT("Incoming Damage : %f, Final Damage : %f"), IncomingDamage, FinalDamage);
 	
 	FGameplayModifierEvaluatedData EvaluatedData(
 		UDonAttributeSet::GetIncomingDamageAttribute(),

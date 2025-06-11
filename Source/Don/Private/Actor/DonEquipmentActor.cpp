@@ -50,3 +50,16 @@ float ADonEquipmentActor::GetFinalAttribute() const
 	}
 	return 0.f;
 }
+
+void ADonEquipmentActor::UpdateUpgradedPoint(int32 InPoint)
+{
+	EquipmentUpgrade = InPoint;
+
+	FEquipmentAttributes EquipmentAttributes = UDonItemLibrary::FindEquipmentAttributes(GetWorld(), EquipmentName);
+	
+	if (EquipmentAttributes.UpgradeCT)
+	{
+		FRealCurve* Curve = EquipmentAttributes.UpgradeCT->FindCurve(EquipmentName, TEXT(""));
+		EquipmentUpgradedBonus = Curve->Eval(EquipmentUpgrade);
+	}
+}

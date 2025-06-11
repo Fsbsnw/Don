@@ -28,7 +28,15 @@ public:
 
 	UFUNCTION()
 	void OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent,	AActor* OtherActor,	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowGameOver();
 
+	UFUNCTION()
+	void UpdateAttributesFromLevel(int32 NewLevel, bool bLevelUp);
+
+	UPROPERTY(EditAnywhere, Category = "Test")
+	bool bCanDead = true;
 
 	// Begin IPlayerInterface 
 
@@ -36,6 +44,7 @@ public:
 	virtual void AddToAttributePoints_Implementation(int32 InAttributePoints) override;
 	virtual void AddToXP_Implementation(int32 InXP) override;
 	virtual void AddToMoney_Implementation(int32 InMoney) override;
+	virtual void AddToScore_Implementation(int32 InScore) override;
 	virtual bool AddItemToInventory_Implementation(FItem Item) override;
 
 	// End IPlayerInterface

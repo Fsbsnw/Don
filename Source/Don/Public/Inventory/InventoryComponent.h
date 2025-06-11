@@ -32,6 +32,7 @@ public:
 	bool FindQuickSlotItemByInputTag(const FGameplayTag& InputTag) const { return AssignedQuickSlots.Contains(InputTag); };
 
 	int32 FindItemInInventory(const FItem& Item) const;
+	bool HasEnoughItems(TArray<FItem> Items);
 	void SwapInventoryItems(int32 IndexA, int32 IndexB);
 
 	const uint8 MaxItemSlots = 20;
@@ -62,11 +63,19 @@ public:
 	void EquipArmorItem(int32 SlotIndex);
 	void UseConsumableItem(int32 SlotIndex);
 	void UseQuickSlotItem(const FGameplayTag& InputTag);
+	void UpgradeArmorItem(int32 SlotIndex, int32 Amount = 1);
+
+	// Store
+
+	bool CanAffordItem(int32 Cost);
 	
 private:
 	UPROPERTY()
 	TArray<FItem> Inventory;
 
 	UPROPERTY()
-	TMap<FGameplayTag, int32> AssignedQuickSlots; 
+	TMap<FGameplayTag, int32> AssignedQuickSlots;
+
+	UPROPERTY(EditDefaultsOnly)
+	USoundBase* DrinkPotion;
 };

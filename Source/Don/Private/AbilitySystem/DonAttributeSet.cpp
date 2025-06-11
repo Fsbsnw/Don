@@ -4,10 +4,13 @@
 #include "AbilitySystem/DonAttributeSet.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AIController.h"
 #include "DonAbilityTypes.h"
 #include "DonGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "Character/Enemy/DonEnemy.h"
 #include "Character/Player/DonCharacter.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
@@ -70,7 +73,7 @@ void UDonAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 	if (Attribute == GetIncomingXPAttribute() && GetIncomingXP() != 0.f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%f XP"), GetIncomingXP());
-		const int32 LocalXP = GetIncomingXP() * GetExpGainRate();
+		const int32 LocalXP = GetIncomingXP() * (GetExpGainRate() * 0.01f);
 		SetIncomingXP(0);
 
 		if (Props.SourceCharacter->Implements<UPlayerInterface>())
@@ -81,7 +84,7 @@ void UDonAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 	if (Attribute == GetIncomingMoneyAttribute() && GetIncomingMoney() != 0.f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%f Money"), GetIncomingMoney());
-		const int32 LocalMoney = GetIncomingMoney() * GetMoneyGainRate();
+		const int32 LocalMoney = GetIncomingMoney() * (GetMoneyGainRate() * 0.01f);
 		SetIncomingMoney(0);
 
 		if (Props.SourceCharacter->Implements<UPlayerInterface>())
@@ -95,41 +98,74 @@ void UDonAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 		SetIncomingDamage(0.f);
 		if (LocalIncomingDamage > 0.f)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s : %f Damaged"), *Props.TargetCharacter->GetName(), LocalIncomingDamage);
-
+			if (FMath::RandRange(1, 100) <= GetDodgeChance())
+			{
+				ShowEvadeText(Props, true);
+				return;
+			}
+				
 			if (Props.TargetCharacter->Implements<UCombatInterface>())
 			{
 				ICombatInterface::Execute_ApplyHitEffect(Props.TargetCharacter);
 			}
 
 			int32 WeaponDamage = 0.f;
-			if (Props.SourceCharacter->Implements<UCombatInterface>())
+			int32 ArmorDefense = 0.f;
+			if (Props.SourceCharacter->Implements<UCombatInterface>() && Props.TargetCharacter->Implements<UCombatInterface>())
 			{
 				WeaponDamage = FMath::RoundToInt(ICombatInterface::Execute_GetWeaponDamage(Props.SourceCharacter));
+				ArmorDefense = FMath::RoundToInt(ICombatInterface::Execute_GetArmorDefense(Props.TargetCharacter));
 				UE_LOG(LogTemp, Warning, TEXT("%s's Weapon Damage Added : %d Damaged"), *Props.SourceCharacter->GetName(), WeaponDamage);
+				UE_LOG(LogTemp, Warning, TEXT("%s's Armor Defense Added : %d Blocked"), *Props.TargetCharacter->GetName(), ArmorDefense);
 			}
-			
-			const float NewHealth = GetHealth() - LocalIncomingDamage - WeaponDamage;
+			int32 FinalDamage = FMath::Max(LocalIncomingDamage + WeaponDamage - ArmorDefense, 0.f);
+			const float NewHealth = GetHealth() - FinalDamage;
 			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
 
 			const bool bFatal = NewHealth <= 0.f;
-			if (bFatal)	ICombatInterface::Execute_Die(Props.TargetCharacter, FVector());
+			if (bFatal && Props.TargetCharacter->Implements<UCombatInterface>())
+			{
+				int32 RewardScore = ICombatInterface::Execute_GetRewardScore(Props.TargetCharacter);
+				bool bFound = true;
+				float DropRate = Props.SourceASC->GetGameplayAttributeValue(GetItemDropRateAttribute(), bFound);
+				ICombatInterface::Execute_Die(Props.TargetCharacter, FVector(), DropRate);
+				if (Props.SourceCharacter->Implements<UPlayerInterface>())
+				{
+					IPlayerInterface::Execute_AddToScore(Props.SourceCharacter, RewardScore);
+				}
+			}
 
 			if (Props.EffectContextHandle.IsValid() && Props.EffectContextHandle.Get()) 
 			{
 				if (const FDonGameplayEffectContext* DonEffectContext = static_cast<const FDonGameplayEffectContext*>(Props.EffectContextHandle.Get()))
 				{
-					ShowFloatingText(Props, LocalIncomingDamage + WeaponDamage, DonEffectContext->GetIsCriticalHit());
+					ShowFloatingText(Props, FinalDamage, DonEffectContext->GetIsCriticalHit());
 					
-					const FVector& KnockbackForce = DonEffectContext->GetKnockbackForce();
 
-					UE_LOG(LogTemp, Warning, TEXT("%s"), *KnockbackForce.ToString());
+					if (AAIController* AIController = Cast<AAIController>(Props.TargetCharacter->GetController()))
+					{
+						if (UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent())
+						{
+							BlackboardComp->SetValueAsBool(TEXT("bIsHitReacting"), true);
+						}
+					}
+
+					const FVector& KnockbackForce = DonEffectContext->GetKnockbackForce();
 					if (!KnockbackForce.IsNearlyZero())
 					{
+						Props.TargetCharacter->StopAnimMontage();
 						ICombatInterface::Execute_SetKnockbackState(Props.TargetCharacter, true, KnockbackForce);
+						if (Props.TargetCharacter->Implements<UPlayerInterface>())
+						{
+							Props.TargetASC->TryActivateAbilitiesByTag(FDonGameplayTags::Get().Effects_HitReact.GetSingleTagContainer());
+						}
 					}
 					else
 					{
+						if (ADonEnemy* Enemy = Cast<ADonEnemy>(Props.TargetCharacter))
+						{
+							if (!Enemy->GetGetupState()) return;
+						}
 						Props.TargetASC->TryActivateAbilitiesByTag(FDonGameplayTags::Get().Effects_HitReact.GetSingleTagContainer());
 					}
 				}
@@ -151,6 +187,23 @@ void UDonAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Da
 		if(ADonPlayerController* PC = Cast<ADonPlayerController>(Props.TargetCharacter->Controller))
 		{
 			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bCriticalHit);
+		}
+	}
+}
+
+void UDonAttributeSet::ShowEvadeText(const FEffectProperties& Props, bool bEvade) const
+{
+	if (!IsValid(Props.SourceCharacter) || !IsValid(Props.TargetCharacter)) return;
+	if (Props.SourceCharacter != Props.TargetCharacter)
+	{
+		if(ADonPlayerController* PC = Cast<ADonPlayerController>(Props.SourceCharacter->Controller))
+		{
+			PC->ShowEvadeText(Props.TargetCharacter, bEvade);
+			return;
+		}
+		if(ADonPlayerController* PC = Cast<ADonPlayerController>(Props.TargetCharacter->Controller))
+		{
+			PC->ShowEvadeText(Props.TargetCharacter, bEvade);
 		}
 	}
 }

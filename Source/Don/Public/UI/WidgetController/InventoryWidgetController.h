@@ -88,7 +88,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnequipAllItems();
 	
+	UFUNCTION(BlueprintCallable)
+	void UseItem(int32 SlotIndex);
 
+	UFUNCTION(BlueprintCallable)
+	bool UpgradeArmorItem(int32 SlotIndex, int32 Points);
 	
 	// Resource functions
 	

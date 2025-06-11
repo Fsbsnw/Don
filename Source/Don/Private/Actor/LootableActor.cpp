@@ -59,7 +59,25 @@ void ALootableActor::InitializeSpawnLocation()
 	{
 		OffsetLocation.Y = SpawnLocation.Y + FMath::RandRange(MinSpawnOffset, MaxSpawnOffset);
 	}
-	OffsetLocation.Z = SpawnLocation.Z;
+	
+	// line trace downward to find the ground Z
+	FHitResult HitResult;
+	FVector Start = FVector(OffsetLocation.X, OffsetLocation.Y, SpawnLocation.Z + 500.0f); 
+	FVector End = FVector(OffsetLocation.X, OffsetLocation.Y, SpawnLocation.Z - 1000.0f);
+
+	FCollisionQueryParams TraceParams;
+	TraceParams.bTraceComplex = true;
+	TraceParams.bReturnPhysicalMaterial = false;
+
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, TraceParams))
+	{
+		OffsetLocation.Z = HitResult.ImpactPoint.Z;
+	}
+	else
+	{
+		OffsetLocation.Z = SpawnLocation.Z;
+	}
+	
 	SpawnOffsetLocation = OffsetLocation;
 }
 
