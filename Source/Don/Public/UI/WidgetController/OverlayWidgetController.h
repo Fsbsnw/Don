@@ -41,6 +41,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
 	FOnPlayerLevelChangedSignature OnPlayerLevelChangedDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
+	FOnAttributeChangedSignature OnGameScoreChangedDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
+	FOnAttributeChangedSignature OnKillCountChangedDelegate;
 	
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Abilities")
 	FOnTagChangedSignature OnTagChanged;

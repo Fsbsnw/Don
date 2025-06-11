@@ -20,6 +20,8 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	
 	OnPlayerLevelChangedDelegate.Broadcast(DonPlayerState->GetPlayerLevel(), true);
 	OnXPPercentChangedDelegate.Broadcast(DonPlayerState->GetXP());
+	OnGameScoreChangedDelegate.Broadcast(DonPlayerState->GetGameScore());
+	OnKillCountChangedDelegate.Broadcast(DonPlayerState->GetKillCount());
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
@@ -88,6 +90,18 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	[this](int32 NewLevel, bool bLevelUp)
 		{
 			OnPlayerLevelChangedDelegate.Broadcast(NewLevel, bLevelUp);
+		}
+	);
+	DonPlayerState->OnGameScoreChangedDelegate.AddLambda(
+		[this](int32 NewGameScore)
+		{
+			OnGameScoreChangedDelegate.Broadcast(NewGameScore);
+		}
+	);
+	DonPlayerState->OnKillCountChangedDelegate.AddLambda(
+		[this](int32 NewKillCount)
+		{
+			OnKillCountChangedDelegate.Broadcast(NewKillCount);
 		}
 	);
 }

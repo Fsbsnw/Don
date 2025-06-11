@@ -161,11 +161,6 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("Normal Damage")
 	);
 
-	GameplayTags.Damage_CriticalHit = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Damage.CriticalHit"),
-	FString("Critical Hit")
-	);
-
 	GameplayTags.Damage_Physical = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Damage.Physical"),
 	FString("Physical Damage")
@@ -223,10 +218,7 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("ComboAttack 3")
 	);
 	
-	GameplayTags.Abilities_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Abilities.FireBolt"),
-	FString("FireBolt Ability")
-	);
+
 
 	
 	GameplayTags.Abilities_ThrowBoomerangAxe = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -240,22 +232,20 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("ArcSlash Ability")
 	);
 
+	GameplayTags.Abilities_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Abilities.FireBolt"),
+	FString("FireBolt Ability")
+	);
 	
-	GameplayTags.Abilities_ChronoBreak = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Abilities.ChronoBreak"),
-	FString("ChronoBreak Ability")
+	GameplayTags.Abilities_TeleportAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Abilities.TeleportAttack"),
+	FString("TeleportAttack Ability")
 	);
 
 	GameplayTags.Abilities_Lightning = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Abilities.Lightning"),
 	FString("Lightning Ability")
 	);
-
-	GameplayTags.Abilities_Dash = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Abilities.Dash"),
-	FString("Dash Ability")
-	);
-
 	
 	GameplayTags.Abilities_DodgeRolling = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Abilities.DodgeRolling"),
@@ -302,6 +292,47 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("Abilities.Type.None"),
 	FString("None Type Ability")
 	);
+
+	
+	// Cooldown
+
+	GameplayTags.Cooldown_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Attack"),
+	FString("Attack Cooldown")
+	);
+
+	
+	GameplayTags.Cooldown_ThrowBoomerangAxe = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.ThrowBoomerangAxe"),
+	FString("ThrowBoomerangAxe Cooldown")
+	);
+
+
+	
+	GameplayTags.Cooldown_ArcSlash = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.ArcSlash"),
+	FString("ArcSlash Cooldown")
+	);
+
+
+	
+	GameplayTags.Cooldown_TeleportAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.TeleportAttack"),
+	FString("TeleportAttack Cooldown")
+	);
+
+	
+	GameplayTags.Cooldown_DodgeRolling = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.DodgeRolling"),
+	FString("DodgeRolling Cooldown")
+	);
+	
+
+	GameplayTags.Cooldown_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.FireBolt"),
+	FString("FireBolt Cooldown")
+	);
+	
 
 
 	// Boss Abilities
@@ -374,18 +405,6 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	
-	// Cooldown
-
-	GameplayTags.Cooldown_Attack = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Cooldown.Attack"),
-	FString("Attack Cooldown")
-	);
-
-	GameplayTags.Cooldown_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Cooldown.FireBolt"),
-	FString("FireBolt Cooldown")
-	);
-	
 
 	// Meta Attributes
 
@@ -423,6 +442,37 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("Item.Consumable"),
 	FString("Consumable Item")
 	);
+
+
+	GameplayTags.Item_Consumable_Potion = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Consumable.Potion"),
+	FString("Potion Item")
+	);
+
+
+	GameplayTags.Item_Consumable_Potion_Health = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Consumable.Potion.Health"),
+	FString("Health Potion Item")
+	);
+
+	
+	GameplayTags.Item_Consumable_Potion_Agility = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Consumable.Potion.Agility"),
+	FString("Agility Potion Item")
+	);
+	
+	
+	GameplayTags.Item_Consumable_Potion_Vigor = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Consumable.Potion.Vigor"),
+	FString("Vigor Potion Item")
+	);
+
+	
+	GameplayTags.Item_Consumable_Potion_Supernatural = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Consumable.Potion.Supernatural"),
+	FString("Supernatural Potion Item")
+	);
+	
 	
 	GameplayTags.Item_Miscellaneous = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Item.Miscellaneous"),

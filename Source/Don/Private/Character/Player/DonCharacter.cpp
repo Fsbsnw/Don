@@ -58,7 +58,6 @@ void ADonCharacter::PossessedBy(AController* NewController)
 void ADonCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-
 }
 
 void ADonCharacter::OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -87,6 +86,21 @@ void ADonCharacter::OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponen
 	}
 }
 
+void ADonCharacter::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
+{
+	Super::Die_Implementation(DeathImpulse, ItemDropRate);
+
+	if (bCanDead) ShowGameOver();
+}
+
+void ADonCharacter::UpdateAttributesFromLevel(int32 NewLevel, bool bLevelUp)
+{
+	if (!bLevelUp) return;
+
+	GetAbilitySystemComponent()->SetActiveGameplayEffectLevel(MaxVitalEffectHandle, NewLevel);
+	ApplyEffectToSelf(DefaultVitalAttributes, NewLevel);
+}
+
 void ADonCharacter::UpdateAbilityTypeAndCollision(FGameplayTag AbilityTag, bool bEnableCollision)
 {
 	if (!AxeCollision) return;
@@ -105,7 +119,7 @@ void ADonCharacter::UpdateAbilityTypeAndCollision(FGameplayTag AbilityTag, bool 
 		IgnoreActors.Empty();
 		DamageEffectParams = FDamageEffectParams();
 	}
-}
+} 
 
 int32 ADonCharacter::GetAttributePoints_Implementation() const
 {
@@ -135,6 +149,14 @@ void ADonCharacter::AddToMoney_Implementation(int32 InMoney)
 	DonPlayerState->AddToMoney(InMoney);
 }
 
+void ADonCharacter::AddToScore_Implementation(int32 InScore)
+{
+	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
+	check(DonPlayerState);
+	DonPlayerState->AddToScore(InScore);
+	DonPlayerState->AddToKillCount(1);
+}
+
 bool ADonCharacter::AddItemToInventory_Implementation(FItem Item)
 {
 	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
@@ -148,6 +170,7 @@ void ADonCharacter::InitAbilityActorInfo()
 	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
 	check(DonPlayerState);
 	DonPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(DonPlayerState, this);
+	DonPlayerState->OnLevelChangedDelegate.AddUObject(this, &ADonCharacter::UpdateAttributesFromLevel);
 
 	Cast<UDonAbilitySystemComponent>(DonPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
 	

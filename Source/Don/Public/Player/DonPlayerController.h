@@ -27,6 +27,8 @@ public:
 
 	UFUNCTION()
 	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter, bool bCriticalHit);
+	UFUNCTION()
+	void ShowEvadeText(ACharacter* TargetCharacter, bool bEvade);
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

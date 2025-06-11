@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "ActiveGameplayEffectHandle.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/Character.h"
 #include "Interface/CombatInterface.h"
 #include "DonCharacterBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentChanged);
 
 class ADonEquipmentActor;
 struct FItem;
@@ -54,7 +56,7 @@ public:
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
 	// Combat Interface
-	virtual void Die_Implementation(const FVector& DeathImpulse) override;
+	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
 	virtual bool IsDead_Implementation() override { return bDead; };
 	virtual void ApplyHitEffect_Implementation() override;
 	virtual void SetKnockbackState_Implementation(bool NewState, const FVector& Force) override;
@@ -73,8 +75,12 @@ public:
 	virtual void EquipArmorHands_Implementation(FItem& Item) override;
 	virtual void EquipArmorLegs_Implementation(FItem& Item) override;
 	virtual void EquipArmorBoots_Implementation(FItem& Item) override;
+	virtual void UpdateUpgradedItemInfo_Implementation(const FItem& Item) override;
+	virtual int32 GetRewardScore_Implementation() override;
 	virtual float GetWeaponDamage_Implementation() override;
 	virtual float GetCharacterLevel_Implementation() const override;
+	virtual float GetArmorDefense_Implementation() override;
+	virtual int32 GetEquippedArmorCount_Implementation() override;
 	// End Combat Interface
 
 protected:
@@ -149,15 +155,22 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultVitalAttributes;
+
+	FActiveGameplayEffectHandle PrimaryEffectHandle;
+	FActiveGameplayEffectHandle SecondaryEffectHandle;
+	FActiveGameplayEffectHandle MaxVitalEffectHandle;
 	
-	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level) const;
-	void InitializeDefaultAttributes() const;
+	FActiveGameplayEffectHandle ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level);
+	void InitializeDefaultAttributes();
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bDead = false;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bKnockback = false;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 RewardScore = 1;
 
 	UPROPERTY(EditDefaultsOnly)
 	float CharacterLevel = 1.f;
@@ -168,10 +181,23 @@ public:
 	void SetCharacterLevel(float InLevel) { CharacterLevel = InLevel; }
 	void ResetMaterials();
 	void AddCharacterAbilities();
+	
 	UFUNCTION(BlueprintCallable)
-	bool GetKnockbackInProgress() const { return bKnockback; };
+	bool GetKnockbackInProgress() const { return bKnockback; }
+	
 	UFUNCTION(BlueprintCallable)
-	void SetKnockback(bool KnockbackState) { bKnockback = KnockbackState; };
+	void SetKnockback(bool KnockbackState) { bKnockback = KnockbackState; }
+
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnEquipmentChanged OnEquipmentChanged;
+
+	FORCEINLINE int32 GetBonusAttackPower() const { return BonusAttackPower; } 
+	FORCEINLINE int32 GetBonusDefense() const { return BonusDefense; } 
+	void AddBonusAttackPower(int32 AttackPower);
+	void AddBonusDefense(int32 Defense);
+
+	void UpdateUpgradedArmorPoint(ADonEquipmentActor* Armor, int32 InPoint);
 private:
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
@@ -191,5 +217,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Looting")
 	float TestOffsetLocation = 75.f;
 
+	UPROPERTY(EditDefaultsOnly)
+	USoundBase* DeathSound;
+
 	FTimerHandle HitFlashTimerHandle;
+
+	int32 BonusAttackPower = 0;
+	int32 BonusDefense = 0;
 };

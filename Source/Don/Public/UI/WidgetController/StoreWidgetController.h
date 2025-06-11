@@ -29,6 +29,9 @@ public:
 	FOnMerchandiseUpdate OnMerchandiseUpdate;
 
 	// Player Functions
+
+	UFUNCTION(BlueprintCallable)
+	bool PlayerCanAffordItem(int32 Cost);
 	
 	UFUNCTION(BlueprintCallable)
     void PlayerBuyItem(FItem Item, int32 Amount = 1);

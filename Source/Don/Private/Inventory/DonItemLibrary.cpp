@@ -28,6 +28,7 @@ FItem UDonItemLibrary::FindItemByName(const UObject* WorldContextObject, FName I
 	{
 		if (Item.ItemName == ItemName)
 		{
+			if (Item.ItemType == EItemType::Equipable) Item.ItemID = FGuid::NewGuid();
 			return Item;
 		}
 	}
@@ -113,6 +114,7 @@ void UDonItemLibrary::SpawnLootableXP(const UObject* WorldContextObject, int32 A
 	if (GameModeBase && GameModeBase->LootableActorAsset && GameModeBase->LootableActorAsset->LootableXP)
 	{
 		TSubclassOf<ALootableActor> LootableRewardClass = GameModeBase->LootableActorAsset->LootableXP;
+		SpawnLocation.Z = 0.f;
 		ALootableActor* LootableReward = WorldContextObject->GetWorld()->SpawnActor<ALootableActor>(LootableRewardClass, SpawnLocation, SpawnRotation);
 		if (LootableReward)
 		{
@@ -134,6 +136,7 @@ void UDonItemLibrary::SpawnLootableMoney(const UObject* WorldContextObject, int3
 		{
 			SpawnLocation.X += FMath::FRandRange(-100.f, 100.f);
 			SpawnLocation.Y += FMath::FRandRange(-100.f, 100.f);
+			SpawnLocation.Z = 0.f;
 			ALootableActor* LootableReward = WorldContextObject->GetWorld()->SpawnActor<ALootableActor>(LootableRewardClass, SpawnLocation, SpawnRotation);
 			if (LootableReward)
 			{
@@ -145,8 +148,26 @@ void UDonItemLibrary::SpawnLootableMoney(const UObject* WorldContextObject, int3
 	}
 }
 
-void UDonItemLibrary::SpawnLootableItem(const UObject* WorldContextObject, FName ItemName, FVector SpawnLocation, FRotator SpawnRotation)
+void UDonItemLibrary::SpawnLootableItem(const UObject* WorldContextObject, TArray<FLootableItem> Items, FVector SpawnLocation, FRotator SpawnRotation, float ItemDropRate)
 {
+	if (FMath::RandRange(1, 100) > ItemDropRate * 100) return;
+	
+	const FDonGameplayTags& GameplayTags = FDonGameplayTags::Get();
+	
+	ADonGameModeBase* GameModeBase = Cast<ADonGameModeBase>(WorldContextObject->GetWorld()->GetAuthGameMode());
+	if (GameModeBase && GameModeBase->LootableActorAsset && GameModeBase->LootableActorAsset->LootableItem)
+	{
+		TSubclassOf<ALootableActor> LootableRewardClass = GameModeBase->LootableActorAsset->LootableItem;
+		
+		SpawnLocation.X += FMath::FRandRange(-100.f, 100.f);
+		SpawnLocation.Y += FMath::FRandRange(-100.f, 100.f);
+		SpawnLocation.Z = 0.f;
+		ALootableActor* LootableReward = WorldContextObject->GetWorld()->SpawnActor<ALootableActor>(LootableRewardClass, SpawnLocation, SpawnRotation);
+		if (LootableReward)
+		{
+			LootableReward->LootType = GameplayTags.Item_Miscellaneous;
+		}
+	}
 }
 
 UQuestListWidgetController* UDonItemLibrary::GetQuestListWidgetController(const UObject* WorldContextObject)

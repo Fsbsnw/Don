@@ -26,3 +26,13 @@ int32 ULevelUpInfo::FindLevelForXP(int32 XP) const
 	
 	return FMath::Clamp(Level, 1, Level - 1);
 }
+
+int32 ULevelUpInfo::FindAttributeRewardForLevelUp(int32 PrevLevel, int32 CurrLevel) const
+{
+	int32 AttributePoints = 0;
+	for (int32 Idx = PrevLevel + 1; Idx <= CurrLevel; Idx++)
+	{
+		AttributePoints += LevelUpInformation[PrevLevel].AttributePointAward;
+	}
+	return AttributePoints;
+}

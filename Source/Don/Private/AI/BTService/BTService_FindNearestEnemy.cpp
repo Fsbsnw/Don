@@ -51,7 +51,6 @@ void UBTService_FindNearestEnemy::TickNode(UBehaviorTreeComponent& OwnerComp, ui
 		{
 			BlackboardComponent->SetValueAsObject(TEXT("TargetEnemy"), NearestEnemy);
 			BlackboardComponent->SetValueAsFloat(TEXT("DistanceToFollow"), NearestDistance);
-			UE_LOG(LogTemp, Warning, TEXT("Distance : %f"), NearestDistance);
 		}
 		else
 		{

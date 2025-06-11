@@ -35,4 +35,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
 	void RemoveItem(FItem Item, int32 AmountToRemove = 1);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
+	bool UpgradeEquipment(int32 Points = 1);
 };

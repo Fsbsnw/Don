@@ -22,6 +22,7 @@ void UDonInventorySlotWidget::UpdateSlotInfo(FItem ItemInfo)
 	if (InventorySlotIndex == -1 || ItemInfo.InventorySlotIndex == InventorySlotIndex)
 	{
 		InventorySlotIndex = ItemInfo.InventorySlotIndex;
+		
 		NotifyUpdateSlot(ItemInfo);
 	}
 }
@@ -43,4 +44,16 @@ void UDonInventorySlotWidget::SwapSlotInfo(UDonInventorySlotWidget* InSlotWidget
 void UDonInventorySlotWidget::RemoveItem(FItem Item, int32 AmountToRemove)
 {
 	Cast<UInventoryWidgetController>(WidgetController)->RemoveItemFromPlayer(Item, AmountToRemove);
+}
+
+bool UDonInventorySlotWidget::UpgradeEquipment(int32 Points)
+{
+	if (UInventoryWidgetController* IWC = Cast<UInventoryWidgetController>(WidgetController))
+	{
+		if (IWC->GetItemInfo(InventorySlotIndex).ItemType != EItemType::Equipable) return false;
+		if (!IWC->UpgradeArmorItem(InventorySlotIndex, Points)) return false;
+		NotifyUpdateSlot(IWC->GetItemInfo(InventorySlotIndex));
+		return true;
+	}
+	return false;
 }

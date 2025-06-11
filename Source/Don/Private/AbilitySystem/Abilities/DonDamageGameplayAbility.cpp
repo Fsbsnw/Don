@@ -6,12 +6,18 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "DonAbilityTypes.h"
-#include "AbilitySystem/Abilities/AbilityTasks/AbilityTask_Timeline.h"
+#include "Character/Interface/CombatInterface.h"
 
 void UDonDamageGameplayAbility::CauseDamage(AActor* TargetActor)
 {
 	FGameplayEffectSpecHandle DamageSpecHandle = MakeOutgoingGameplayEffectSpec(DamageEffectClass, 1.f);
-	const float ScaledDamage = Damage.GetValueAtLevel(GetAbilityLevel());
+	float ScaledDamage = Damage.GetValueAtLevel(GetAbilityLevel());
+	if (GetAvatarActorFromActorInfo()->Implements<UCombatInterface>())
+	{
+		float CharacterLevel = ICombatInterface::Execute_GetCharacterLevel(GetAvatarActorFromActorInfo());
+		ScaledDamage = Damage.GetValueAtLevel(CharacterLevel);
+	}
+	if (ScaledDamage <= 0.f) return;
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(DamageSpecHandle, DamageType, ScaledDamage);
 	GetAbilitySystemComponentFromActorInfo()->ApplyGameplayEffectSpecToTarget(*DamageSpecHandle.Data.Get(), UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor));
 }

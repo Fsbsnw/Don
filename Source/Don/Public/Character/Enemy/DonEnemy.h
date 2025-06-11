@@ -6,6 +6,7 @@
 #include "Character/DonCharacterBase.h"
 #include "DonEnemy.generated.h"
 
+struct FLootableItem;
 class UNiagaraSystem;
 class UBehaviorTree;
 class ADonAIController;
@@ -20,17 +21,23 @@ class DON_API ADonEnemy : public ADonCharacterBase
 public:
 	ADonEnemy();
 
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
 	virtual void SetKnockbackState_Implementation(bool bKnockback, const FVector& Force) override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void DestroyStone();
+
+	
 	UFUNCTION(BlueprintCallable)
 	void SetMeshInitState();
 
-	virtual void PossessedBy(AController* NewController) override;
-	virtual void Die_Implementation(const FVector& DeathImpulse) override;
 	
 	void SetHealthPercent(float NewValue);
 	void SetHealthText(float NewValue, float NewMaxValue);
 	UFUNCTION(BlueprintCallable)
 	void SetKnockbackState(bool NewState, FVector Force = FVector::ZeroVector);
+	void SetRewardScore(int32 InRewardScore) { RewardScore = InRewardScore; }
 
 	UPROPERTY(EditAnywhere)
 	float ForceMultiplier = 15.f;
@@ -38,8 +45,14 @@ public:
 	UPROPERTY(EditAnywhere)
 	float TestXDivide = 2.f;
 
+	UPROPERTY(EditAnywhere)
+	float CrystalDropRate = 0.5f;
+
 	UFUNCTION(BlueprintCallable)
 	bool IsForwardRagdoll() { return bForwardRagdoll; }
+
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FLootableItem> LootableItems;
 
 	/*
 	 * Boss
@@ -51,6 +64,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetIsHoldingRock() const { return bIsHoldingRock; }
 
+	UFUNCTION(BlueprintCallable)
+	void SetGetupState(bool NewState) { bGetupState = NewState; }
+
+	UFUNCTION(BlueprintCallable)
+	bool GetGetupState() const { return bGetupState; }
+	
 	UPROPERTY(EditDefaultsOnly)
 	bool bBossEnemy = false;
 
@@ -73,4 +92,5 @@ protected:
 private:
 	bool bForwardRagdoll = false;
 	bool bIsHoldingRock = false;
+	bool bGetupState = true;
 };

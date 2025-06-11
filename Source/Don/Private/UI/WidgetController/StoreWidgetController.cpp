@@ -50,6 +50,15 @@ void UStoreWidgetController::NPCSellMerchandise(int32 SlotIndex)
 	}
 }
 
+bool UStoreWidgetController::PlayerCanAffordItem(int32 Cost)
+{
+	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
+	{
+		return DonPlayerState->GetInventoryComponent()->CanAffordItem(Cost);
+	}
+	return false;
+}
+
 void UStoreWidgetController::PlayerBuyItem(FItem Item, int32 Amount)
 {
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))

@@ -31,7 +31,8 @@ UENUM(BlueprintType)
 enum class EQuestRewardType : uint8
 {
 	XP		UMETA(DisplayName = "XP"),
-	Item	UMETA(DisplayName = "Item")
+	Item	UMETA(DisplayName = "Item"),
+	Money	UMETA(DisplayName = "Money"),
 };
 
 /*
@@ -97,6 +98,9 @@ struct FQuest
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FDataTableRowHandle DialogueAfterQuestCompletion;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FString NextQuestTitle;
 };
 
 USTRUCT(BlueprintType)

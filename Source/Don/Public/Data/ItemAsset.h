@@ -7,6 +7,23 @@
 #include "Engine/DataAsset.h"
 #include "ItemAsset.generated.h"
 
+class UGameplayEffect;
+
+USTRUCT(BlueprintType)
+struct FLootableItem
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FName ItemName;
+
+	UPROPERTY(EditAnywhere)
+	int32 Amount;
+
+	UPROPERTY(EditAnywhere)
+	float DropRate;
+};
+
 UENUM(BlueprintType)
 enum class EItemType : uint8
 {
@@ -24,6 +41,10 @@ struct FItem
 	bool operator==(const FItem& Other) const
 	{
 		return Other.ItemName == this->ItemName && Other.ItemType == this->ItemType;
+	}
+	bool IsSameInstance(const FItem& Other) const
+	{
+		return this->ItemID == Other.ItemID;
 	}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -58,6 +79,9 @@ struct FItem
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	FGameplayTag ItemTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<UGameplayEffect> ItemEffectClass;
 };
 
 

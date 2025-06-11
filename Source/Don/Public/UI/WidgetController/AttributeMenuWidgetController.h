@@ -34,6 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddAttributePointsTest();
 
+	UFUNCTION(BlueprintCallable)
+	bool UpgradeWeapon();
+
 private:
 	void BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute);
 

@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerState.h"
 #include "DonPlayerState.generated.h"
 
+class UNiagaraSystem;
 class ULevelUpInfo;
 class UInventoryComponent;
 class UAbilitySystemComponent;
@@ -41,13 +42,20 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<ULevelUpInfo> LevelUpInfo;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, Category = "Effect")
 	USoundBase* MoneyGainSound;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, Category = "Effect")
 	USoundBase* XPGainSound;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Effect")
+	UNiagaraSystem* LevelUpEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effect")
+	USoundBase* LevelUpSound;
+
 	void PlayInteractionSound2D(USoundBase* SoundSource);
+	void ShowNiagaraEffect(UNiagaraSystem* NiagaraSystem);
 
 	// Delegates
 	
@@ -57,6 +65,10 @@ public:
 	FOnPlayerStatChanged OnSkillPointsChangedDelegate;
 	FOnPlayerStatChanged OnMoneyChangedDelegate;
 	FOnPlayerStatChanged OnMemoryFragmentChangedDelegate;
+	FOnPlayerStatChanged OnGameScoreChangedDelegate;
+	FOnPlayerStatChanged OnKillCountChangedDelegate;
+	FOnPlayerStatChanged OnAxeUpgradeChangedDelegate;
+	
 	UPROPERTY(BlueprintAssignable, Category = "Quest")
 	FOnQuestListChanged OnQuestListChanged;
 	FOnQuestObjectivesMet OnQuestObjectivesMet;
@@ -69,6 +81,11 @@ public:
 	FORCEINLINE int32 GetSpellPoints() const { return SkillPoints; }
 	FORCEINLINE int32 GetMoney() const { return Money; }
 	FORCEINLINE int32 GetMemoryFragment() const { return MemoryFragment; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE int32 GetGameScore() const { return GameScore; }
+	FORCEINLINE int32 GetKillCount() const { return KillCount; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE int32 GetAxeUpgrade() const { return AxeUpgrade; }
 
 	void AddToXP(int32 InXP);
 	void AddToLevel(int32 InLevel);
@@ -76,6 +93,12 @@ public:
 	void AddToSkillPoints(int32 InPoints);
 	void AddToMoney(int32 InMoney);
 	void AddToMemoryFragment(int32 InMemoryFragment);
+	void AddToScore(int32 InScore);
+	void AddToKillCount(int32 InKillCount);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool UpgradeAxe();
+	void AddToAxeUpgrade(int32 InAxeUpgrade);
 	
 	void SetXP(int32 InXP);
 	void SetLevel(int32 InLevel);
@@ -83,6 +106,8 @@ public:
 	void SetSkillPoints(int32 InPoints);
 	void SetMoney(int32 InMoney);
 	void SetMemoryFragment(int32 InMemoryFragment);
+	void SetGameScore(int32 InGameScore);
+	void SetKillCount(int32 InKillCount);
 
 
 	UFUNCTION(BlueprintCallable)
@@ -96,16 +121,25 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TMap<ENPCName, FQuestContainer> PlayerQuests;
 
+	UFUNCTION(BlueprintCallable)
+	void AddQuest(FQuest NewQuest);
 	void SetQuestState(FQuest Quest, EQuestState State);
-	void CheckQuestObjectives();
+	UFUNCTION(BlueprintCallable)
+	void CheckAllQuestObjectives();
+	UFUNCTION(BlueprintCallable)
+	bool IsQuestObjectiveCompleted(FQuest Quest);
 	bool HasQuest(FQuest Quest);
+	UFUNCTION(BlueprintCallable)
+	FQuest GetPlayerQuestInfo(FString QuestTitle);
 
 	UFUNCTION(BlueprintCallable)
-	bool IsItemConditionMet(const FObjective& Objective);
+	bool IsItemConditionMet(FString QuestTitle, const FObjective& Objective);
 	UFUNCTION(BlueprintCallable)
-	bool IsDialogueConditionMet(const FObjective& Objective);
+	bool IsDialogueConditionMet(FString QuestTitle, const FObjective& Objective);
 	UFUNCTION(BlueprintCallable)
-	bool IsQuestConditionMet(const FObjective& Objective);
+	bool IsQuestConditionMet(FString QuestTitle, const FObjective& Objective);
+	UFUNCTION(BlueprintCallable)
+	bool IsKillCountConditionMet(FString QuestTitle, const FObjective& Objective);
 
 	// End Quests
 	
@@ -120,7 +154,10 @@ protected:
 	TObjectPtr<UInventoryComponent> InventoryComponent;
 	
 private:
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Level)
+	UPROPERTY(EditAnywhere)
+	int32 AxeUpgrade = 1;
+	
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_Level)
 	int32 Level = 1;
 	
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_XP)
@@ -137,6 +174,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_MemoryFragment)
 	int32 MemoryFragment = 0;
+
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_GameScore)
+	int32 GameScore = 0;
+
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_KillCount)
+	int32 KillCount = 0;
 	
 	UFUNCTION()
 	void OnRep_Level(int32 OldLevel);
@@ -155,4 +198,11 @@ private:
 
 	UFUNCTION()
 	void OnRep_MemoryFragment(int32 OldMemoryFragment);
+
+	UFUNCTION()
+	void OnRep_GameScore(int32 OldGameScore);
+
+	UFUNCTION()
+	void OnRep_KillCount(int32 OldKillCount);
 };
+

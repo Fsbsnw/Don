@@ -62,7 +62,6 @@ public:
 	// Damage
 
 	FGameplayTag Damage;
-	FGameplayTag Damage_CriticalHit;
 	FGameplayTag Damage_Physical;
 	FGameplayTag Damage_Fire;
 
@@ -83,16 +82,19 @@ public:
 	FGameplayTag Abilities_ComboAttack_1;
 	FGameplayTag Abilities_ComboAttack_2;
 	FGameplayTag Abilities_ComboAttack_3;
-	FGameplayTag Abilities_FireBolt;
 	FGameplayTag Abilities_ThrowBoomerangAxe;
 	FGameplayTag Abilities_ArcSlash;
-	FGameplayTag Abilities_ChronoBreak;
+	FGameplayTag Abilities_TeleportAttack;
 	FGameplayTag Abilities_Lightning;
-	FGameplayTag Abilities_Dash;
 	FGameplayTag Abilities_DodgeRolling;
+	FGameplayTag Abilities_FireBolt;
 	FGameplayTag Request_Abilities_Lightning;
 	
 	FGameplayTag Cooldown_Attack;
+	FGameplayTag Cooldown_ThrowBoomerangAxe;
+	FGameplayTag Cooldown_ArcSlash;
+	FGameplayTag Cooldown_TeleportAttack;
+	FGameplayTag Cooldown_DodgeRolling;
 	FGameplayTag Cooldown_FireBolt;
 
 	FGameplayTag Abilities_HitReact;
@@ -132,6 +134,11 @@ public:
 
 	FGameplayTag Item;
 	FGameplayTag Item_Consumable;
+	FGameplayTag Item_Consumable_Potion;
+	FGameplayTag Item_Consumable_Potion_Health;
+	FGameplayTag Item_Consumable_Potion_Vigor;
+	FGameplayTag Item_Consumable_Potion_Agility;
+	FGameplayTag Item_Consumable_Potion_Supernatural;
 	FGameplayTag Item_Quest;
 	FGameplayTag Item_Miscellaneous;
 	FGameplayTag Item_Equippable;

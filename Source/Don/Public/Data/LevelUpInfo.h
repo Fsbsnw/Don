@@ -34,4 +34,5 @@ public:
 	TArray<FDonLevelUpInfo> LevelUpInformation;
 
 	int32 FindLevelForXP(int32 XP) const;
+	int32 FindAttributeRewardForLevelUp(int32 PrevLevel, int32 CurrLevel) const;
 };

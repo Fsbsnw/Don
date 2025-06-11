@@ -17,6 +17,7 @@ void AMerchantNPC::BeginPlay()
 	Super::BeginPlay();
 
 	LoadMerchandise();
+	SetLifeSpan(LifeTimer);
 }
 
 void AMerchantNPC::RemoveMerchandise(FItem Item, int32 Amount)
@@ -35,6 +36,16 @@ void AMerchantNPC::RemoveMerchandise(FItem Item, int32 Amount)
 
 void AMerchantNPC::LoadMerchandise()
 {
+	for (TTuple<FName, int> ItemInfo : ItemsToAdd)
+	{
+		FItem Item = UDonItemLibrary::FindItemByName(this, ItemInfo.Key);
+		Item.Amount = ItemInfo.Value;
+		Item.InventorySlotIndex = Merchandise.Num();
+		Merchandise.Add(Item);
+	}
+	
+	if (!bLoadBonusMerchandise) return;
+	
 	UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(GetGameInstance());
 	if (DonGameInstance)
 	{
@@ -51,9 +62,11 @@ void AMerchantNPC::LoadMerchandise()
 					FItem ItemToAdd;
 					ItemToAdd = UDonItemLibrary::FindItemByName(this, Info->Merchandise[Index].ItemName);
 					ItemToAdd.Amount = Info->Merchandise[Index].Amount;
-					ItemToAdd.InventorySlotIndex = Index;
+					ItemToAdd.InventorySlotIndex = Merchandise.Num();
 
-					Merchandise.Add(ItemToAdd);
+					int32 FoundIndex = Merchandise.Find(ItemToAdd);
+					if (FoundIndex >= 0) Merchandise[FoundIndex].Amount += ItemToAdd.Amount;
+					else Merchandise.Add(ItemToAdd);
 				}
 				return;
 			}

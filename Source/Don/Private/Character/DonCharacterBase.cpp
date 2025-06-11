@@ -11,6 +11,8 @@
 #include "Actor/DonEquipmentActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Data/ItemAsset.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
 
 ADonCharacterBase::ADonCharacterBase()
@@ -29,18 +31,22 @@ UAbilitySystemComponent* ADonCharacterBase::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
-void ADonCharacterBase::Die_Implementation(const FVector& DeathImpulse)
+void ADonCharacterBase::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
 {
 	if (!bDead)
 	{
 		bDead = true;
+		if (ActorHasTag(FName("Enemy")) && DeathSound)
+		{
+			UGameplayStatics::PlaySound2D(this, DeathSound, 1);
+		}
 		UE_LOG(LogTemp, Warning, TEXT("%s is Dead"), *GetName());
 	}
 }
 
 void ADonCharacterBase::SetKnockbackState_Implementation(bool NewState, const FVector& Force)
 {
-	
+	GetCharacterMovement()->AddImpulse(Force);
 }
 
 bool ADonCharacterBase::IsItemEquipped_Implementation(FItem& Item)
@@ -126,45 +132,80 @@ void ADonCharacterBase::UnequipWeapon_Implementation()
 {
 	if (Weapon)
 	{
+		const float AttackPower = Weapon->GetFinalAttribute();
 		Weapon->RequestDestroy();
 		Weapon = nullptr;
+		AddBonusAttackPower(-AttackPower);
 	}
 }
 
 void ADonCharacterBase::UnequipArmorHelmet_Implementation()
 {
-	if (ArmorHelmet) ArmorHelmet->Destroy();
-	ArmorHelmet = nullptr;
+	if (ArmorHelmet)
+	{
+		const float Defense = ArmorHelmet->GetFinalAttribute();
+		ArmorHelmet->Destroy();
+		ArmorHelmet = nullptr;
+		AddBonusDefense(-Defense);
+	}
 }
 
 void ADonCharacterBase::UnequipArmorChest_Implementation()
 {
-	if (ArmorChest) ArmorChest->Destroy();
-	ArmorChest = nullptr;
+	if (ArmorChest)
+	{
+		const float Defense = ArmorChest->GetFinalAttribute();
+		ArmorChest->Destroy();
+		ArmorChest = nullptr;
+		AddBonusDefense(-Defense);
+	}
 }
 
 void ADonCharacterBase::UnequipArmorHands_Implementation()
 {
-	if (ArmorLeftHand) ArmorLeftHand->Destroy();
+	float Defense = 0.f;
+	if (ArmorLeftHand)
+	{
+		Defense = ArmorLeftHand->GetFinalAttribute() * 2;
+		ArmorLeftHand->Destroy();
+	}
 	ArmorLeftHand = nullptr;
 
-	if (ArmorRightHand) ArmorRightHand->Destroy();
+	if (ArmorRightHand)
+	{
+		ArmorRightHand->Destroy();
+	}
 	ArmorRightHand = nullptr;
+	AddBonusDefense(-Defense);
 }
 
 void ADonCharacterBase::UnequipArmorLegs_Implementation()
 {
-	if (ArmorLegs) ArmorLegs->Destroy();
-	ArmorLegs = nullptr;
+	if (ArmorLegs) 
+	{
+		const float Defense = ArmorLegs->GetFinalAttribute();
+		ArmorLegs->Destroy();
+		ArmorLegs = nullptr;
+		AddBonusDefense(-Defense);
+	}
 }
 
 void ADonCharacterBase::UnequipArmorBoots_Implementation()
 {
-	if (ArmorLeftBoot) ArmorLeftBoot->Destroy();
+	float Defense = 0.f;
+	if (ArmorLeftBoot) 
+	{
+		Defense = ArmorLeftBoot->GetFinalAttribute() * 2;
+		ArmorLeftBoot->Destroy();
+	}
 	ArmorLeftBoot = nullptr;
 
-	if (ArmorRightBoot) ArmorRightBoot->Destroy();
+	if (ArmorRightBoot)
+	{
+		ArmorRightBoot->Destroy();
+	}
 	ArmorRightBoot = nullptr;
+	AddBonusDefense(-Defense);
 }
 
 void ADonCharacterBase::EquipWeapon_Implementation(FItem& Item)
@@ -179,12 +220,15 @@ void ADonCharacterBase::EquipWeapon_Implementation(FItem& Item)
 		Equipment->InitEquipmentAttributes();
 		Weapon = Equipment;
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponSocket);
+		
+		const float AttackPower = Weapon->GetFinalAttribute();
+		AddBonusDefense(AttackPower);
 	}
 }
 
 void ADonCharacterBase::EquipArmorHelmet_Implementation(FItem& Item)
 {
-	if (ArmorHelmet)
+	if (ArmorHelmet && Item.IsSameInstance(ArmorHelmet->GetEquipmentInfo()))
 	{
 		UnequipArmorHelmet_Implementation();
 		return;
@@ -192,14 +236,18 @@ void ADonCharacterBase::EquipArmorHelmet_Implementation(FItem& Item)
 	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
+		Equipment->SetEquipmentInfo(Item);
 		ArmorHelmet = Equipment;
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorHelmetSocket);
+
+		const float Defense = ArmorHelmet->GetFinalAttribute();
+		AddBonusDefense(Defense);
 	}
 }
 
 void ADonCharacterBase::EquipArmorChest_Implementation(FItem& Item)
 {
-	if (ArmorChest)
+	if (ArmorChest && Item.IsSameInstance(ArmorChest->GetEquipmentInfo()))
 	{
 		UnequipArmorChest_Implementation();
 		return;
@@ -207,35 +255,45 @@ void ADonCharacterBase::EquipArmorChest_Implementation(FItem& Item)
 	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
+		Equipment->SetEquipmentInfo(Item);
 		ArmorChest = Equipment;
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorChestSocket);
+
+		const float Defense = ArmorChest->GetFinalAttribute();
+		AddBonusDefense(Defense);
 	}
 }
 
 void ADonCharacterBase::EquipArmorHands_Implementation(FItem& Item)
 {
-	if (ArmorLeftHand || ArmorRightHand)
+	if (ArmorLeftHand || ArmorRightHand && Item.IsSameInstance(ArmorLeftHand->GetEquipmentInfo()))
 	{
 		UnequipArmorHands_Implementation();
 		return;
 	}
+	float Defense = 0.f;
 	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
+		Equipment->SetEquipmentInfo(Item);
 		ArmorLeftHand = Equipment;
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorLeftHandSocket);
+
+		Defense = ArmorLeftHand->GetFinalAttribute() * 2;
 	}
 	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
+		Equipment->SetEquipmentInfo(Item);
 		ArmorRightHand = Equipment;
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorRightHandSocket);
 	}
+	AddBonusDefense(Defense);
 }
 
 void ADonCharacterBase::EquipArmorLegs_Implementation(FItem& Item)
 {
-	if (ArmorLegs)
+	if (ArmorLegs && Item.IsSameInstance(ArmorLegs->GetEquipmentInfo()))
 	{
 		UnequipArmorLegs_Implementation();
 		return;
@@ -243,36 +301,104 @@ void ADonCharacterBase::EquipArmorLegs_Implementation(FItem& Item)
 	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
+		Equipment->SetEquipmentInfo(Item);
 		ArmorLegs = Equipment;
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorLegsSocket);
+
+		const float Defense = ArmorLegs->GetFinalAttribute();
+		AddBonusDefense(Defense);
 	}
 }
 
 void ADonCharacterBase::EquipArmorBoots_Implementation(FItem& Item)
 {
-	if (ArmorLeftBoot || ArmorRightBoot)
+	if (ArmorLeftBoot || ArmorRightBoot && Item.IsSameInstance(ArmorLeftBoot->GetEquipmentInfo()))
 	{
 		UnequipArmorBoots_Implementation();
 		return;
 	}
+	float Defense = 0.f;
 	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
+		Equipment->SetEquipmentInfo(Item);
 		ArmorLeftBoot = Equipment;
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorLeftBootSocket);
+
+		Defense = ArmorLeftBoot->GetFinalAttribute();
 	}
 	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
+		Equipment->SetEquipmentInfo(Item);
 		ArmorRightBoot = Equipment;
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorRightBootSocket);
 	}
+	AddBonusDefense(Defense * 2);
 }
+
+void ADonCharacterBase::UpdateUpgradedItemInfo_Implementation(const FItem& Item)
+{
+	if (ArmorHelmet && Item.IsSameInstance(ArmorHelmet->GetEquipmentInfo()))
+	{
+		UpdateUpgradedArmorPoint(ArmorHelmet, Item.Upgrade);
+	}
+	else if (ArmorChest && Item.IsSameInstance(ArmorChest->GetEquipmentInfo()))
+	{
+		UpdateUpgradedArmorPoint(ArmorChest, Item.Upgrade);
+	}
+	else if (ArmorLegs && Item.IsSameInstance(ArmorLegs->GetEquipmentInfo()))
+	{
+		UpdateUpgradedArmorPoint(ArmorLegs, Item.Upgrade);
+	}
+	else if (ArmorLeftBoot && Item.IsSameInstance(ArmorLeftBoot->GetEquipmentInfo()))
+	{
+		UpdateUpgradedArmorPoint(ArmorLeftBoot, Item.Upgrade);
+		UpdateUpgradedArmorPoint(ArmorRightBoot, Item.Upgrade);
+	}
+	else if (ArmorLeftHand && Item.IsSameInstance(ArmorLeftHand->GetEquipmentInfo()))
+	{
+		UpdateUpgradedArmorPoint(ArmorLeftHand, Item.Upgrade);
+		UpdateUpgradedArmorPoint(ArmorRightHand, Item.Upgrade);
+	}
+}
+
 
 float ADonCharacterBase::GetWeaponDamage_Implementation()
 {
-	if (Weapon) return Weapon->GetFinalAttribute();
+	if (const ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetPlayerState()))
+	{
+		return DonPlayerState->GetAxeUpgrade() * 3.f;
+	}
 	return 0.f;
+}
+
+float ADonCharacterBase::GetArmorDefense_Implementation()
+{
+	float FinalDefense = 0.f;
+	if (ArmorHelmet) FinalDefense += ArmorHelmet->GetFinalAttribute();
+	if (ArmorChest) FinalDefense += ArmorChest->GetFinalAttribute();
+	if (ArmorLegs) FinalDefense += ArmorLegs->GetFinalAttribute();
+	if (ArmorLeftHand) FinalDefense += ArmorLeftHand->GetFinalAttribute() * 2.f;
+	if (ArmorLeftBoot) FinalDefense += ArmorLeftBoot->GetFinalAttribute() * 2.f;
+
+	return FinalDefense;
+}
+
+int32 ADonCharacterBase::GetEquippedArmorCount_Implementation()
+{
+	int32 Count = 0;
+	if (ArmorHelmet) Count++;
+	if (ArmorChest) Count++;
+	if (ArmorLegs) Count++;
+	if (ArmorLeftHand) Count++;
+	if (ArmorLeftBoot) Count++;
+	return Count;
+}
+
+int32 ADonCharacterBase::GetRewardScore_Implementation()
+{
+	return RewardScore;
 }
 
 float ADonCharacterBase::GetCharacterLevel_Implementation() const
@@ -329,7 +455,7 @@ void ADonCharacterBase::InitAbilityActorInfo()
 {
 }
 
-void ADonCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level) const
+FActiveGameplayEffectHandle ADonCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level)
 {
 	check(IsValid(GetAbilitySystemComponent()));
 	check(GameplayEffectClass);
@@ -337,17 +463,14 @@ void ADonCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayE
 	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
 	ContextHandle.AddSourceObject(this);
 	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(GameplayEffectClass, Level, ContextHandle);
-	// SpecHandle.Data->SetSetByCallerMagnitude(
-	// 	FDonGameplayTags::Get().
-	// )
-	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
+	return GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
 }
 
-void ADonCharacterBase::InitializeDefaultAttributes() const
+void ADonCharacterBase::InitializeDefaultAttributes()
 {
 	ApplyEffectToSelf(DefaultPrimaryAttributes, GetCharacterLevel_Implementation());
-	ApplyEffectToSelf(DefaultSecondaryAttributes, GetCharacterLevel_Implementation());
-	ApplyEffectToSelf(DefaultMaxVitalAttributes, GetCharacterLevel_Implementation());
+	SecondaryEffectHandle = ApplyEffectToSelf(DefaultSecondaryAttributes, GetCharacterLevel_Implementation());
+	MaxVitalEffectHandle = ApplyEffectToSelf(DefaultMaxVitalAttributes, GetCharacterLevel_Implementation());
 	ApplyEffectToSelf(DefaultVitalAttributes, GetCharacterLevel_Implementation());
 }
 
@@ -359,4 +482,23 @@ void ADonCharacterBase::AddCharacterAbilities()
 	ASC->AddCharacterAbilities(StartupAbilities);
 	ASC->AddCharacterPassiveAbilities(StartupPassiveAbilities);
 	ASC->AddCharacterStartupAbilities(StartupCommonAbilities);
+}
+
+void ADonCharacterBase::AddBonusAttackPower(int32 AttackPower)
+{
+	BonusAttackPower = FMath::Max(0, BonusAttackPower + AttackPower);
+	OnEquipmentChanged.Broadcast();
+}
+
+void ADonCharacterBase::AddBonusDefense(int32 Defense)
+{
+	BonusDefense = FMath::Max(0, BonusDefense + Defense);
+	OnEquipmentChanged.Broadcast();
+}
+
+void ADonCharacterBase::UpdateUpgradedArmorPoint(ADonEquipmentActor* Armor, int32 InPoint)
+{
+	if (Armor == nullptr) return;
+
+	Armor->UpdateUpgradedPoint(InPoint);
 }

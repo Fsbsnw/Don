@@ -129,6 +129,32 @@ void UInventoryWidgetController::UnequipAllItems()
 	}
 }
 
+void UInventoryWidgetController::UseItem(int32 SlotIndex)
+{
+	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
+	{
+		DonPlayerState->GetInventoryComponent()->UseConsumableItem(SlotIndex);
+	}
+}
+
+bool UInventoryWidgetController::UpgradeArmorItem(int32 SlotIndex, int32 Points)
+{
+	FItem Item;
+	Item.ItemName = FName("Upgrade Crystal");
+	Item.Amount = 1;
+	TArray<FItem> Items;
+	Items.Add(Item);
+	
+	if (GetInventoryComponent()->HasEnoughItems(Items))
+	{
+		GetInventoryComponent()->UpgradeArmorItem(SlotIndex, Points);
+		int32 Index = GetInventoryComponent()->FindItemInInventory(Item);
+		GetInventoryComponent()->RemoveItem(Item, Index, Item.Amount);
+		return true;
+	}
+	return false;
+}
+
 void UInventoryWidgetController::OnMoneyAdded(int32 Money)
 {
 	OnMoneyChanged.Broadcast(Money);
