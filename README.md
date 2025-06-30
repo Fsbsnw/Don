@@ -4,7 +4,6 @@
  <img src="https://github.com/user-attachments/assets/154ec290-540d-44b5-aed1-1f4b4e26504e">
  <br>
 
- ※ 외부에서 받은 애니메이션 리소스가 기본 SK_Mannequin_Skeleton 용으로 제작되었는데, 다른 캐릭터 메시로 리타겟팅하는게 어려워서 그대로 사용했습니다..
 
 
 ## 1인 프로젝트 - 최도의
