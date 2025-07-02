@@ -14,11 +14,16 @@ bool UDonItem_PotionBase::UseItem(AActor* Target, FItem& Item, bool& bWasConsume
 	if (TargetASC)
 	{
 		FGameplayEffectContextHandle ContextHandle = TargetASC->MakeEffectContext();
-		TSubclassOf<UGameplayEffect> GameplayEffect = UDonItemLibrary::FindItemConsumableByName(this, Item.ItemName).ItemEffectClass;
-		FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(GameplayEffect, 1.0f, ContextHandle);
-		TargetASC->ApplyGameplayEffectSpecToTarget(*EffectSpecHandle.Data.Get(), TargetASC);
-		bWasConsumed = true;
-		return true;
+		TSoftClassPtr<UGameplayEffect> SoftGameplayEffect =	UDonItemLibrary::FindItemConsumableByName(this, Item.ItemName).ItemEffectClass;
+
+		if (UClass* LoadedClass = SoftGameplayEffect.LoadSynchronous())
+		{
+			TSubclassOf<UGameplayEffect> GameplayEffect = LoadedClass;
+			FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(GameplayEffect, 1.0f, ContextHandle);
+			TargetASC->ApplyGameplayEffectSpecToTarget(*EffectSpecHandle.Data.Get(), TargetASC);
+			bWasConsumed = true;
+			return true;
+		}
 	}
 	return Super::UseItem(Target, Item, bWasConsumed);
 }
