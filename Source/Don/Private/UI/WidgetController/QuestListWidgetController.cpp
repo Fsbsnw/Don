@@ -28,14 +28,15 @@ void UQuestListWidgetController::AwardQuestRewards(FString QuestTitle)
 	Quest = DonPlayerState->GetPlayerQuestInfo(QuestTitle);
 	if (Quest.QuestTitle.IsEmpty()) return;
 
-	// Find Items to Remove by Quest Objectives
+	// Find Items to Remove
 	for (FObjective Objective : Quest.QuestObjectives)
 	{
 		if (Objective.ObjectiveType == EObjectiveType::HasItem)
 		{
 			FItem ItemToRemove = UDonItemLibrary::FindItemByName(GetWorld(), Objective.ItemID);
 			int32 IndexToRemove = DonPlayerState->GetInventoryComponent()->FindItemInInventory(ItemToRemove);
-			DonPlayerState->GetInventoryComponent()->RemoveItem(ItemToRemove, IndexToRemove, Objective.ItemAmount);						
+			if (IndexToRemove == INDEX_NONE) return;
+			DonPlayerState->GetInventoryComponent()->RemoveItem(IndexToRemove, Objective.ItemAmount);						
 		}
 	}
 
@@ -60,7 +61,7 @@ void UQuestListWidgetController::AwardQuestRewards(FString QuestTitle)
 		}
 	}
 
-	// Set New Repeat Quest
+	// Set New Quest
 	FQuest NextRepeatQuest;
 	NextRepeatQuest.QuestTitle = Quest.QuestTitle;
 	NextRepeatQuest.QuestDescription = Quest.QuestDescription;
@@ -93,7 +94,7 @@ void UQuestListWidgetController::AwardQuestRewards(FString QuestTitle)
 		}
 	}
 
-	// Remove Completed Quest and Add New Repeat Quest
+	// Remove Completed Quest and Add New Quest
 	DonPlayerState->PlayerQuests.FindOrAdd(ENPCName::Normal).Quests.Remove(Quest);
 	DonPlayerState->PlayerQuests.FindOrAdd(ENPCName::Normal).Quests.Add(NextRepeatQuest);
 }

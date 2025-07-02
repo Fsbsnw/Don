@@ -3,6 +3,8 @@
 
 #include "UI/Widget/Inventory/DonInventorySlotWidget.h"
 
+#include "DonGameplayTags.h"
+#include "Data/ItemStructs.h"
 #include "Inventory/InventoryComponent.h"
 #include "UI/WidgetController/InventoryWidgetController.h"
 
@@ -50,7 +52,7 @@ bool UDonInventorySlotWidget::UpgradeEquipment(int32 Points)
 {
 	if (UInventoryWidgetController* IWC = Cast<UInventoryWidgetController>(WidgetController))
 	{
-		if (IWC->GetItemInfo(InventorySlotIndex).ItemType != EItemType::Equipable) return false;
+		if (!IWC->GetItemInfo(InventorySlotIndex).ItemTag.MatchesTag(FDonGameplayTags::Get().Item_Equippable)) return false;
 		if (!IWC->UpgradeArmorItem(InventorySlotIndex, Points)) return false;
 		NotifyUpdateSlot(IWC->GetItemInfo(InventorySlotIndex));
 		return true;

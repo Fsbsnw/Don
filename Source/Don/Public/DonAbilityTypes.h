@@ -77,9 +77,11 @@ public:
 
 	bool GetIsCriticalHit() const { return bIsCriticalHit; }
 	FVector GetKnockbackForce() const { return KnockbackForce; }
+	bool GetCanDodge() const { return bCanDodge; }
 	
 	void SetIsCriticalHit(bool bInIsCriticalHit) { bIsCriticalHit = bInIsCriticalHit; }
 	void SetKnockbackForce(const FVector& InForce) { KnockbackForce = InForce; }
+	void SetCanDodge(bool bInCanDodge) { bCanDodge = bInCanDodge; }
 
 	virtual FDonGameplayEffectContext* Duplicate() const
 	{
@@ -100,6 +102,9 @@ protected:
 
 	UPROPERTY()
 	FVector KnockbackForce = FVector::ZeroVector;
+
+	UPROPERTY()
+	bool bCanDodge = false;
 };
 
 template<>

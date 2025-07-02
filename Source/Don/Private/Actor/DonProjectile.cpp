@@ -122,6 +122,7 @@ bool ADonProjectile::IsValidOverlap(AActor* OtherActor)
 	if (DamageEffectParams.SourceAbilitySystemComponent == nullptr) return false;
 	AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();
 	if (SourceAvatarActor == OtherActor) return false;
+	if (SourceAvatarActor->ActorHasTag(FName("Enemy")) && OtherActor->ActorHasTag(FName("Enemy"))) return false;
 
 	return true;
 }

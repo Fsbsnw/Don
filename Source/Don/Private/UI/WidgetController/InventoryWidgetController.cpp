@@ -27,20 +27,6 @@ void UInventoryWidgetController::BroadcastInitialValues()
 	}
 }
 
-void UInventoryWidgetController::InitAndLoadInventory()
-{
-	if (SlotWidgetClass == nullptr) return;
-	
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
-	{
-		for (int32 i = 0; i < DonPlayerState->GetInventoryComponent()->MaxItemSlots; i++)
-		{
-			UDonInventorySlotWidget* SlotWidget = CreateWidget<UDonInventorySlotWidget>(GetWorld(), SlotWidgetClass);
-			SlotWidget->SetWidgetController(this);
-		}		
-	}	
-}
-
 void UInventoryWidgetController::HandleSlotSellEvent(int32 SlotIndex)
 {
 	GetInventoryComponent()->OnRequestSellItem(SlotIndex);
@@ -106,15 +92,7 @@ void UInventoryWidgetController::RemoveItemFromPlayer(FItem Item, int32 Amount)
 {
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
 	{
-		DonPlayerState->GetInventoryComponent()->RemoveItem(Item, Item.InventorySlotIndex, Amount);
-	}
-}
-
-void UInventoryWidgetController::EquipItem(int32 SlotIndex)
-{
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
-	{
-		DonPlayerState->GetInventoryComponent()->EquipArmorItem(SlotIndex);
+		DonPlayerState->GetInventoryComponent()->RemoveItem(Item.InventorySlotIndex, Amount);
 	}
 }
 
@@ -133,14 +111,13 @@ void UInventoryWidgetController::UseItem(int32 SlotIndex)
 {
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
 	{
-		DonPlayerState->GetInventoryComponent()->UseConsumableItem(SlotIndex);
+		DonPlayerState->GetInventoryComponent()->UseItem(SlotIndex);
 	}
 }
 
 bool UInventoryWidgetController::UpgradeArmorItem(int32 SlotIndex, int32 Points)
 {
-	FItem Item;
-	Item.ItemName = FName("Upgrade Crystal");
+	FItem Item = UDonItemLibrary::FindItemByName(this, FName("Upgrade Crystal"));
 	Item.Amount = 1;
 	TArray<FItem> Items;
 	Items.Add(Item);
@@ -148,9 +125,12 @@ bool UInventoryWidgetController::UpgradeArmorItem(int32 SlotIndex, int32 Points)
 	if (GetInventoryComponent()->HasEnoughItems(Items))
 	{
 		GetInventoryComponent()->UpgradeArmorItem(SlotIndex, Points);
-		int32 Index = GetInventoryComponent()->FindItemInInventory(Item);
-		GetInventoryComponent()->RemoveItem(Item, Index, Item.Amount);
-		return true;
+		const int32 Index = GetInventoryComponent()->FindItemInInventory(Item);
+		if (Index != INDEX_NONE)
+		{
+			GetInventoryComponent()->RemoveItem(Index, Item.Amount);
+			return true;
+		}
 	}
 	return false;
 }

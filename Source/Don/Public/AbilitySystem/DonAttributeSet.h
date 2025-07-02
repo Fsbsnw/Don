@@ -62,6 +62,11 @@ public:
 	UDonAttributeSet();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
+	void HandleIncomingXP(FEffectProperties Props);
+	void HandleIncomingMoney(FEffectProperties Props);
+	bool HandleDodge(FEffectProperties Props);
+	void HandleDie(FEffectProperties Props);
+	void HandleIncomingDamage(FEffectProperties Props);
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
 	void ShowFloatingText(const FEffectProperties& Props, float Damage, bool bCriticalHit) const;

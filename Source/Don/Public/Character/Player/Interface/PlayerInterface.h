@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Data/ItemAsset.h"
+#include "Data/ItemStructs.h"
 #include "PlayerInterface.generated.h"
 
 UINTERFACE(MinimalAPI)

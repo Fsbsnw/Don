@@ -38,6 +38,13 @@ ADonCharacter::ADonCharacter()
 	AxeCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	AxeCollision->SetGenerateOverlapEvents(false);
 	AxeCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	InteractionCollision = CreateDefaultSubobject<USphereComponent>("Interaction Collision");
+	InteractionCollision->SetSphereRadius(100.f);
+	InteractionCollision->SetupAttachment(RootComponent);
+	InteractionCollision->SetCollisionResponseToAllChannels(ECR_Overlap);
+	InteractionCollision->SetGenerateOverlapEvents(true);
+	InteractionCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 void ADonCharacter::BeginPlay()
@@ -188,12 +195,17 @@ void ADonCharacter::InitAbilityActorInfo()
 	InitializeDefaultAttributes();
 }
 
-bool ADonCharacter::ExecuteInteract(AActor* Actor)
+void ADonCharacter::ExecuteInteract()
 {
-	if (Actor->Implements<UInteractInterface>())
+	TArray<AActor*> OverlappingActors;
+	InteractionCollision->GetOverlappingActors(OverlappingActors);
+
+	for (AActor* NPCActor : OverlappingActors)
 	{
-		Cast<IInteractInterface>(Actor)->Interact(GetPlayerState());
-		return true;
+		if (NPCActor->Implements<UInteractInterface>())
+		{
+			Cast<IInteractInterface>(NPCActor)->Interact(GetPlayerState());
+			return;
+		}
 	}
-	return false;
 }

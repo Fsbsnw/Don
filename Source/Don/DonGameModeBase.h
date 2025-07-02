@@ -6,6 +6,9 @@
 #include "GameFramework/GameModeBase.h"
 #include "DonGameModeBase.generated.h"
 
+class UItemConsumableAsset;
+class UItemEquipmentAsset;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpawnedAmountSignature, int32, Amount);
 
 class UNPCInfo;
 class ULootableActorDataAsset;
@@ -36,44 +39,64 @@ class DON_API ADonGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 protected:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
 	
 public:
+	UPROPERTY(BlueprintAssignable)
+	FOnSpawnedAmountSignature OnSpawnedAmountDelegate;
+	
+	int32 SpawnedEnemyAmount = 0;
+
+	void AddToSpawnedEnemies(int32 Value);
+	
 	UPROPERTY(EditAnywhere)
 	bool bStartLevel = true;
 	bool bStopLevel = false;
+
+	// Data Asset
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
 	TObjectPtr<UItemAsset> ItemInfoAsset;
-
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
+	TObjectPtr<UItemEquipmentAsset> ItemEquipmentAsset;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
+	TObjectPtr<UItemConsumableAsset> ItemConsumableAsset;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "NPC Information")
 	TObjectPtr<UNPCInfo> NPCInfoAsset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lootable Actor Information")
 	TObjectPtr<ULootableActorDataAsset> LootableActorAsset;
 
+	// End Data Asset
+	
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FEnemySpawnInfo> EnemySpawnTimer;
+	TArray<FEnemySpawnInfo> EnemySpawnSchedule;
 
 	UPROPERTY(EditDefaultsOnly)
 	float SpawnDistance = 1000.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float DestroyNPCTimer = 60.f;
+	float NPCLifeTime = 60.f;
 	
 	UPROPERTY(EditDefaultsOnly)
-	float EnemyUpgradeTimer = 60.f;
+	float EnemyUpgradeTime = 60.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	float SpawnEndTimer = 60.f * 15.f;
+	float SpawnEndTime = 60.f * 15.f;
 	
 	UPROPERTY(EditDefaultsOnly)
-	int32 MaxSpawnAmount = 50;
+	int32 MaxSpawnAmount = 10;
 
 	UPROPERTY(EditDefaultsOnly)
-	int32 SpawnWaveTimer = 15.f;
+	int32 MaxEnemyEntities = 50;
 
 	UPROPERTY(EditDefaultsOnly)
-	float BonusEnemySpawnTimer = 3.f;
+	int32 WaveTime = 15.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float BonusEnemySpawnTime = 3.f;
 
 	UPROPERTY(EditDefaultsOnly)
 	float BonusEnemySpawnChance = 0.05f;

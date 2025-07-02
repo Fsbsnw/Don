@@ -7,13 +7,13 @@
 #include "Don.h"
 #include "DonGameplayTags.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
-#include "AbilitySystem/DonAttributeSet.h"
 #include "Actor/DonEquipmentActor.h"
 #include "Components/CapsuleComponent.h"
-#include "Data/ItemAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
+#include "Data/ItemStructs.h"
+#include "Inventory/DonItemLibrary.h"
 
 ADonCharacterBase::ADonCharacterBase()
 {
@@ -51,13 +51,6 @@ void ADonCharacterBase::SetKnockbackState_Implementation(bool NewState, const FV
 
 bool ADonCharacterBase::IsItemEquipped_Implementation(FItem& Item)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Checking if item '%s' is equipped."), *Item.ItemName.ToString());
-
-	if (Weapon && Item.ItemName == Weapon->EquipmentName)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item '%s' matches Weapon: '%s'"), *Item.ItemName.ToString(), *Weapon->EquipmentName.ToString());
-		return true;
-	}
 	if (ArmorHelmet && Item.ItemName == ArmorHelmet->EquipmentName)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Item '%s' matches ArmorHelmet: '%s'"), *Item.ItemName.ToString(), *ArmorHelmet->EquipmentName.ToString());
@@ -208,21 +201,28 @@ void ADonCharacterBase::UnequipArmorBoots_Implementation()
 	AddBonusDefense(-Defense);
 }
 
-void ADonCharacterBase::EquipWeapon_Implementation(FItem& Item)
+void ADonCharacterBase::EquipItem_Implementation(FItem& Item)
 {
-	if (Weapon)
+	FDonGameplayTags GameplayTags = FDonGameplayTags::Get();
+	if (Item.ItemTag.MatchesTagExact(GameplayTags.Item_Equippable_Armor_Helmet))
 	{
-		UnequipWeapon_Implementation();
-		return;
+		EquipArmorHelmet_Implementation(Item);
 	}
-	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
+	else if (Item.ItemTag == GameplayTags.Item_Equippable_Armor_Chest)
 	{
-		Equipment->InitEquipmentAttributes();
-		Weapon = Equipment;
-		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, WeaponSocket);
-		
-		const float AttackPower = Weapon->GetFinalAttribute();
-		AddBonusDefense(AttackPower);
+		EquipArmorChest_Implementation(Item);
+	}
+	else if (Item.ItemTag == GameplayTags.Item_Equippable_Armor_Hands)
+	{
+		EquipArmorHands_Implementation(Item);
+	}
+	else if (Item.ItemTag == GameplayTags.Item_Equippable_Armor_Legs)
+	{
+		EquipArmorLegs_Implementation(Item);
+	}
+	else if (Item.ItemTag == GameplayTags.Item_Equippable_Armor_Boots)
+	{
+		EquipArmorBoots_Implementation(Item);
 	}
 }
 
@@ -233,7 +233,10 @@ void ADonCharacterBase::EquipArmorHelmet_Implementation(FItem& Item)
 		UnequipArmorHelmet_Implementation();
 		return;
 	}
-	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
+	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
+	if (EquipmentInfo.ItemActorClass == nullptr) return;
+	
+	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(EquipmentInfo.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
 		Equipment->SetEquipmentInfo(Item);
@@ -252,7 +255,10 @@ void ADonCharacterBase::EquipArmorChest_Implementation(FItem& Item)
 		UnequipArmorChest_Implementation();
 		return;
 	}
-	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
+	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
+	if (EquipmentInfo.ItemActorClass == nullptr) return;
+	
+	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(EquipmentInfo.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
 		Equipment->SetEquipmentInfo(Item);
@@ -272,7 +278,10 @@ void ADonCharacterBase::EquipArmorHands_Implementation(FItem& Item)
 		return;
 	}
 	float Defense = 0.f;
-	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
+	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
+	if (EquipmentInfo.ItemActorClass == nullptr) return;
+	
+	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(EquipmentInfo.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
 		Equipment->SetEquipmentInfo(Item);
@@ -280,8 +289,8 @@ void ADonCharacterBase::EquipArmorHands_Implementation(FItem& Item)
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorLeftHandSocket);
 
 		Defense = ArmorLeftHand->GetFinalAttribute() * 2;
-	}
-	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
+	}	
+	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(EquipmentInfo.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
 		Equipment->SetEquipmentInfo(Item);
@@ -298,7 +307,10 @@ void ADonCharacterBase::EquipArmorLegs_Implementation(FItem& Item)
 		UnequipArmorLegs_Implementation();
 		return;
 	}
-	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
+	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
+	if (EquipmentInfo.ItemActorClass == nullptr) return;
+	
+	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(EquipmentInfo.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
 		Equipment->SetEquipmentInfo(Item);
@@ -318,7 +330,10 @@ void ADonCharacterBase::EquipArmorBoots_Implementation(FItem& Item)
 		return;
 	}
 	float Defense = 0.f;
-	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
+	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
+	if (EquipmentInfo.ItemActorClass == nullptr) return;
+	
+	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(EquipmentInfo.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
 		Equipment->SetEquipmentInfo(Item);
@@ -326,8 +341,8 @@ void ADonCharacterBase::EquipArmorBoots_Implementation(FItem& Item)
 		Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorLeftBootSocket);
 
 		Defense = ArmorLeftBoot->GetFinalAttribute();
-	}
-	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(Item.ItemActorClass))
+	}	
+	if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(EquipmentInfo.ItemActorClass))
 	{
 		Equipment->InitEquipmentAttributes();
 		Equipment->SetEquipmentInfo(Item);
@@ -341,25 +356,25 @@ void ADonCharacterBase::UpdateUpgradedItemInfo_Implementation(const FItem& Item)
 {
 	if (ArmorHelmet && Item.IsSameInstance(ArmorHelmet->GetEquipmentInfo()))
 	{
-		UpdateUpgradedArmorPoint(ArmorHelmet, Item.Upgrade);
+		UpdateUpgradedArmorPoint(ArmorHelmet, Item.EquipmentAttribute.Upgrade);
 	}
 	else if (ArmorChest && Item.IsSameInstance(ArmorChest->GetEquipmentInfo()))
 	{
-		UpdateUpgradedArmorPoint(ArmorChest, Item.Upgrade);
+		UpdateUpgradedArmorPoint(ArmorChest, Item.EquipmentAttribute.Upgrade);
 	}
 	else if (ArmorLegs && Item.IsSameInstance(ArmorLegs->GetEquipmentInfo()))
 	{
-		UpdateUpgradedArmorPoint(ArmorLegs, Item.Upgrade);
+		UpdateUpgradedArmorPoint(ArmorLegs, Item.EquipmentAttribute.Upgrade);
 	}
 	else if (ArmorLeftBoot && Item.IsSameInstance(ArmorLeftBoot->GetEquipmentInfo()))
 	{
-		UpdateUpgradedArmorPoint(ArmorLeftBoot, Item.Upgrade);
-		UpdateUpgradedArmorPoint(ArmorRightBoot, Item.Upgrade);
+		UpdateUpgradedArmorPoint(ArmorLeftBoot, Item.EquipmentAttribute.Upgrade);
+		UpdateUpgradedArmorPoint(ArmorRightBoot, Item.EquipmentAttribute.Upgrade);
 	}
 	else if (ArmorLeftHand && Item.IsSameInstance(ArmorLeftHand->GetEquipmentInfo()))
 	{
-		UpdateUpgradedArmorPoint(ArmorLeftHand, Item.Upgrade);
-		UpdateUpgradedArmorPoint(ArmorRightHand, Item.Upgrade);
+		UpdateUpgradedArmorPoint(ArmorLeftHand, Item.EquipmentAttribute.Upgrade);
+		UpdateUpgradedArmorPoint(ArmorRightHand, Item.EquipmentAttribute.Upgrade);
 	}
 }
 

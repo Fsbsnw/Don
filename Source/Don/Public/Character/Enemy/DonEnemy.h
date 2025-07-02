@@ -21,20 +21,20 @@ class DON_API ADonEnemy : public ADonCharacterBase
 public:
 	ADonEnemy();
 
+	virtual void Destroyed() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
 	virtual void SetKnockbackState_Implementation(bool bKnockback, const FVector& Force) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void DestroyStone();
-
 	
 	UFUNCTION(BlueprintCallable)
 	void SetMeshInitState();
-
 	
 	void SetHealthPercent(float NewValue);
 	void SetHealthText(float NewValue, float NewMaxValue);
+	void SetHealthVisibility(bool State);
 	UFUNCTION(BlueprintCallable)
 	void SetKnockbackState(bool NewState, FVector Force = FVector::ZeroVector);
 	void SetRewardScore(int32 InRewardScore) { RewardScore = InRewardScore; }
@@ -79,6 +79,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UWidgetComponent* HealthBarComponent;
+
+	FTimerHandle HealthVisibilityTimerHandle;
+	FTimerHandle KnockbackCollisionTimerHandle;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;

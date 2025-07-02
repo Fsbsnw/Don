@@ -4,22 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "ItemAsset.generated.h"
+#include "ItemConsumableAsset.generated.h"
 
-
-struct FItem;
-
+struct FItemConsumableInfo;
 /**
  * 
  */
 UCLASS()
-class DON_API UItemAsset : public UDataAsset
+class DON_API UItemConsumableAsset : public UDataAsset
 {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ItemInformation")
-	TArray<FItem> ItemInformation;
+	TArray<FItemConsumableInfo> ConsumableInformation;
 	
 	UFUNCTION(BlueprintCallable)
-	FItem FindItemByName(FName ItemName);
+	FItemConsumableInfo FindItemConsumableByName(FName ItemName);
 };

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Data/ItemAsset.h"
+#include "Data/ItemStructs.h"
 #include "StoreWidgetController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMerchandiseUpdate, FItem, Item);
