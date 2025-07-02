@@ -16,7 +16,7 @@ struct FItemEquipmentInfo
 	FName ItemName;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSubclassOf<AActor> ItemActorClass;
+	TSoftClassPtr<AActor> ItemActorClass;
 };
 
 USTRUCT(BlueprintType)
@@ -40,7 +40,7 @@ struct FItemConsumableInfo
 	FName ItemName;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSubclassOf<UGameplayEffect> ItemEffectClass;
+	TSoftClassPtr<UGameplayEffect> ItemEffectClass;
 };
 
 USTRUCT(BlueprintType)
@@ -79,7 +79,7 @@ struct FItem
 	FGuid ItemID;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UTexture2D* Icon = nullptr;
+	TSoftObjectPtr<UTexture2D> Icon = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	FGameplayTag ItemTag;
