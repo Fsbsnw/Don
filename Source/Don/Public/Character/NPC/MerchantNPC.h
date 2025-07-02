@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/NPC/NPCCharacterBase.h"
-#include "Data/ItemAsset.h"
+#include "Data/ItemStructs.h"
 #include "MerchantNPC.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMerchandiseChanged, FItem, Item);

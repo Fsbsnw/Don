@@ -21,7 +21,7 @@ void UBTTask_Rampage_UseAbility::RotateToTarget(UBehaviorTreeComponent& OwnerCom
 	ControlledPawn->SetActorRotation(LookAtRotation);
 }
 
- EBTNodeResult::Type UBTTask_Rampage_UseAbility::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_Rampage_UseAbility::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 

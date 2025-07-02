@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Data/ItemAsset.h"
+#include "Data/ItemStructs.h"
 #include "InventoryComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryChanged, FItem, Item);
@@ -35,7 +36,7 @@ public:
 	bool HasEnoughItems(TArray<FItem> Items);
 	void SwapInventoryItems(int32 IndexA, int32 IndexB);
 
-	const uint8 MaxItemSlots = 20;
+	const int32 MaxItemSlots = 400;
 
 	void InitAndLoadInventory();
 
@@ -45,7 +46,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void AddItem(FItem Item, int32 Amount = 1);
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void RemoveItem(FItem Item, int32 SlotIndex, int32 Amount = 1);
+	void RemoveItem(int32 SlotIndex, int32 Amount = 1);
 	UFUNCTION()
 	void OnRequestSellItem(int32 SlotIndex);
 
@@ -53,15 +54,13 @@ public:
 	FOnInventoryChanged OnInventoryItemAdded;
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryChanged OnInventoryItemRemoved;
-	FOnInventoryItemSold OnInventoryItemSold;
-
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventorySlotChanged OnInventorySlotChanged;
+	FOnInventoryItemSold OnInventoryItemSold;
 
 	// Use
 
-	void EquipArmorItem(int32 SlotIndex);
-	void UseConsumableItem(int32 SlotIndex);
+	void UseItem(int32 SlotIndex);
 	void UseQuickSlotItem(const FGameplayTag& InputTag);
 	void UpgradeArmorItem(int32 SlotIndex, int32 Amount = 1);
 

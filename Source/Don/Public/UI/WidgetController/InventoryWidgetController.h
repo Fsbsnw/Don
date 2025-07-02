@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/ItemAsset.h"
+#include "Data/ItemStructs.h"
 #include "Input/DragAndDrop.h"
 #include "UI/WidgetController/DonWidgetController.h"
 #include "InventoryWidgetController.generated.h"
@@ -28,9 +29,6 @@ public:
 	virtual void BroadcastInitialValues() override;
 
 	UInventoryComponent* GetInventoryComponent();
-	
-	UFUNCTION(BlueprintCallable)
-	void InitAndLoadInventory();
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> SlotWidgetClass;
@@ -83,16 +81,13 @@ public:
 	void RemoveItemFromPlayer(FItem Item, int32 Amount = 1);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipItem(int32 SlotIndex);
-
-	UFUNCTION(BlueprintCallable)
 	void UnequipAllItems();
 	
 	UFUNCTION(BlueprintCallable)
 	void UseItem(int32 SlotIndex);
 
 	UFUNCTION(BlueprintCallable)
-	bool UpgradeArmorItem(int32 SlotIndex, int32 Points);
+	bool UpgradeArmorItem(int32 SlotIndex, int32 Points = 1);
 	
 	// Resource functions
 	

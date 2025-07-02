@@ -38,9 +38,9 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	bool IsItemEquipped(FItem& Item);
-	
+
 	UFUNCTION(BlueprintNativeEvent)
-	void EquipWeapon(FItem& Item);
+	void EquipItem(FItem& Item);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void EquipArmorHelmet(FItem& Item);

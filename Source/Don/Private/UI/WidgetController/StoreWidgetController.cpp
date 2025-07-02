@@ -45,7 +45,7 @@ void UStoreWidgetController::NPCSellMerchandise(int32 SlotIndex)
 		FItem MerchandiseToSell = MerchantNPC->GetMerchandise()[SlotIndex];
 		MerchantNPC->RemoveMerchandise(MerchandiseToSell, 1);
 		PlayerBuyItem(MerchandiseToSell, 1);
-		// Broadcast delegate for UI blueprint
+		
 		OnMerchandiseUpdate.Broadcast(GetNPCMerchandise()[SlotIndex]);
 	}
 }
@@ -73,26 +73,8 @@ void UStoreWidgetController::PlayerSellItem(int32 SlotIndex)
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
 	{
 		FItem ItemToSell = DonPlayerState->GetInventoryComponent()->GetInventory()[SlotIndex];
-		DonPlayerState->GetInventoryComponent()->RemoveItem(ItemToSell, SlotIndex);
-
+		DonPlayerState->GetInventoryComponent()->RemoveItem(SlotIndex);
 		int32 AdjustedPrice = ItemToSell.ItemPrice;
-
-		if (ANPCCharacterBase* NPC = Cast<ANPCCharacterBase>(InteractComponent->GetOwner()))
-		{
-			if (ItemToSell.ItemType == EItemType::Equipable)
-			{
-				AdjustedPrice = ItemToSell.ItemPrice * NPC->EquipmentPriceRate;
-			}
-			else if (ItemToSell.ItemType == EItemType::Consumable)
-			{
-				AdjustedPrice = ItemToSell.ItemPrice * NPC->ConsumablePriceRate;
-			}
-			else
-			{
-				AdjustedPrice = ItemToSell.ItemPrice * NPC->NormalPriceRate;
-			}
-		}
-		
 		DonPlayerState->AddToMoney(AdjustedPrice);
 	}
 }

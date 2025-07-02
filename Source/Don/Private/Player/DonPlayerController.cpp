@@ -105,7 +105,6 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 					for (const FVector& PointLoc : NavPath->PathPoints)
 					{
 						Spline->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
-						DrawDebugSphere(GetWorld(), PointLoc, 50.f, 12, FColor::Red, false, 4.f);
 					}
 					if (NavPath->PathPoints.Num() > 0)
 					{
@@ -171,7 +170,7 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 	{
 		if (ADonCharacter* DonCharacter = Cast<ADonCharacter>(GetPawn()))
 		{
-			DonCharacter->Interact();
+			DonCharacter->ExecuteInteract();
 		}
 	}
 

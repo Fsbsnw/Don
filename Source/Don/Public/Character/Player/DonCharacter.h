@@ -48,17 +48,14 @@ public:
 	virtual bool AddItemToInventory_Implementation(FItem Item) override;
 
 	// End IPlayerInterface
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void Interact();
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateAbilityTypeAndCollision(FGameplayTag AbilityTag, bool bEnableCollision);
+	void ExecuteInteract();
+	
 protected:
 	virtual void InitAbilityActorInfo() override;
 
-	UFUNCTION(BlueprintCallable)
-	bool ExecuteInteract(AActor* Actor);
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -66,6 +63,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> Camera;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USphereComponent> InteractionCollision;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<USkeletalMeshComponent> Axe;

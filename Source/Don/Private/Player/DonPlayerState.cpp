@@ -306,17 +306,20 @@ void ADonPlayerState::AddToKillCount(int32 InKillCount)
 
 bool ADonPlayerState::UpgradeAxe()
 {
-	FItem Item;
-	Item.ItemName = FName("Upgrade Crystal");
+	FItem Item = UDonItemLibrary::FindItemByName(this, FName("Upgrade Crystal"));
 	Item.Amount = 1;
 	TArray<FItem> Items;
 	Items.Add(Item);
+	
 	if (InventoryComponent->HasEnoughItems(Items))
 	{
 		int32 Index = InventoryComponent->FindItemInInventory(Item);
-		InventoryComponent->RemoveItem(Item, Index, Item.Amount);
-		AddToAxeUpgrade(1);
-		return true;
+		if (Index != INDEX_NONE)
+		{
+			InventoryComponent->RemoveItem(Index, Item.Amount);
+			AddToAxeUpgrade(1);
+			return true;
+		}
 	}
 	return false;
 }

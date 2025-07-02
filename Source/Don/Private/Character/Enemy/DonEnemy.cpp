@@ -3,7 +3,7 @@
 
 #include "Character/Enemy/DonEnemy.h"
 
-#include "DonGameplayTags.h"
+#include "DonGameModeBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
@@ -15,10 +15,12 @@
 #include "Components/TextBlock.h"
 #include "Components/WidgetComponent.h"
 #include "Inventory/DonItemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/Widget/HealthBarWidget.h"
 
 ADonEnemy::ADonEnemy()
 {
+	PrimaryActorTick.bCanEverTick = false;
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 
 	AbilitySystemComponent = CreateDefaultSubobject<UDonAbilitySystemComponent>("AbilitySystemComponent");
@@ -28,6 +30,18 @@ ADonEnemy::ADonEnemy()
 	AttributeSet = CreateDefaultSubobject<UDonAttributeSet>("AttributeSet");
 
 	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>("Health Bar Widget Component");
+}
+
+void ADonEnemy::Destroyed()
+{
+	if (ADonGameModeBase* GameModeBase = Cast<ADonGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	{
+		GameModeBase->AddToSpawnedEnemies(-1);
+	}
+	GetWorld()->GetTimerManager().ClearTimer(HealthVisibilityTimerHandle);
+	GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
+	
+	Super::Destroyed();
 }
 
 void ADonEnemy::SetKnockbackState_Implementation(bool NewState, const FVector& Force)
@@ -48,12 +62,28 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 	
 	if (NewState)
 	{
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		
 		GetMesh()->SetSimulatePhysics(true);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		FVector ScaledForce = FVector(Force.X * (ForceMultiplier / TestXDivide), Force.Y * ForceMultiplier, Force.Z * ForceMultiplier); 
 		GetMesh()->AddImpulse(ScaledForce, NAME_None, true);
+
+		FTimerDelegate KnockbackCollisionTimerDelegate;
+		KnockbackCollisionTimerDelegate.BindLambda(
+			[this]()
+			{
+				if (!bKnockback)
+				{
+					GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
+					return;
+				}
+				const FVector PelvisLocation = GetMesh()->GetSocketLocation(FName("pelvis"));
+				GetCapsuleComponent()->SetWorldLocation(PelvisLocation);
+			}
+		);
+		GetWorld()->GetTimerManager().SetTimer(KnockbackCollisionTimerHandle, KnockbackCollisionTimerDelegate, 0.1f, true);
+		
 		SetKnockback(true);
 	}
 	else
@@ -114,14 +144,20 @@ void ADonEnemy::Die_Implementation(const FVector& DeathImpulse, float ItemDropRa
 {
 	Super::Die_Implementation(DeathImpulse, ItemDropRate);
 
+	const FVector SpawnLocation = GetActorLocation();
+	const FRotator SpawnRotation = GetActorRotation();
 	FCharacterClassInfo CharacterClassInfo = UDonItemLibrary::FindCharacterClassInfo(this, CharacterClass);
-	UDonItemLibrary::SpawnLootableXP(this, CharacterClassInfo.DroppableXP, GetActorLocation(), GetActorRotation());
-	UDonItemLibrary::SpawnLootableMoney(this, CharacterClassInfo.DroppableMoney, FMath::RandRange(0, 3), GetActorLocation(), GetActorRotation());
 
-	float AdjustedRate = ItemDropRate * 0.01f * CrystalDropRate; 
-	UDonItemLibrary::SpawnLootableItem(this, LootableItems, GetActorLocation(), GetActorRotation(), AdjustedRate);
+	UDonItemLibrary::SpawnLootableXP(this, CharacterClassInfo.DroppableXP, SpawnLocation, SpawnRotation);
+	UDonItemLibrary::SpawnLootableMoney(this, CharacterClassInfo.DroppableMoney, FMath::RandRange(0, 3), SpawnLocation, SpawnRotation);
+	for (FLootableItem& LootableItem : LootableItems)
+	{
+		// Normalized Rate
+		float AdjustedRate = ItemDropRate * 0.01f * LootableItem.DropRate;
+		UDonItemLibrary::SpawnLootableItem(this, LootableItems, SpawnLocation, SpawnRotation, AdjustedRate);
+	}
 
-	if (DeathEffect) UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, DeathEffect, GetActorLocation());
+	if (DeathEffect) UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, DeathEffect, SpawnLocation);
 	Destroy();
 }
 
@@ -157,6 +193,14 @@ void ADonEnemy::SetHealthText(float NewValue, float NewMaxValue)
 	}
 }
 
+void ADonEnemy::SetHealthVisibility(bool State)
+{
+	if (HealthBarComponent)
+	{
+		HealthBarComponent->SetVisibility(State);
+	}
+}
+
 void ADonEnemy::BeginPlay()
 {
 	Super::BeginPlay();
@@ -176,9 +220,30 @@ void ADonEnemy::InitAbilityActorInfo()
 		DonAttributeSet->GetHealthAttribute()).AddLambda(
 			[this, DonAttributeSet](const FOnAttributeChangeData& Data)
 			{
+				SetHealthVisibility(true);
 				const float NewValue = DonAttributeSet->GetHealth() / DonAttributeSet->GetMaxHealth();
 				SetHealthText(DonAttributeSet->GetHealth(), DonAttributeSet->GetMaxHealth());
 				SetHealthPercent(NewValue);
+
+				if (GetWorld()->GetTimerManager().IsTimerActive(HealthVisibilityTimerHandle))
+				{
+					GetWorld()->GetTimerManager().ClearTimer(HealthVisibilityTimerHandle);
+				}
+
+				FTimerDelegate HealthVisibilityDelegate;
+				HealthVisibilityDelegate.BindLambda(
+					[this]()
+					{
+						SetHealthVisibility(false);
+					}
+				);
+
+				GetWorld()->GetTimerManager().SetTimer(
+					HealthVisibilityTimerHandle,
+					HealthVisibilityDelegate,
+					3.f,
+					false
+				);
 			}
-		);
+	);
 }

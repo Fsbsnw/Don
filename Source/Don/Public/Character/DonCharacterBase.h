@@ -69,7 +69,7 @@ public:
 	virtual void UnequipArmorHands_Implementation() override;
 	virtual void UnequipArmorLegs_Implementation() override;
 	virtual void UnequipArmorBoots_Implementation() override;
-	virtual void EquipWeapon_Implementation(FItem& Item) override;
+	virtual void EquipItem_Implementation(FItem& Item) override;
 	virtual void EquipArmorHelmet_Implementation(FItem& Item) override;
 	virtual void EquipArmorChest_Implementation(FItem& Item) override;
 	virtual void EquipArmorHands_Implementation(FItem& Item) override;

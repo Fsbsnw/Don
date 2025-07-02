@@ -8,10 +8,11 @@
 #include "Character/DonCharacterBase.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Data/Dialogue.h"
-#include "Data/ItemAsset.h"
+#include "Data/ItemStructs.h"
 #include "Data/Quest.h"
 #include "DonItemLibrary.generated.h"
 
+class UDonItemBase;
 class UAbilityInfo;
 class UAttributeMenuWidgetController;
 struct FDamageEffectParams;
@@ -29,6 +30,14 @@ class DON_API UDonItemLibrary : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
 	static FItem FindItemByName(const UObject* WorldContextObject, FName ItemName);
+
+	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
+	static FItemEquipmentInfo FindItemEquipmentByName(const UObject* WorldContextObject, FName ItemName);
+	
+	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
+	static FItemConsumableInfo FindItemConsumableByName(const UObject* WorldContextObject, FName ItemName);
+	
+	static UDonItemBase* CreateItemObjectByTag(const UObject* WorldContextObject, FGameplayTag Tag);
 
 	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
 	static UInventoryWidgetController* GetInventoryWidgetController(const UObject* WorldContextObject);

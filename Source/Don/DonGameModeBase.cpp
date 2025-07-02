@@ -18,48 +18,54 @@ void ADonGameModeBase::BeginPlay()
 
 	if (!bStartLevel) return;
 
-	for (FEnemySpawnInfo EnemySpawnInfo : EnemySpawnTimer)
+	for (FEnemySpawnInfo EnemySpawnInfo : EnemySpawnSchedule)
 	{
 		// Spawn Enemy
 		if (EnemySpawnInfo.EnemyClass->IsChildOf(ADonEnemy::StaticClass()))
 		{
-			float SpawnTime = EnemySpawnInfo.SpawnTime;
+			float SpawnDelay = EnemySpawnInfo.SpawnTime;
 			TSubclassOf<ADonEnemy> EnemyClass = TSubclassOf<ADonEnemy>(EnemySpawnInfo.EnemyClass);
 			int32 Amount = EnemySpawnInfo.Amount;
 			
 			FTimerDelegate EnemyTimerDelegate;
-			EnemyTimerDelegate.BindUFunction(this, FName("SpawnEnemy"), SpawnTime, EnemyClass, Amount);
+			EnemyTimerDelegate.BindUFunction(this, FName("SpawnEnemy"), SpawnDelay, EnemyClass, Amount);
 
 			FTimerHandle EnemyTimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(EnemyTimerHandle, EnemyTimerDelegate, SpawnTime, false);
+			GetWorld()->GetTimerManager().SetTimer(EnemyTimerHandle, EnemyTimerDelegate, SpawnDelay, false);
 
 
 			// Bonus Enemy
-			
 			FTimerDelegate BonusEnemyTimerDelegate;
 			BonusEnemyTimerDelegate.BindUFunction(this, FName("SpawnBonusEnemy"),EnemyClass);
 
 			FTimerHandle BonusEnemyTimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(BonusEnemyTimerHandle, BonusEnemyTimerDelegate, BonusEnemySpawnTimer, true);
+			GetWorld()->GetTimerManager().SetTimer(BonusEnemyTimerHandle, BonusEnemyTimerDelegate, BonusEnemySpawnTime, true);
 		}
 		// Spawn NPC
 		else if (EnemySpawnInfo.EnemyClass->IsChildOf(ANPCCharacterBase::StaticClass()))
 		{
-			float SpawnTime = EnemySpawnInfo.SpawnTime;
+			float SpawnDelay = EnemySpawnInfo.SpawnTime;
 			TSubclassOf<ANPCCharacterBase> NPCClass = TSubclassOf<ANPCCharacterBase>(EnemySpawnInfo.EnemyClass);
 			
 			FTimerDelegate NPCTimerDelegate;
 			NPCTimerDelegate.BindUFunction(this, FName("SpawnNPC"), NPCClass);
 
 			FTimerHandle NPCTimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(NPCTimerHandle, NPCTimerDelegate, SpawnTime, true);
+			GetWorld()->GetTimerManager().SetTimer(NPCTimerHandle, NPCTimerDelegate, SpawnDelay, true);
 		}
 	}
 }
 
+void ADonGameModeBase::AddToSpawnedEnemies(int32 Value)
+{
+	SpawnedEnemyAmount += Value;
+	SpawnedEnemyAmount = FMath::Max(SpawnedEnemyAmount, 0);
+	OnSpawnedAmountDelegate.Broadcast(SpawnedEnemyAmount);
+}
+
 void ADonGameModeBase::SpawnBonusEnemy(TSubclassOf<ACharacter> Enemy)
 {
-	if (bStopLevel) return;
+	if (bStopLevel || SpawnedEnemyAmount >= MaxEnemyEntities) return;
 	
 	for (APlayerState* PS : GameState->PlayerArray)
 	{
@@ -81,17 +87,14 @@ void ADonGameModeBase::SpawnBonusEnemy(TSubclassOf<ACharacter> Enemy)
 	}
 }
 
-void ADonGameModeBase::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-}
-
 void ADonGameModeBase::SpawnEnemy(float SpawnTime, TSubclassOf<ACharacter> Enemy, int32 Amount)
 {
 	if (!bStopLevel)
 	{
 		for (int32 Idx = 0; Idx < FMath::Min(Amount, MaxSpawnAmount); Idx++)
 		{
+			if (SpawnedEnemyAmount >= MaxEnemyEntities) break;
+			
 			FVector Center;
 			APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 			if (PlayerPawn)	Center = PlayerPawn->GetActorLocation();
@@ -109,19 +112,20 @@ void ADonGameModeBase::SpawnEnemy(float SpawnTime, TSubclassOf<ACharacter> Enemy
 			ADonEnemy* EnemyActor = GetWorld()->SpawnActorDeferred<ADonEnemy>(Enemy, SpawnTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
 			if (EnemyActor)
 			{
-				int32 Level = FMath::Max(1, 1 + FMath::FloorToInt32(GetWorld()->GetTimeSeconds() / EnemyUpgradeTimer));
+				int32 Level = FMath::Max(1, 1 + FMath::FloorToInt32(GetWorld()->GetTimeSeconds() / EnemyUpgradeTime));
 				UE_LOG(LogTemp, Warning, TEXT("Enemy Level : %d"), Level);
 				EnemyActor->SetCharacterLevel(Level);
 				UGameplayStatics::FinishSpawningActor(EnemyActor, SpawnTransform);
+				AddToSpawnedEnemies(1);
 				if (EnemyActor->bBossEnemy) break;
 			}
 		}
 	}
 	
-	if (GetWorld()->GetTimeSeconds() < SpawnEndTimer && SpawnTime > 0.f)
+	if (GetWorld()->GetTimeSeconds() < SpawnEndTime && SpawnTime > 0.f)
 	{
 		FTimerDelegate EnemyTimerDelegate;
-		int32 AmountToAdd = FMath::FloorToInt(GetWorld()->GetTimeSeconds() / SpawnWaveTimer);
+		int32 AmountToAdd = FMath::FloorToInt(GetWorld()->GetTimeSeconds() / WaveTime);
 		int32 NewSpawnAmount = FMath::RandRange(FMath::Max(1, Amount + AmountToAdd - 3), Amount + AmountToAdd + 1);
 		EnemyTimerDelegate.BindUFunction(this, FName("SpawnEnemy"), SpawnTime, Enemy, NewSpawnAmount);
 
@@ -139,7 +143,7 @@ void ADonGameModeBase::SpawnNPC(TSubclassOf<ACharacter> NPC)
 		if (AMerchantNPC* Merchant = Cast<AMerchantNPC>(NPCActor))
 		{
 			Merchant->bLoadBonusMerchandise = false;
-			Merchant->LifeTimer = DestroyNPCTimer;
+			Merchant->LifeTimer = NPCLifeTime;
 		}
 		UGameplayStatics::FinishSpawningActor(NPCActor, FTransform(FRotator(0.f, 135.f, 0.f)));
 	}
@@ -163,6 +167,6 @@ void ADonGameModeBase::SpawnNPC(TSubclassOf<ACharacter> NPC)
 				bStopLevel = false;
 			}
 		);
-		GetWorld()->GetTimerManager().SetTimer(ResumeLevelTimer, ResumeLevelDelegate, DestroyNPCTimer, false);
+		GetWorld()->GetTimerManager().SetTimer(ResumeLevelTimer, ResumeLevelDelegate, NPCLifeTime, false);
 	}
 }

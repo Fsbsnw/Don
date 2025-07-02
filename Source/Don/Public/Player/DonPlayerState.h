@@ -29,6 +29,9 @@ class DON_API ADonPlayerState : public APlayerState, public IAbilitySystemInterf
 {
 	GENERATED_BODY()
 public:
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
+	
 	ADonPlayerState();
 
 	virtual void BeginPlay() override;
@@ -36,8 +39,6 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<ULevelUpInfo> LevelUpInfo;
@@ -155,7 +156,7 @@ protected:
 	
 private:
 	UPROPERTY(EditAnywhere)
-	int32 AxeUpgrade = 1;
+	int32 AxeUpgrade = 0;
 	
 	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_Level)
 	int32 Level = 1;

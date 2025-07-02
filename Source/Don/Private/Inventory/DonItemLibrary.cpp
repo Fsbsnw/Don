@@ -7,7 +7,6 @@
 #include "DonAbilityTypes.h"
 #include "DonGameModeBase.h"
 #include "DonGameplayTags.h"
-#include "AbilitySystem/Abilities/DonDamageGameplayAbility.h"
 #include "Data/LootableActorDataAsset.h"
 #include "GameInstance/DonGameInstance.h"
 #include "Kismet/GameplayStatics.h"
@@ -17,22 +16,49 @@
 #include "UI/WidgetController/QuestListWidgetController.h"
 #include "Actor/LootableActor.h"
 #include "Character/DonCharacterBase.h"
+#include "Data/DonItem_EquipmentBase.h"
+#include "Data/DonItem_PotionBase.h"
+#include "Data/ItemConsumableAsset.h"
+#include "Data/ItemEquipmentAsset.h"
+#include "Data/ItemStructs.h"
 #include "Data/NPCInfo.h"
 
 FItem UDonItemLibrary::FindItemByName(const UObject* WorldContextObject, FName ItemName)
 {
 	const ADonGameModeBase* DonGameMode = Cast<ADonGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
-	if (DonGameMode == nullptr) return FItem();
+	if (DonGameMode == nullptr || DonGameMode->ItemInfoAsset == nullptr) return FItem();
 
-	for (FItem Item : DonGameMode->ItemInfoAsset->ItemInformation)
+	return DonGameMode->ItemInfoAsset->FindItemByName(ItemName);
+}
+
+FItemEquipmentInfo UDonItemLibrary::FindItemEquipmentByName(const UObject* WorldContextObject, FName ItemName)
+{
+	const ADonGameModeBase* DonGameMode = Cast<ADonGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (DonGameMode == nullptr || DonGameMode->ItemEquipmentAsset == nullptr) return FItemEquipmentInfo();
+
+	return DonGameMode->ItemEquipmentAsset->FindItemEquipmentByName(ItemName);
+}
+
+FItemConsumableInfo UDonItemLibrary::FindItemConsumableByName(const UObject* WorldContextObject, FName ItemName)
+{
+	const ADonGameModeBase* DonGameMode = Cast<ADonGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (DonGameMode == nullptr || DonGameMode->ItemConsumableAsset == nullptr) return FItemConsumableInfo();
+
+	return DonGameMode->ItemConsumableAsset->FindItemConsumableByName(ItemName);
+}
+
+UDonItemBase* UDonItemLibrary::CreateItemObjectByTag(const UObject* WorldContextObject, FGameplayTag Tag)
+{
+	FDonGameplayTags DonGameplayTags = FDonGameplayTags::Get();
+	if (Tag.MatchesTag(DonGameplayTags.Item_Consumable))
 	{
-		if (Item.ItemName == ItemName)
-		{
-			if (Item.ItemType == EItemType::Equipable) Item.ItemID = FGuid::NewGuid();
-			return Item;
-		}
+		return NewObject<UDonItem_PotionBase>(WorldContextObject->GetWorld());
 	}
-	return FItem();
+	else if (Tag.MatchesTag(DonGameplayTags.Item_Equippable))
+	{
+		return NewObject<UDonItem_EquipmentBase>(WorldContextObject->GetWorld());
+	}
+	return NewObject<UDonItemBase>(WorldContextObject->GetWorld());
 }
 
 UInventoryWidgetController* UDonItemLibrary::GetInventoryWidgetController(const UObject* WorldContextObject)

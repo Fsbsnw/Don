@@ -42,10 +42,9 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	const FDonGameplayTags& Tags = FDonGameplayTags::Get();
 	FGameplayEffectSpec Spec = ExecutionParams.GetOwningSpec();
 	float IncomingDamage = Spec.GetSetByCallerMagnitude(Tags.Damage, false);
-
-
+	
 	float SourceVigor = 0.f;
-	float TargetXPRate = 0.f;
+	float DodgeChance = 0.f;
 	float CriticalHitChance = 0.f;
 	float CriticalHitDamage = 0.f;
 
@@ -56,11 +55,12 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	{
 		FAggregatorEvaluateParameters EvaluateParameters;
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(GetAttributeStatics().VigorDef, EvaluateParameters, SourceVigor);
-		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(GetAttributeStatics().DodgeChanceDef, EvaluateParameters, TargetXPRate);
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(GetAttributeStatics().DodgeChanceDef, EvaluateParameters, DodgeChance);
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(GetAttributeStatics().CriticalHitChanceDef, EvaluateParameters, CriticalHitChance);
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(GetAttributeStatics().CriticalHitDamageDef, EvaluateParameters, CriticalHitDamage);
 	}
 
+	const bool bCanDodge = FMath::FRandRange(0.f, 100.f) < DodgeChance;
 	const bool bCriticalHit = FMath::FRandRange(0.f, 100.f) < CriticalHitChance;
 
 	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
@@ -69,6 +69,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		if (FDonGameplayEffectContext* DonContext = static_cast<FDonGameplayEffectContext*>(EffectContextHandle.Get()))
 		{
 			DonContext->SetIsCriticalHit(bCriticalHit);
+			DonContext->SetCanDodge(bCanDodge);
 		}
 	}
 

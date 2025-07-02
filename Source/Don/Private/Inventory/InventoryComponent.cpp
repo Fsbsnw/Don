@@ -8,7 +8,9 @@
 #include "DonGameplayTags.h"
 #include "Character/Interface/CombatInterface.h"
 #include "Character/Player/DonCharacter.h"
+#include "Data/DonItemBase.h"
 #include "Data/ItemAsset.h"
+#include "Inventory/DonItemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
 
@@ -59,7 +61,7 @@ void UInventoryComponent::SwapInventoryItems(int32 IndexA, int32 IndexB)
 void UInventoryComponent::InitAndLoadInventory()
 {
 	Inventory.SetNum(MaxItemSlots);
-	for (uint8 i = 0; i < MaxItemSlots; i++)
+	for (int32 i = 0; i < MaxItemSlots; i++)
 	{
 		Inventory[i].InventorySlotIndex = i;
 	}
@@ -80,8 +82,9 @@ void UInventoryComponent::AddItem(FItem Item, int32 Amount)
 
 		Item.Amount = Amount;
 
+		FDonGameplayTags Tags = FDonGameplayTags::Get();
 		// ItemType == EItemType::Equipable
-		if (Item.ItemType == EItemType::Equipable)
+		if (Item.ItemTag.MatchesTag(Tags.Item_Equippable))
 		{
 			for (uint8 i = 0; i < MaxItemSlots; i++)
 			{
@@ -132,33 +135,14 @@ void UInventoryComponent::AddItem(FItem Item, int32 Amount)
 	}
 }
 
-void UInventoryComponent::RemoveItem(FItem Item, int32 SlotIndex, int32 Amount)
+void UInventoryComponent::RemoveItem(int32 SlotIndex, int32 Amount)
 {
 	if (SlotIndex != INDEX_NONE)
 	{
 		if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
 		{
-			if (!DonPlayerState)
-			{
-				UE_LOG(LogTemp, Error, TEXT("DonPlayerState is nullptr!"));
-				return;
-			}
-
 			APawn* Pawn = DonPlayerState->GetPawn();
-			if (!Pawn)
-			{
-				UE_LOG(LogTemp, Error, TEXT("GetPawn() returned nullptr!"));
-				return;
-			}
-
-			UE_LOG(LogTemp, Warning, TEXT("Pawn Class: %s"), *Pawn->GetClass()->GetName());
-
 			ADonCharacter* ControlledCharacter = Cast<ADonCharacter>(Pawn);
-			if (!ControlledCharacter)
-			{
-				UE_LOG(LogTemp, Error, TEXT("Pawn is not ADonCharacter!"));
-				return;
-			}
 
 			if (!ControlledCharacter->Implements<UCombatInterface>())
 			{
@@ -171,25 +155,31 @@ void UInventoryComponent::RemoveItem(FItem Item, int32 SlotIndex, int32 Amount)
 				ICombatInterface::Execute_UnequipItem(ControlledCharacter, Inventory[SlotIndex]);
 			}
 		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("GetOwner() is not an ADonPlayerState!"));
-		}
 
-		
-		if (Inventory[SlotIndex].Amount - Amount > 0)
+		FItem Item = Inventory[SlotIndex];
+		int32 RemainingAmount = Amount;
+		int32 IndexToCheck = SlotIndex;
+
+		while (RemainingAmount > 0 && IndexToCheck != INDEX_NONE)
 		{
-			Inventory[SlotIndex].Amount -= Amount;
+			if (Inventory[IndexToCheck].Amount - RemainingAmount > 0)
+			{
+				Inventory[IndexToCheck].Amount -= RemainingAmount;
+				RemainingAmount = 0;				
+			}
+			else
+			{
+				RemainingAmount -= Inventory[IndexToCheck].Amount;
+				FItem DefaultItem;
+				DefaultItem.Amount = 0;
+				DefaultItem.InventorySlotIndex = IndexToCheck;
+				Inventory[IndexToCheck] = DefaultItem;
+			}
+			OnInventoryItemRemoved.Broadcast(Inventory[IndexToCheck]);
+			OnInventorySlotChanged.Broadcast(Inventory);
+
+			IndexToCheck = FindItemInInventory(Item);
 		}
-		else
-		{
-			FItem DefaultItem;
-			DefaultItem.Amount = 0;
-			DefaultItem.InventorySlotIndex = SlotIndex;
-			Inventory[SlotIndex] = DefaultItem;
-		}
-		OnInventoryItemRemoved.Broadcast(Inventory[SlotIndex]);
-		OnInventorySlotChanged.Broadcast(Inventory);
 	}
 }
 
@@ -198,83 +188,23 @@ void UInventoryComponent::OnRequestSellItem(int32 SlotIndex)
 	OnInventoryItemSold.Broadcast(SlotIndex);
 }
 
-void UInventoryComponent::EquipArmorItem(int32 SlotIndex)
+void UInventoryComponent::UseItem(int32 SlotIndex)
 {
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
-	{
-		ADonCharacter* ControlledCharacter = Cast<ADonCharacter>(DonPlayerState->GetPawn());
-		
-		if (ControlledCharacter && ControlledCharacter->Implements<UCombatInterface>())
-		{
-			const FDonGameplayTags& GameplayTags = FDonGameplayTags::Get();
-			FItem ItemToEquip = Inventory[SlotIndex];
-			
-			if (ItemToEquip.ItemTag.MatchesTagExact(GameplayTags.Item_Equippable_Armor_Helmet))
-			{
-				ICombatInterface::Execute_EquipArmorHelmet(ControlledCharacter, ItemToEquip);
-			}
-			else if (ItemToEquip.ItemTag == GameplayTags.Item_Equippable_Armor_Chest)
-			{
-				ICombatInterface::Execute_EquipArmorChest(ControlledCharacter, ItemToEquip);
-			}
-			else if (ItemToEquip.ItemTag == GameplayTags.Item_Equippable_Armor_Hands)
-			{
-				ICombatInterface::Execute_EquipArmorHands(ControlledCharacter, ItemToEquip);
-			}
-			else if (ItemToEquip.ItemTag == GameplayTags.Item_Equippable_Armor_Legs)
-			{
-				ICombatInterface::Execute_EquipArmorLegs(ControlledCharacter, ItemToEquip);
-			}
-			else if (ItemToEquip.ItemTag == GameplayTags.Item_Equippable_Armor_Boots)
-			{
-				ICombatInterface::Execute_EquipArmorBoots(ControlledCharacter, ItemToEquip);
-			}
-			else if (ItemToEquip.ItemTag == GameplayTags.Item_Equippable_Weapon)
-			{
-				ICombatInterface::Execute_EquipWeapon(ControlledCharacter, ItemToEquip);
-			}
-		}
-	}
-}
-
-void UInventoryComponent::UseConsumableItem(int32 SlotIndex)
-{
-	if (Inventory[SlotIndex].ItemType != EItemType::Consumable) return;
-	
-	if (Inventory[SlotIndex].ItemTag.MatchesTag(FDonGameplayTags::Get().Item_Consumable_Potion))
-	{
-		if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner()))
-		{
-			if (Inventory[SlotIndex].ItemEffectClass)
-			{
-				FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
-				FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(Inventory[SlotIndex].ItemEffectClass, 1.0f, EffectContext);
-
-				ASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), ASC);
-				if (DrinkPotion) UGameplayStatics::PlaySound2D(this, DrinkPotion);
-				RemoveItem(Inventory[SlotIndex], SlotIndex, 1);
-			}
-		}
-	}
-	UE_LOG(LogTemp, Warning, TEXT("Use Consumable Item : %s"), *Inventory[SlotIndex].ItemName.ToString());
+	UDonItemBase* Item = UDonItemLibrary::CreateItemObjectByTag(this, Inventory[SlotIndex].ItemTag);
+	bool bWasConsumed = false;
+	Item->UseItem(GetOwner(), Inventory[SlotIndex], bWasConsumed);
+	if (bWasConsumed) RemoveItem(SlotIndex, 1);
 }
 
 void UInventoryComponent::UseQuickSlotItem(const FGameplayTag& InputTag)
 {
 	int32 FoundInventoryIndex = *AssignedQuickSlots.Find(InputTag);
-	if (Inventory[FoundInventoryIndex].ItemType == EItemType::Consumable)
-	{
-		UseConsumableItem(FoundInventoryIndex);
-	}
-	else if (Inventory[FoundInventoryIndex].ItemType == EItemType::Equipable)
-	{
-		EquipArmorItem(FoundInventoryIndex);
-	}
+	UseItem(FoundInventoryIndex);
 }
 
 void UInventoryComponent::UpgradeArmorItem(int32 SlotIndex, int32 Amount)
 {
-	Inventory[SlotIndex].Upgrade += Amount;
+	Inventory[SlotIndex].EquipmentAttribute.Upgrade += Amount;
 
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
 	{
