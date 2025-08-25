@@ -12,6 +12,8 @@
 #include "Data/Quest.h"
 #include "DonItemLibrary.generated.h"
 
+struct FRoomServiceOrder;
+struct FKitchenOrder;
 class UDonItemBase;
 class UAbilityInfo;
 class UAttributeMenuWidgetController;

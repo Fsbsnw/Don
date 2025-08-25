@@ -1,0 +1,78 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
+
+bool UKitchenOrderSubsystem::ShouldCreateSubsystem(UObject* Outer) const
+{
+	if (const UWorld* World = Outer->GetWorld())
+	{
+		return World->GetMapName().Contains("InnMap");
+	}
+	return false;
+}
+
+void UKitchenOrderSubsystem::BroadcastInitialValues()
+{
+	OnKitchenOrderUpdated.Broadcast(KitchenOrderQueue);
+}
+
+FKitchenOrder UKitchenOrderSubsystem::EnqueueKitchenOrder(FKitchenOrder& Order)
+{
+	// 요리사 여유가 있는 경우
+	Order.OrderID = FGuid::NewGuid();
+	Order.RemainingTime = Order.CookingTime;
+	if (true)
+	{
+		Order.bIsCooking = true;
+		if (!GetWorld()->GetTimerManager().IsTimerActive(OrderTimerHandle))
+		{
+			GetWorld()->GetTimerManager().SetTimer(
+				OrderTimerHandle,
+				this,
+				&UKitchenOrderSubsystem::UpdateKitchenOrders,
+				1.0f,
+				true
+			);
+		}
+	}
+	KitchenOrderQueue.Add(Order);
+	OnKitchenOrderAdded.Broadcast(Order);
+	return Order;
+}
+
+void UKitchenOrderSubsystem::UpdateKitchenOrders()
+{
+	TArray<int32> IndexToRemove;
+	for (int32 i = 0; i < KitchenOrderQueue.Num(); i++)
+	{
+		FKitchenOrder& Order = KitchenOrderQueue[i];
+		if (Order.bIsCooking && Order.RemainingTime > 0)
+		{
+			Order.RemainingTime--;
+
+			if (Order.RemainingTime <= 0)
+			{
+				Order.bIsCooking = false;
+				IndexToRemove.Add(i);
+			}
+		}
+	}
+
+	// 내림차순 제거
+	IndexToRemove.Sort(TGreater<int32>());
+
+	for (int32 i : IndexToRemove)
+	{
+		const FKitchenOrder Order = KitchenOrderQueue[i];
+		KitchenOrderQueue.RemoveAt(i);
+		OnKitchenOrderRemoved.Broadcast(Order);
+	}
+
+	if (KitchenOrderQueue.IsEmpty())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(OrderTimerHandle);
+	}
+	
+	OnKitchenOrderUpdated.Broadcast(KitchenOrderQueue);
+}
