@@ -1,0 +1,51 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Inn/DonInnLibrary.h"
+
+#include "Data/CuisineAsset.h"
+#include "Data/RoomServiceAsset.h"
+#include "GameInstance/DonGameInstance.h"
+#include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
+#include "GameInstance/SubSystem/RoomServiceOrderSubsystem.h"
+#include "Kismet/GameplayStatics.h"
+
+FKitchenOrder UDonInnLibrary::FindCuisineByName(const UObject* WorldContextObject, FName CuisineName)
+{
+	const UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
+	if (DonGameInstance == nullptr || DonGameInstance->CuisineDataAsset == nullptr) return FKitchenOrder();
+
+	return DonGameInstance->CuisineDataAsset->FindCuisineByName(CuisineName);
+}
+
+FRoomServiceOrder UDonInnLibrary::FindRoomServiceByName(const UObject* WorldContextObject, FName RoomServiceName)
+{
+	const UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
+	if (DonGameInstance == nullptr || DonGameInstance->RoomServiceDataAsset == nullptr) return FRoomServiceOrder();
+
+	return DonGameInstance->RoomServiceDataAsset->FindRoomServiceByName(RoomServiceName);
+}
+
+void UDonInnLibrary::AddKitchenOrder(const UObject* WorldContextObject, FKitchenOrder Order)
+{
+	UKitchenOrderSubsystem* KitchenOrderSubsystem = UGameplayStatics::GetGameInstance(WorldContextObject)->GetSubsystem<UKitchenOrderSubsystem>();
+	if (KitchenOrderSubsystem == nullptr) return;
+
+	KitchenOrderSubsystem->EnqueueKitchenOrder(Order);
+}
+
+void UDonInnLibrary::AddRoomServiceOrder(const UObject* WorldContextObject, FRoomServiceOrder Order)
+{
+	URoomServiceOrderSubsystem* RoomServiceOrderSubsystem = UGameplayStatics::GetGameInstance(WorldContextObject)->GetSubsystem<URoomServiceOrderSubsystem>();
+	if (RoomServiceOrderSubsystem == nullptr) return;
+
+	RoomServiceOrderSubsystem->EnqueueRoomServiceOrder(Order);
+}
+
+FRoomServiceOrder UDonInnLibrary::RemoveRoomServiceOrder(const UObject* WorldContextObject)
+{
+	URoomServiceOrderSubsystem* RoomServiceOrderSubsystem = UGameplayStatics::GetGameInstance(WorldContextObject)->GetSubsystem<URoomServiceOrderSubsystem>();
+	if (RoomServiceOrderSubsystem == nullptr) return FRoomServiceOrder();
+
+	return RoomServiceOrderSubsystem->DequeueRoomServiceOrder();
+}

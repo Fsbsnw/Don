@@ -9,6 +9,8 @@
 #include "Data/Quest.h"
 #include "DonGameInstance.generated.h"
 
+class URoomServiceAsset;
+class UCuisineAsset;
 class UAbilityInfo;
 class UDataTable;
 /**
@@ -41,4 +43,10 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UDataTable* MerchandiseDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCuisineAsset* CuisineDataAsset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	URoomServiceAsset* RoomServiceDataAsset;
 };
