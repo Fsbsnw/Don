@@ -7,6 +7,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "KitchenOrderSubsystem.generated.h"
 
+class AInnChef;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKitchenOrderChanged, FKitchenOrder, KitchenOrder);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKitchenOrderUpdated, const TArray<FKitchenOrder>&, KitchenOrders);
 
@@ -38,9 +39,14 @@ public:
 	TArray<FKitchenOrder>& GetKitchenOrderQueue() { return KitchenOrderQueue; };
 
 	FKitchenOrder EnqueueKitchenOrder(FKitchenOrder& Order);
-	
+	FGuid FindNextQueuedOrderID() const;
+	void RegisterChef(AInnChef* Chef) { if (!Chefs.Contains(Chef)) Chefs.Add(Chef); };
+	void UnregisterChef(AInnChef* Chef) { if (Chefs.Contains(Chef)) Chefs.Remove(Chef); };
+	AInnChef* FindIdleChef();
 private:
 	TArray<FKitchenOrder> KitchenOrderQueue;
+	TArray<AInnChef*> Chefs;
+	TMap<int32, AInnChef*> CookingChefs;
 
 	FTimerHandle OrderTimerHandle;
 	void UpdateKitchenOrders();

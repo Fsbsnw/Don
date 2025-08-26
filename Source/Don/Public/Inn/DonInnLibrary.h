@@ -16,15 +16,20 @@ class DON_API UDonInnLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
-	// Order
+	// Kitchen
 	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | Kitchen")
 	static FKitchenOrder FindCuisineByName(const UObject* WorldContextObject, FName CuisineName);
 
-	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | RoomService")
-	static FRoomServiceOrder FindRoomServiceByName(const UObject* WorldContextObject, FName RoomServiceName);
-	
 	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | Kitchen")
 	static void AddKitchenOrder(const UObject* WorldContextObject, FKitchenOrder Order);
+
+	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | Kitchen")
+	static FGuid FindNextQueuedKitchenOrder(const UObject* WorldContextObject);
+
+
+	// RoomService
+	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | RoomService")
+	static FRoomServiceOrder FindRoomServiceByName(const UObject* WorldContextObject, FName RoomServiceName);
 
 	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | RoomService")
 	static void AddRoomServiceOrder(const UObject* WorldContextObject, FRoomServiceOrder RoomServiceOrder);
