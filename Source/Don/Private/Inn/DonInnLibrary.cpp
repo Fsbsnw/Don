@@ -34,6 +34,14 @@ void UDonInnLibrary::AddKitchenOrder(const UObject* WorldContextObject, FKitchen
 	KitchenOrderSubsystem->EnqueueKitchenOrder(Order);
 }
 
+FGuid UDonInnLibrary::FindNextQueuedKitchenOrder(const UObject* WorldContextObject)
+{
+	UKitchenOrderSubsystem* KitchenOrderSubsystem = UGameplayStatics::GetGameInstance(WorldContextObject)->GetSubsystem<UKitchenOrderSubsystem>();
+	if (KitchenOrderSubsystem == nullptr) return FGuid();
+
+	return KitchenOrderSubsystem->FindNextQueuedOrderID();
+}
+
 void UDonInnLibrary::AddRoomServiceOrder(const UObject* WorldContextObject, FRoomServiceOrder Order)
 {
 	URoomServiceOrderSubsystem* RoomServiceOrderSubsystem = UGameplayStatics::GetGameInstance(WorldContextObject)->GetSubsystem<URoomServiceOrderSubsystem>();

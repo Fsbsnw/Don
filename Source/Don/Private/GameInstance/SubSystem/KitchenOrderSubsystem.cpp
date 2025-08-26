@@ -3,6 +3,8 @@
 
 #include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
 
+#include "Inn/Actor/InnChef.h"
+
 bool UKitchenOrderSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
 	if (const UWorld* World = Outer->GetWorld())
@@ -22,9 +24,12 @@ FKitchenOrder UKitchenOrderSubsystem::EnqueueKitchenOrder(FKitchenOrder& Order)
 	// 요리사 여유가 있는 경우
 	Order.OrderID = FGuid::NewGuid();
 	Order.RemainingTime = Order.CookingTime;
-	if (true)
+	
+	if (AInnChef* IdleChef = FindIdleChef())
 	{
 		Order.bIsCooking = true;
+		Order.AssignedChef = IdleChef;
+		IdleChef->StartOrder(Order);
 		if (!GetWorld()->GetTimerManager().IsTimerActive(OrderTimerHandle))
 		{
 			GetWorld()->GetTimerManager().SetTimer(
@@ -39,6 +44,27 @@ FKitchenOrder UKitchenOrderSubsystem::EnqueueKitchenOrder(FKitchenOrder& Order)
 	KitchenOrderQueue.Add(Order);
 	OnKitchenOrderAdded.Broadcast(Order);
 	return Order;
+}
+
+FGuid UKitchenOrderSubsystem::FindNextQueuedOrderID() const
+{
+	for (const FKitchenOrder& Order : KitchenOrderQueue)
+	{
+		if (!Order.bIsCooking)
+		{
+			return Order.OrderID;
+		}
+	}
+	return FGuid();
+}
+
+AInnChef* UKitchenOrderSubsystem::FindIdleChef()
+{
+	for (AInnChef* Chef : Chefs)
+	{
+		if (!Chef->IsCooking()) return Chef;
+	}
+	return nullptr;
 }
 
 void UKitchenOrderSubsystem::UpdateKitchenOrders()
@@ -65,8 +91,20 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 	for (int32 i : IndexToRemove)
 	{
 		const FKitchenOrder Order = KitchenOrderQueue[i];
+		Order.AssignedChef->EndOrder();
 		KitchenOrderQueue.RemoveAt(i);
 		OnKitchenOrderRemoved.Broadcast(Order);
+
+		for (FKitchenOrder& NewOrder : KitchenOrderQueue)
+		{
+			if (!NewOrder.bIsCooking)
+			{
+				NewOrder.bIsCooking = true;
+				NewOrder.AssignedChef = Order.AssignedChef;
+				Order.AssignedChef->StartOrder(NewOrder);
+				break;
+			}
+		}
 	}
 
 	if (KitchenOrderQueue.IsEmpty())
