@@ -23,11 +23,17 @@ protected:
 
 public:
 	FORCEINLINE bool IsCooking() const { return bIsCooking; }
-	void StartOrder(const FKitchenOrder& Order);
+	void StartOrder(FKitchenOrder& Order);
 	void EndOrder();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UTexture2D* ChefImage;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 ChefLevel = 1;
+
+	UFUNCTION(BlueprintCallable)
+	void ChefLevelUp() { ChefLevel += 1; }
 
 private:
 	bool bIsCooking = false;

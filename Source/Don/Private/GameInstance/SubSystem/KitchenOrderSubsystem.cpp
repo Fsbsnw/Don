@@ -21,13 +21,12 @@ void UKitchenOrderSubsystem::BroadcastInitialValues()
 
 FKitchenOrder UKitchenOrderSubsystem::EnqueueKitchenOrder(FKitchenOrder& Order)
 {
-	// 요리사 여유가 있는 경우
 	Order.OrderID = FGuid::NewGuid();
 	Order.RemainingTime = Order.CookingTime;
 	
+	// 요리사 여유가 있는 경우
 	if (AInnChef* IdleChef = FindIdleChef())
 	{
-		Order.bIsCooking = true;
 		Order.AssignedChef = IdleChef;
 		IdleChef->StartOrder(Order);
 		if (!GetWorld()->GetTimerManager().IsTimerActive(OrderTimerHandle))
@@ -85,6 +84,8 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 		}
 	}
 
+	OnKitchenOrderUpdated.Broadcast(KitchenOrderQueue);
+
 	// 내림차순 제거
 	IndexToRemove.Sort(TGreater<int32>());
 
@@ -97,11 +98,10 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 
 		for (FKitchenOrder& NewOrder : KitchenOrderQueue)
 		{
-			if (!NewOrder.bIsCooking)
+			if (!NewOrder.bIsCooking && NewOrder.RemainingTime > 0.f)
 			{
-				NewOrder.bIsCooking = true;
 				NewOrder.AssignedChef = Order.AssignedChef;
-				Order.AssignedChef->StartOrder(NewOrder);
+				NewOrder.AssignedChef->StartOrder(NewOrder);
 				break;
 			}
 		}
@@ -111,6 +111,4 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(OrderTimerHandle);
 	}
-	
-	OnKitchenOrderUpdated.Broadcast(KitchenOrderQueue);
 }
