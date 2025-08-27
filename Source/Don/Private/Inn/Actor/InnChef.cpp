@@ -36,8 +36,11 @@ void AInnChef::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void AInnChef::StartOrder(const FKitchenOrder& Order)
+void AInnChef::StartOrder(FKitchenOrder& Order)
 {
+	Order.bIsCooking = true;
+	Order.CookingTime = FMath::Max(2, Order.CookingTime - (ChefLevel - 1));
+	Order.RemainingTime = Order.CookingTime;
 	OrderID = Order.OrderID;
 	bIsCooking = true;
 }
