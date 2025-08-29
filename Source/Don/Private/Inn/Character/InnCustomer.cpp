@@ -21,11 +21,10 @@ void AInnCustomer::OrderFood()
 {
 	if (FavoriteFoods.IsEmpty()) return;
 	
-	int32 Index = FMath::RandRange(0, FavoriteFoods.Num() - 1);
-	FKitchenOrder FoodOrder = FavoriteFoods[Index];
+	const int32 Index = FMath::RandRange(0, FavoriteFoods.Num() - 1);
+	FKitchenOrder FoodOrder = UDonInnLibrary::FindCuisineByName(this, FavoriteFoods[Index]);
+	FoodOrder.OrderedCustomer = this;
 	UDonInnLibrary::AddKitchenOrder(this, FoodOrder);
-
-	UE_LOG(LogTemp, Log, TEXT("%d, %d"), Index, FavoriteFoods.Num());
 }
 
 void AInnCustomer::ReceivedFood()
@@ -37,9 +36,11 @@ void AInnCustomer::ReceivedFood()
 		MealTimerHandle,
 		this,               
 		&AInnCustomer::OnMealFinished, 
-		10.0f,                
+		EatingTime,                
 		false                  
 	);
+
+	UE_LOG(LogTemp, Log, TEXT("%s has received the meal."), *GetName());
 }
 
 void AInnCustomer::OnMealFinished()

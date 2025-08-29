@@ -7,6 +7,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "KitchenOrderSubsystem.generated.h"
 
+class AInnCustomer;
 class AInnChef;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKitchenOrderChanged, FKitchenOrder, KitchenOrder);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKitchenOrderUpdated, const TArray<FKitchenOrder>&, KitchenOrders);
@@ -46,7 +47,6 @@ public:
 private:
 	TArray<FKitchenOrder> KitchenOrderQueue;
 	TArray<AInnChef*> Chefs;
-	TMap<int32, AInnChef*> CookingChefs;
 
 	FTimerHandle OrderTimerHandle;
 	void UpdateKitchenOrders();

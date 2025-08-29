@@ -41,7 +41,10 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere)
-	TArray<FKitchenOrder> FavoriteFoods;
+	TArray<FName> FavoriteFoods;
+
+	UPROPERTY(EditAnywhere)
+	float EatingTime = 10.f;
 
 	ECustomerMealState MealState = ECustomerMealState::WaitingForFood;
 };
