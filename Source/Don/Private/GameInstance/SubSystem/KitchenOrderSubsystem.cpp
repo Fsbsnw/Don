@@ -4,6 +4,7 @@
 #include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
 
 #include "Inn/Actor/InnChef.h"
+#include "Inn/Character/InnCustomer.h"
 
 bool UKitchenOrderSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
@@ -93,6 +94,10 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 	{
 		const FKitchenOrder Order = KitchenOrderQueue[i];
 		Order.AssignedChef->EndOrder();
+		if (AInnCustomer* Customer = Cast<AInnCustomer>(Order.OrderedCustomer))
+		{
+			Customer->ReceivedFood();
+		}
 		KitchenOrderQueue.RemoveAt(i);
 		OnKitchenOrderRemoved.Broadcast(Order);
 

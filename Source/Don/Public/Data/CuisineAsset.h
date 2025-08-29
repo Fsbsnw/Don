@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "CuisineAsset.generated.h"
 
+class AInnCustomer;
 class AInnChef;
 
 USTRUCT(BlueprintType)
@@ -46,6 +47,9 @@ struct FKitchenOrder
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AInnChef> AssignedChef;
+	
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<AInnCustomer> OrderedCustomer;
 };
 
 /**
