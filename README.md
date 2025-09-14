@@ -7,16 +7,19 @@
 
 
 ## 1인 프로젝트 - 최도의
-## 게임 장르 : 3D 뱀파이어 서바이벌류
- 기획 배경 : 당시에 재밌게 하던 게임인 뱀파이어 서바이벌처럼 매 스테이지의 활약에 따라 캐릭터를 강화하고, 
- 
- 더 높은 점수를 기록하는 게임을 만들어보자란 욕구 + 유니티는 많은 오브젝트가 있어도 비교적 쉽게 성능적인 관리가 가능하지만, 
- 
- 반대로 언리얼이라면 이를 구현할 때 어느 부분을 타협하고 관리해야 하는지에 대한 궁금증
- 
- ⇒ 3D 액션 장르로 설정
 
+## 게임 장르 : 3D 뱀파이어 서바이벌류
+
+## 기획 배경
+
+ 뱀파이어 서바이벌이 주는 **수많은 적을 쓸어버리는 핵 앤 슬래시의 쾌감**과 **매번 새롭게 강해지는 로그라이크의 재미**를 3D 환경에서 구현하고 싶었습니다.
+ 
+ 이 핵심 기능을 구현하기 위해서는 화면에 수많은 적을 동시에 처리하는 기술력이 필수적이었습니다. 특히, 무거운 기능들이 바탕이 되는 언리얼 엔진 환경에서 이러한 다수의 오브젝트를 어떻게 효율적으로 관리하고 최적화할 수 있는지에 대한 기술적 호기심이 생겼습니다.
+ 
+ 따라서 이 프로젝트는 **3D 뱀파이어 서바이벌류 게임 제작**이라는 기획적 목표와, **다수의 AI 오브젝트를 다루는 언리얼 엔진의 성능 최적화**라는 기술적 목표를 동시에 달성하는 것을 과제로 삼고 시작되었습니다.
+ 
 ## 포트폴리오 요약
+* 최적화 시도들
 * GAS 시스템 기반 Ability 구현
 * 인벤토리(MVC패턴)
 * 퀘스트
@@ -24,36 +27,45 @@
 * 장비 강화
 * 상점
 * 적 AI(Behavior Tree)
-* 최적화 시도들
 
 ## [Don 포트폴리오 영상](https://youtu.be/gn_eyMzty2I)
 
 ## 최적화 시도
+**<문제 상황>** <br>
 적군이 많아지면 급격한 프레임 저하 및 스파이크 현상
 
 73 FPS(기본 상태) -> 39 FPS(적군 50명 스폰 상태)
-⇒ 목표 : 50명 스폰 시에도 60 FPS 근처 유지
 
+<br>
+
+**<문제 원인 파악>** <br>
+Stat Game을 통한 프로파일링 <br>
+⇒ **Char Movement Total, EndScopedMovementUpdate Time, UpdateOverlaps Time, PerformOverlapQuery Time** 이 네 가지 항목에서 많은 비용이 발생
+
+<br>
+
+**<시도한 해결 방안>** <br>
 1. Enemy Object 전용 콜리전 사용 및 캡슐 컴포넌트의 물리 충돌 Ignore
 2. RVO 사용
 
 <img width="1347" height="473" alt="Image" src="https://github.com/user-attachments/assets/16070b8e-bf9c-4a42-abbf-7563e54b9513" />
 
-⇒ 여전히 Char Movement Total의 비용이 높음, 36 FPS 근처
+⇒ 여전히 **Char Movement Total**의 비용이 높음, 39 FPS 근처
 
 <br>
 
-3. Overlap 관련 비용 원인 탐색 → Mesh overlap events이 불필요하게 켜져 있었고, 이를 해제한 상태
+3. Overlap 관련 비용 원인 탐색 → **Mesh overlap events**이 불필요하게 켜져 있었고, 이를 해제한 상태
 
 <img width="1372" height="476" alt="Image" src="https://github.com/user-attachments/assets/3999fe3d-4720-46cd-994b-782f4043a17a" />
 
-⇒ UpdateOverlaps Time, PerformOverlapQuery Time 감소 <br>
-⇒ 하지만 여전히 Char Movement Total의 비용이 높음, 유의미한 FPS 변화 없음 <br>
-⇒ Character Movement Component 자체를 사용하면 안 되는 상황
+⇒ **UpdateOverlaps Time, PerformOverlapQuery Time** 감소 <br>
+⇒ 하지만 여전히 **Char Movement Total**의 비용이 높음, 유의미한 FPS 변화 없음 <br>
+⇒ **Character Movement Component** 자체를 사용하면 안 되는 상황
 
 <br>
 
-4. Character Movement Component → Floating Pawn Movement 변경
+4. **Character Movement Component → Floating Pawn Movement**로 변경 <br>
+   ⇒ 다수의 AI에게 불필요한 네트워크, 물리 상호작용 기능이 없는 경량 컴포넌트로 교체하여 이동 비용 절감
 
 <img width="1367" height="482" alt="Image" src="https://github.com/user-attachments/assets/7b0e8a22-4ac8-46c8-bc2b-ad754a601481" />
 
@@ -62,18 +74,23 @@
 
 <br>
 
-5. 캡슐 콜리전 Ignore로 바꾸고, 액터가 겹치는 현상을 완화하기 위해 플레이어 기준 랜덤 Offset 좌표로 이동하는 <br>
+5. 물리 충돌을 Ignore함에 따라 발생하는 AI 뭉침 현상을 완화하기 위해 각 AI에게 플레이어 주변의 랜덤 좌표를 할당하는 <br>
    커스텀 BTTaskNode_MoveToLocationAndRepath 노드 사용
 
 <img width="1345" height="525" alt="Image" src="https://github.com/user-attachments/assets/b8aa0770-f962-42ab-b487-5206a74a4023" />
 
 <br><br>
 
-<BTTaskNode_MoveToLocationAndRepath - TickTask 부분>
+<BTTaskNode_MoveToLocationAndRepath - TickTask>
 
-<img width="722" height="398" alt="Image" src="https://github.com/user-attachments/assets/59248caa-4225-4829-bf49-e444c45d929f" />
+<img width="722" height="398" alt="Image" src="https://github.com/user-attachments/assets/59248caa-4225-4829-bf49-e444c45d929f" /> <br><br>
 
-<br>
+**<최종 결과>** <br>
+프레임 드랍의 주요 원인 4가지의 비용을 현저히 저하시킴으로써 <br> 
+**39** FPS -> **60** FPS <br>
+**25** ms -> **17** ms <br>
+만큼의 개선 가능
+<br><br>
 
  ## 트러블 슈팅
   <details>
