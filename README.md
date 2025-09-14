@@ -32,9 +32,7 @@
 
 ## 최적화 시도
 **<문제 상황>** <br>
-적군이 많아지면 급격한 프레임 저하 및 스파이크 현상
-
-73 FPS(기본 상태) -> 39 FPS(적군 50명 스폰 상태)
+다수의 적이 스폰된 상황에서, 적이 **50마리만 스폰되어도 프레임이 73 FPS에서 39 FPS로 급락**하는 심각한 성능 저하가 발생
 
 <br>
 
@@ -75,7 +73,7 @@ Stat Game을 통한 프로파일링 <br>
 <br>
 
 5. 물리 충돌을 Ignore함에 따라 발생하는 AI 뭉침 현상을 완화하기 위해 각 AI에게 플레이어 주변의 랜덤 좌표를 할당하는 <br>
-   커스텀 BTTaskNode_MoveToLocationAndRepath 노드 사용
+   커스텀 **BTTaskNode_MoveToLocationAndRepath** 노드 사용
 
 <img width="1345" height="525" alt="Image" src="https://github.com/user-attachments/assets/b8aa0770-f962-42ab-b487-5206a74a4023" />
 
@@ -98,7 +96,7 @@ Stat Game을 통한 프로파일링 <br>
    <br>
    넉백 공격을 통해 Skeltal Mesh의 Physics를 활성화시키면 자연스러운 Ragdoll 모션 연출이 가능했지만,
    
-   Capsule Component는 해당 시점에 고정되어 어색한 타격 판정이 발생.
+   **Capsule Component는 해당 시점에 고정되어 어색한 타격 판정**이 발생.
    
    -> Unreal 구조상 Simulate Physics가 활성화되면 해당 **Mesh가 위치 제어의 주체**가 되며 **Capsule Component는 물리 연산에서 제외**되기 때문.
 
@@ -120,7 +118,7 @@ Stat Game을 통한 프로파일링 <br>
    <br>
    처음엔 아이템 구조체 안에 선언된 타입별 Gameplay Tag에 따라 장착/사용/기타 등으로 동작을 분기하여 처리했으나,
    
-   아이템 종류가 다양해지고 속성이 복잡해지면서 기존 방식에 구조적 한계가 발생.
+   아이템 **종류가 다양**해지고 **속성이 복잡**해지면서 기존 방식에 **구조적 한계**가 발생.
 
 
    **<기존 Item 구조체>**
