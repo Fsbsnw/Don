@@ -81,12 +81,57 @@ Stat Game을 통한 프로파일링 <br>
 
 <img width="722" height="398" alt="Image" src="https://github.com/user-attachments/assets/59248caa-4225-4829-bf49-e444c45d929f" /> <br><br>
 
-**<최종 결과>** <br>
+**<1차 최종 결과>** <br>
 프레임 드랍의 주요 원인 4가지의 비용을 현저히 저하시킴으로써 <br> 
 **39** FPS -> **60** FPS <br>
 **25** ms -> **17** ms <br>
 만큼의 개선 가능
 <br><br>
+
+**<추가 실험>**
+
+오브젝트를 **100개로** 늘렸을 때 **33 FPS** 기록, 렌더링 Lumen, 안티 앨리어싱 끄고 **46 FPS** <br>
+추가로 병목이 발생한 지점을 파악하기 위해 **stat unit**을 활용하여 프레임이 걸린 시간과 각 요소들을 파악
+
+<img width="141" height="166" alt="Image" src="https://github.com/user-attachments/assets/1ca24787-28d8-48ed-a8a1-eacd2b00b8cc" />
+
+1. Frame : 21.52ms
+2. Game : 13.66ms
+3. Draw : 7.01ms
+4. RHIT : 6.54ms
+5. **GPU Time : 21.11ms**
+
+* Game Thread -> Render Thread로 게임 로직 처리 데이터 전달
+* Render Thread -> Render Hardware Interface로 생성한 드로우 콜 전달
+* RHI Thread -> GPU가 이해하는 저수준 언어로 파싱 및 전달
+* **GPU : 드로우 콜 처리 => 이 부분에서 21.11ms가 발생** <br>
+
+기본적으로 Game Thread가 1프레임 정도는 앞서서 처리할 수 있지만 최종적으로 GPU에서 처리하는 시간이 1프레임(설정 값 기준)을 초과한 지연이 발생. <br>
+GPU를 제외한 세 개의 스레드에서 GPU 작업 완료 후에 처리될 동기화를 기다리기 때문에 프레임 드랍 초래. <br>
+이를 실제로 파악하기 위해 **Unreal Insights** 툴을 사용
+
+<img width="1463" height="558" alt="Image" src="https://github.com/user-attachments/assets/5943326b-5b6e-4dd6-9180-dc6f00c690b8" />
+
+* Game Thread -> GameThreadWaitForTask **8.7ms**
+* Render Thread -> WaitUntilTasksComplete **13.3ms**
+* RHI Thread -> WaitUntilTasksComplete **6.8ms**, WaitForTasks **7.2ms 이상**
+
+**<GPU 처리 - 언리얼 렌더링 패스>**
+* Prepass 2.2ms
+* Basepass 5.8ms
+* RenderAnisotropyPass 3ms
+* ShadowDepths 6.5ms
+
+=> Mesh의 **Triangles에** 비례하는 처리 비용들 <br>
+가벼운 스켈레탈 메시로 교체 후 LOD의 **Cull distance** 설정
+
+<img width="170" height="181" alt="Image" src="https://github.com/user-attachments/assets/0dbcae01-9375-4c25-b8c3-8349ee71df97" />
+
+
+**<최종 결과>**
+* 2배 가까이 줄어든 드로우 콜 및 Frame 소요 시간
+* 200개 가까이 소환해도 60 FPS 유지
+
 
  ## 트러블 슈팅
   <details>
