@@ -30,7 +30,7 @@
 
 ## 최적화 시도
 **<문제 상황>** <br>
-다수의 적이 스폰된 상황에서, 적이 **50마리만 스폰되어도 프레임이 73 FPS에서 39 FPS로 급락**하는 심각한 성능 저하가 발생
+적이 **50마리 정도가 스폰됐을 때, 프레임이 73 FPS에서 39 FPS로 급락**하는 심각한 성능 저하가 발생
 
 <br>
 
@@ -41,16 +41,15 @@ Stat Game을 통한 프로파일링 <br>
 <br>
 
 **<시도한 해결 방안>** <br>
-1. Enemy Object 전용 콜리전 사용 및 캡슐 컴포넌트의 물리 충돌 Ignore
-2. RVO 사용
+1. Enemy Object 전용 콜리전 사용 및 캡슐 컴포넌트의 물리 충돌 Ignore, RVO 사용
 
-<img width="1347" height="473" alt="Image" src="https://github.com/user-attachments/assets/16070b8e-bf9c-4a42-abbf-7563e54b9513" />
+<img width="862" height="154" alt="Image" src="https://github.com/user-attachments/assets/00817213-2060-46c8-a61f-33cd27aa7613" />
 
 ⇒ 여전히 **Char Movement Total**의 비용이 높음, 39 FPS 근처
 
 <br>
 
-3. Overlap 관련 비용 원인 탐색 → **Mesh overlap events**이 불필요하게 켜져 있었고, 이를 해제한 상태
+2. Overlap 관련 비용 원인 탐색 → **Mesh overlap events**이 불필요하게 켜져 있었고, 이를 해제한 상태
 
 <img width="1372" height="476" alt="Image" src="https://github.com/user-attachments/assets/3999fe3d-4720-46cd-994b-782f4043a17a" />
 
@@ -60,7 +59,7 @@ Stat Game을 통한 프로파일링 <br>
 
 <br>
 
-4. **Character Movement Component → Floating Pawn Movement**로 변경 <br>
+3. **Character Movement Component → Floating Pawn Movement**로 변경 <br>
    ⇒ 다수의 AI에게 불필요한 네트워크, 물리 상호작용 기능이 없는 경량 컴포넌트로 교체하여 이동 비용 절감
 
 <img width="1367" height="482" alt="Image" src="https://github.com/user-attachments/assets/7b0e8a22-4ac8-46c8-bc2b-ad754a601481" />
