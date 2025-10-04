@@ -36,43 +36,39 @@
 
 **<문제 원인 파악>** <br>
 Stat Game을 통한 프로파일링 <br>
-⇒ **Char Movement Total, EndScopedMovementUpdate Time, UpdateOverlaps Time, PerformOverlapQuery Time** 이 네 가지 항목에서 많은 비용이 발생
+
+<img width="845" height="145" alt="Image" src="https://github.com/user-attachments/assets/8668a706-bfd7-423a-bf53-d373e305186b" />
+
+⇒ **Char Movement Total, EndScopedMovementUpdate Time, UpdateOverlaps Time, PerformOverlapQuery Time** 항목에서 많은 비용이 발생
 
 <br>
 
 **<시도한 해결 방안>** <br>
 1. Enemy Object 전용 콜리전 사용 및 캡슐 컴포넌트의 물리 충돌 Ignore, RVO 사용
-
-<img width="862" height="154" alt="Image" src="https://github.com/user-attachments/assets/00817213-2060-46c8-a61f-33cd27aa7613" />
-
-⇒ 여전히 **Char Movement Total**의 비용이 높음, 39 FPS 근처
-
-<br>
-
 2. Overlap 관련 비용 원인 탐색 → **Mesh overlap events**이 불필요하게 켜져 있었고, 이를 해제한 상태
 
-<img width="1372" height="476" alt="Image" src="https://github.com/user-attachments/assets/3999fe3d-4720-46cd-994b-782f4043a17a" />
+<img width="843" height="217" alt="Image" src="https://github.com/user-attachments/assets/d1d87103-61c2-4c21-a6dc-55e6619420b1" />
 
 ⇒ **UpdateOverlaps Time, PerformOverlapQuery Time** 감소 <br>
 ⇒ 하지만 여전히 **Char Movement Total**의 비용이 높음, 유의미한 FPS 변화 없음 <br>
-⇒ **Character Movement Component** 자체를 사용하면 안 되는 상황
+⇒ **Character Movement Component** 자체를 사용하면 안 되는 상황 (네트워크 예측 및 지면 체크 등의 높은 비용)
 
 <br>
 
 3. **Character Movement Component → Floating Pawn Movement**로 변경 <br>
    ⇒ 다수의 AI에게 불필요한 네트워크, 물리 상호작용 기능이 없는 경량 컴포넌트로 교체하여 이동 비용 절감
 
-<img width="1367" height="482" alt="Image" src="https://github.com/user-attachments/assets/7b0e8a22-4ac8-46c8-bc2b-ad754a601481" />
+<img width="846" height="174" alt="Image" src="https://github.com/user-attachments/assets/2795be6c-ee1a-4c40-b7ba-398d54624030" />
 
 ⇒ 비용 자체가 확 줄었고, 60 FPS 근처 유지 가능 <br>
 ⇒ 하지만 캡슐 컴포넌트 콜리전의 Block 상태로 인해 물리 계산 비용이 좀 더 발생하는 듯.
 
 <br>
 
-5. 물리 충돌을 Ignore함에 따라 발생하는 **AI 뭉침 현상**을 완화하기 위해 각 AI에게 플레이어 주변의 랜덤 좌표를 할당하는 <br>
+5. 불필요한 물리 충돌 Ignore 설정 및 **AI 뭉침 현상**을 완화하기 위해 각 AI에게 플레이어 주변의 랜덤 좌표를 할당하는 <br>
    커스텀 **BTTaskNode_MoveToLocationAndRepath** 노드 사용
 
-<img width="1345" height="525" alt="Image" src="https://github.com/user-attachments/assets/b8aa0770-f962-42ab-b487-5206a74a4023" />
+<img width="848" height="203" alt="Image" src="https://github.com/user-attachments/assets/1d58f37b-d417-4c1d-86ab-da501f262399" />
 
 <br><br>
 
@@ -80,11 +76,11 @@ Stat Game을 통한 프로파일링 <br>
 
 <img width="722" height="398" alt="Image" src="https://github.com/user-attachments/assets/59248caa-4225-4829-bf49-e444c45d929f" /> <br><br>
 
-**<1차 최종 결과>** <br>
+**<1차 결과>** <br>
 프레임 드랍의 주요 원인 4가지의 비용을 현저히 저하시킴으로써 <br> 
 **39** FPS -> **60** FPS <br>
 **25** ms -> **17** ms <br>
-만큼의 개선 가능
+만큼의 개선 가능 (오브젝트 **50개** 기준)
 <br><br>
 
 **<추가 실험>**
@@ -111,18 +107,33 @@ GPU를 제외한 세 개의 스레드에서 GPU 작업 완료 후에 처리될 �
 
 <img width="1463" height="558" alt="Image" src="https://github.com/user-attachments/assets/5943326b-5b6e-4dd6-9180-dc6f00c690b8" />
 
+<img width="360" height="32" alt="Image" src="https://github.com/user-attachments/assets/19621ddf-6eff-40d1-88b5-579def6690cb" />
+
+<img width="360" height="32" alt="Image" src="https://github.com/user-attachments/assets/e47bc3cd-9c5f-4e4b-a6e8-f6959ef68e66" />
+
+<img width="360" height="32" alt="Image" src="https://github.com/user-attachments/assets/3f1ba601-4330-4e8b-a5b5-cdd792c8893b" />
+
+<img width="360" height="32" alt="Image" src="https://github.com/user-attachments/assets/18c5e5de-d14b-46ab-a0e6-08e667aff802" />
+
+
+
 * Game Thread -> GameThreadWaitForTask **8.7ms**
 * Render Thread -> WaitUntilTasksComplete **13.3ms**
 * RHI Thread -> WaitUntilTasksComplete **6.8ms**, WaitForTasks **7.2ms 이상**
 
-**<GPU 처리 - 언리얼 렌더링 패스>**
-* Prepass 2.2ms
-* Basepass 5.8ms
-* RenderAnisotropyPass 3ms
-* ShadowDepths 6.5ms
+<img width="718" height="16" alt="Image" src="https://github.com/user-attachments/assets/abbfa99a-0583-4c16-9c51-5452c2f1db05" />
 
-=> Mesh의 **Triangles에** 비례하는 처리 비용들 <br>
-가벼운 스켈레탈 메시로 교체 후 LOD의 **Cull distance** 설정
+**<GPU 처리 - 언리얼 렌더링 패스>**
+* Prepass **2.3ms**
+* Basepass **6.3ms**
+* RenderAnisotropyPass **3ms**
+* ShadowDepths **5.2ms**
+
+=> 주로 Mesh의 **Triangles 수에** 비례하는 처리 비용들 <br>
+* 가벼운 스켈레탈 메시로 교체 후 LOD의 **Cull distance** 설정
+* 애니메이션 적용시키고 멀리 있는 애니메이션 업데이트 주기 감소(**Enable Update Rate Optimizations**) 활성화
+  
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/0023eaaa-4803-4729-9b09-738c933cb750" />
 
 <img width="170" height="181" alt="Image" src="https://github.com/user-attachments/assets/0dbcae01-9375-4c25-b8c3-8349ee71df97" />
 
@@ -130,7 +141,6 @@ GPU를 제외한 세 개의 스레드에서 GPU 작업 완료 후에 처리될 �
 **<최종 결과>**
 * 2배 가까이 줄어든 드로우 콜 및 Frame 소요 시간
 * 200개 가까이 소환해도 60 FPS 유지
-
 
  ## 트러블 슈팅
   <details>
