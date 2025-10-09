@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/ItemAsset.h"
+#include "Data/ItemStructs.h"
 #include "UI/Widget/DonUserWidget.h"
 #include "DonInventorySlotWidget.generated.h"
 
@@ -20,21 +20,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 InventorySlotIndex = -1;
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
-	void UpdateSlotInfo(FItem ItemInfo);
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Inventory Slot")
+	
+	UFUNCTION()
+	void HandleInventoryUpdated(const TArray<FItem>& Inventory);
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory Slot")
 	void NotifyUpdateSlot(const FItem& Item);
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
-	void CachingDraggedSlotInfo(UDonInventorySlotWidget* InSlotWidget);
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
-	void SwapSlotInfo(UDonInventorySlotWidget* InSlotWidget);
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
-	void RemoveItem(FItem Item, int32 AmountToRemove = 1);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
 	bool UpgradeEquipment(int32 Points = 1);

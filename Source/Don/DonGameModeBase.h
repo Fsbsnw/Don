@@ -101,7 +101,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float BonusEnemySpawnChance = 0.05f;
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SpawnEnemy(float SpawnTime, TSubclassOf<ACharacter> Enemy, int32 Amount);
 	UFUNCTION()
 	void SpawnNPC(TSubclassOf<ACharacter> NPC);

@@ -110,8 +110,6 @@ void ADonCharacter::UpdateAttributesFromLevel(int32 NewLevel, bool bLevelUp)
 
 void ADonCharacter::UpdateAbilityTypeAndCollision(FGameplayTag AbilityTag, bool bEnableCollision)
 {
-	if (!AxeCollision) return;
-
 	if (bEnableCollision && AbilityTag.IsValid())
 	{
 		AxeCollision->SetGenerateOverlapEvents(true);

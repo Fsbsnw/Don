@@ -7,6 +7,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "KitchenOrderSubsystem.generated.h"
 
+class AInnSeat;
 class AInnCustomer;
 class AInnChef;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKitchenOrderChanged, FKitchenOrder, KitchenOrder);
@@ -24,6 +25,8 @@ protected:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	
 public:
+	// Kitchen Order
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnKitchenOrderChanged OnKitchenOrderAdded;
 
@@ -41,12 +44,31 @@ public:
 
 	FKitchenOrder EnqueueKitchenOrder(FKitchenOrder& Order);
 	FGuid FindNextQueuedOrderID() const;
+
+	
+	// Chef
+	
 	void RegisterChef(AInnChef* Chef) { if (!Chefs.Contains(Chef)) Chefs.Add(Chef); };
 	void UnregisterChef(AInnChef* Chef) { if (Chefs.Contains(Chef)) Chefs.Remove(Chef); };
 	AInnChef* FindIdleChef();
+
+	
+	// Seat
+
+	AInnSeat* FindEmptySeat(AInnCustomer* Customer);
+	void AssignSeatToCustomer(AInnCustomer* Customer);
+
+
+	// Test
+
+	UFUNCTION(BlueprintCallable)
+	void SpawnKitchenCustomer(TSubclassOf<AInnCustomer> CustomerClass, FVector SpawnLocation);
+	
 private:
 	TArray<FKitchenOrder> KitchenOrderQueue;
 	TArray<AInnChef*> Chefs;
+	TArray<AInnCustomer*> Customers;
+	TArray<AInnSeat*> Seats;
 
 	FTimerHandle OrderTimerHandle;
 	void UpdateKitchenOrders();

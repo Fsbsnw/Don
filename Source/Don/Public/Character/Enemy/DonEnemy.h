@@ -86,9 +86,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
 
-	UPROPERTY()
-	TObjectPtr<ADonAIController> DonAIController;
-
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UNiagaraSystem> DeathEffect;
 
