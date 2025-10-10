@@ -47,15 +47,14 @@ bool UInventoryComponent::HasEnoughItems(TArray<FItem> Items)
 	return true;
 }
 
-void UInventoryComponent::SwapInventoryItems(int32 IndexA, int32 IndexB)
+void UInventoryComponent::SwapInventoryItems(int32 FromIndex, int32 ToIndex)
 {
-	FItem CachedItem = Inventory[IndexA];
+	Inventory.Swap(FromIndex, ToIndex);
 
-	Inventory[IndexA] = Inventory[IndexB];
-	Inventory[IndexB] = CachedItem;
-
-	Inventory[IndexA].InventorySlotIndex = IndexA;
-	Inventory[IndexB].InventorySlotIndex = IndexB;
+	Inventory[FromIndex].InventorySlotIndex = FromIndex;
+	Inventory[ToIndex].InventorySlotIndex = ToIndex;
+	
+	OnInventoryChanged.Broadcast(Inventory);
 }
 
 void UInventoryComponent::InitAndLoadInventory()
@@ -71,7 +70,7 @@ void UInventoryComponent::InitAndLoadInventory()
 
 void UInventoryComponent::BroadcastInventory()
 {
-	OnInventorySlotChanged.Broadcast(Inventory);
+	OnInventoryChanged.Broadcast(Inventory);
 }
 
 void UInventoryComponent::AddItem(FItem Item, int32 Amount)
@@ -83,6 +82,7 @@ void UInventoryComponent::AddItem(FItem Item, int32 Amount)
 		Item.Amount = Amount;
 
 		FDonGameplayTags Tags = FDonGameplayTags::Get();
+		
 		// ItemType == EItemType::Equipable
 		if (Item.ItemTag.MatchesTag(Tags.Item_Equippable))
 		{
@@ -95,8 +95,6 @@ void UInventoryComponent::AddItem(FItem Item, int32 Amount)
 					Item.InventorySlotIndex = i;
 					Inventory[i] = Item;
 					Amount--;
-					OnInventoryItemAdded.Broadcast(Inventory[i]);
-					OnInventorySlotChanged.Broadcast(Inventory);
 				}
 			}
 			DonPlayerState->CheckAllQuestObjectives();
@@ -110,11 +108,10 @@ void UInventoryComponent::AddItem(FItem Item, int32 Amount)
 			if (Index != INDEX_NONE)
 			{
 				Inventory[Index].Amount += Amount;
-				OnInventoryItemAdded.Broadcast(Inventory[Index]);
-				OnInventorySlotChanged.Broadcast(Inventory);
+				
 				DonPlayerState->CheckAllQuestObjectives();
 			}
-			// Cannot Found Item
+			// Cannot Find Item
 			else
 			{
 				for (uint8 i = 0; i < MaxItemSlots; i++)
@@ -124,14 +121,14 @@ void UInventoryComponent::AddItem(FItem Item, int32 Amount)
 						Item.Amount = Amount;
 						Item.InventorySlotIndex = i;
 						Inventory[i] = Item;
-						OnInventoryItemAdded.Broadcast(Inventory[i]);
-						OnInventorySlotChanged.Broadcast(Inventory);
+						
 						DonPlayerState->CheckAllQuestObjectives();
-						return;
+						break;
 					}
 				}
 			}
 		}
+		OnInventoryChanged.Broadcast(Inventory);
 	}
 }
 
@@ -175,11 +172,10 @@ void UInventoryComponent::RemoveItem(int32 SlotIndex, int32 Amount)
 				DefaultItem.InventorySlotIndex = IndexToCheck;
 				Inventory[IndexToCheck] = DefaultItem;
 			}
-			OnInventoryItemRemoved.Broadcast(Inventory[IndexToCheck]);
-			OnInventorySlotChanged.Broadcast(Inventory);
 
 			IndexToCheck = FindItemInInventory(Item);
 		}
+		OnInventoryChanged.Broadcast(Inventory);
 	}
 }
 

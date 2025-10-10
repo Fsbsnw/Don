@@ -4,6 +4,7 @@
 #include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
 
 #include "Inn/Actor/InnChef.h"
+#include "Inn/Actor/InnSeat.h"
 #include "Inn/Character/InnCustomer.h"
 
 bool UKitchenOrderSubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -65,6 +66,36 @@ AInnChef* UKitchenOrderSubsystem::FindIdleChef()
 		if (!Chef->IsCooking()) return Chef;
 	}
 	return nullptr;
+}
+
+AInnSeat* UKitchenOrderSubsystem::FindEmptySeat(AInnCustomer* Customer)
+{
+	if (Customer == nullptr) return nullptr;
+	
+	for (AInnSeat* Seat : Seats)
+	{
+		if (!Seat->GetIsOccupied()) return Seat;
+	}
+	return nullptr;
+}
+
+void UKitchenOrderSubsystem::AssignSeatToCustomer(AInnCustomer* Customer)
+{
+	if (AInnSeat* Seat = FindEmptySeat(Customer))
+	{
+		Seat->SetIsOccupied(true);
+		Customer->Seat = Seat;
+		UE_LOG(LogTemp, Warning, TEXT("Assigned Seat Location : %s"), *Seat->GetActorLocation().ToString());
+	}
+}
+
+void UKitchenOrderSubsystem::SpawnKitchenCustomer(TSubclassOf<AInnCustomer> CustomerClass, FVector SpawnLocation)
+{
+	AInnCustomer* Customer = GetWorld()->SpawnActor<AInnCustomer>(CustomerClass, SpawnLocation, FRotator::ZeroRotator);
+	if (Customer)
+	{
+		AssignSeatToCustomer(Customer);
+	}	
 }
 
 void UKitchenOrderSubsystem::UpdateKitchenOrders()

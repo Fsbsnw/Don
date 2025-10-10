@@ -16,15 +16,20 @@ void UInventoryWidgetController::BindCallbacksToDependencies()
 	
 	DonPlayerState->OnMoneyChangedDelegate.AddUObject(this, &UInventoryWidgetController::OnMoneyAdded);
 	DonPlayerState->OnMemoryFragmentChangedDelegate.AddUObject(this, &UInventoryWidgetController::OnMemoryFragmentAdded);
+	DonPlayerState->GetInventoryComponent()->OnInventoryChanged.AddDynamic(this, &UInventoryWidgetController::HandleInventoryUpdated);
 }
 
 void UInventoryWidgetController::BroadcastInitialValues()
 {
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
-	{
-		OnMoneyChanged.Broadcast(DonPlayerState->GetMoney());
-		OnMemoryFragmentChanged.Broadcast(DonPlayerState->GetMemoryFragment());
-	}
+	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
+	
+	OnMoneyChanged.Broadcast(DonPlayerState->GetMoney());
+	OnMemoryFragmentChanged.Broadcast(DonPlayerState->GetMemoryFragment());
+}
+
+void UInventoryWidgetController::HandleInventoryUpdated(const TArray<FItem>& Inventory)
+{
+	OnInventoryChanged.Broadcast(Inventory);
 }
 
 void UInventoryWidgetController::HandleSlotSellEvent(int32 SlotIndex)
@@ -34,66 +39,30 @@ void UInventoryWidgetController::HandleSlotSellEvent(int32 SlotIndex)
 
 UInventoryComponent* UInventoryWidgetController::GetInventoryComponent()
 {
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
-	{
-		return DonPlayerState->GetInventoryComponent();
-	}
-	return nullptr;
-}
-
-void UInventoryWidgetController::OnItemAdded(FItem Item)
-{
-	OnInventoryItemAdded.Broadcast(Item);
-}
-
-void UInventoryWidgetController::OnItemRemoved(FItem Item)
-{
-	OnInventoryItemRemoved.Broadcast(Item);
+	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
+	
+	return DonPlayerState->GetInventoryComponent();
 }
 
 FItem UInventoryWidgetController::GetItemInfo(int32 SlotIndex)
 {
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
-	{
-		if (SlotIndex != -1) return DonPlayerState->GetInventoryComponent()->GetInventory()[SlotIndex]; 
-	}
-	return FItem();
+	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
+
+	return DonPlayerState->GetInventoryComponent()->GetInventory()[SlotIndex];
 }
 
-void UInventoryWidgetController::SwapSlotInfo(UDonInventorySlotWidget* DesiredSlot)
+void UInventoryWidgetController::SwapSlotInfo(int32 FromIndex, int32 ToIndex)
 {
-	if (DraggedSlot->InventorySlotIndex == -1 || DesiredSlot->InventorySlotIndex == -1) return;
+	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
 	
-	if (ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState))
-	{
-		int32 DraggedIndex = DraggedSlot->InventorySlotIndex;
-		int32 DesiredIndex = DesiredSlot->InventorySlotIndex;
-
-		DonPlayerState->GetInventoryComponent()->SwapInventoryItems(DraggedIndex, DesiredIndex);
-		
-		TArray<FItem>& Inventory = DonPlayerState->GetInventoryComponent()->GetInventory();
-		
-		DraggedSlot->UpdateSlotInfo(Inventory[DraggedIndex]);
-		DesiredSlot->UpdateSlotInfo(Inventory[DesiredIndex]);
-	}
-
-	DraggedSlot = nullptr;
+	DonPlayerState->GetInventoryComponent()->SwapInventoryItems(FromIndex, ToIndex);
 }
 
 void UInventoryWidgetController::AddItemToPlayer(FItem Item, int32 Amount)
 {
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
-	{
-		DonPlayerState->GetInventoryComponent()->AddItem(Item, Amount);
-	}
-}
-
-void UInventoryWidgetController::RemoveItemFromPlayer(FItem Item, int32 Amount)
-{
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
-	{
-		DonPlayerState->GetInventoryComponent()->RemoveItem(Item.InventorySlotIndex, Amount);
-	}
+	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
+	
+	DonPlayerState->GetInventoryComponent()->AddItem(Item, Amount);
 }
 
 void UInventoryWidgetController::UnequipAllItems()
@@ -109,10 +78,9 @@ void UInventoryWidgetController::UnequipAllItems()
 
 void UInventoryWidgetController::UseItem(int32 SlotIndex)
 {
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
-	{
-		DonPlayerState->GetInventoryComponent()->UseItem(SlotIndex);
-	}
+	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
+	
+	DonPlayerState->GetInventoryComponent()->UseItem(SlotIndex);
 }
 
 bool UInventoryWidgetController::UpgradeArmorItem(int32 SlotIndex, int32 Points)
@@ -147,9 +115,7 @@ void UInventoryWidgetController::OnMemoryFragmentAdded(int32 MemoryFragment)
 
 void UInventoryWidgetController::AddMemoryFragment(int32 InMemoryFragment)
 {
-	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
-	if (DonPlayerState)
-	{
-		DonPlayerState->AddToMemoryFragment(InMemoryFragment);
-	}
+	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
+	
+	DonPlayerState->AddToMemoryFragment(InMemoryFragment);
 }

@@ -17,6 +17,7 @@ class DON_API UDonInnLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 public:
 	// Kitchen
+	
 	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | Kitchen")
 	static FKitchenOrder FindCuisineByName(const UObject* WorldContextObject, FName CuisineName);
 
@@ -28,6 +29,7 @@ public:
 
 
 	// RoomService
+	
 	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | RoomService")
 	static FRoomServiceOrder FindRoomServiceByName(const UObject* WorldContextObject, FName RoomServiceName);
 

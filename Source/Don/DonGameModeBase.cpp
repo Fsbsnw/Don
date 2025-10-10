@@ -121,7 +121,8 @@ void ADonGameModeBase::SpawnEnemy(float SpawnTime, TSubclassOf<ACharacter> Enemy
 			}
 		}
 	}
-	
+
+	// 게임 진행중이면 적 스폰 진행
 	if (GetWorld()->GetTimeSeconds() < SpawnEndTime && SpawnTime > 0.f)
 	{
 		FTimerDelegate EnemyTimerDelegate;

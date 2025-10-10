@@ -4,10 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Data/ItemStructs.h"
 #include "ItemAsset.generated.h"
 
-
-struct FItem;
 
 /**
  * 

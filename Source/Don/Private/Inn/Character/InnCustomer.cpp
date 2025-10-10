@@ -3,8 +3,10 @@
 
 #include "Inn/Character/InnCustomer.h"
 
+#include "AI/DonAIController.h"
 #include "Data/CuisineAsset.h"
 #include "Inn/DonInnLibrary.h"
+#include "Inn/Actor/InnSeat.h"
 
 AInnCustomer::AInnCustomer()
 {
@@ -15,6 +17,7 @@ AInnCustomer::AInnCustomer()
 void AInnCustomer::BeginPlay()
 {
 	Super::BeginPlay();
+	
 }
 
 void AInnCustomer::OrderFood()
@@ -46,6 +49,25 @@ void AInnCustomer::ReceivedFood()
 void AInnCustomer::OnMealFinished()
 {
 	MealState = ECustomerMealState::FinishedEating;
+
+	ADonAIController* DonAIController = Cast<ADonAIController>(GetController());
+	if (DonAIController == nullptr) return;
+		
+	// 여관방 빈 자리 있는 경우
+	if (true)
+	{
+		InnState = ECustomerInnState::Room;
+
+		DonAIController->MoveToLocation(RoomEntrance->GetActorLocation());
+	}
+	else
+	{
+		InnState = ECustomerInnState::Exit;
+		
+		DonAIController->MoveToLocation(Exit->GetActorLocation());
+	}
+
+	Seat = nullptr;
 	
 	UE_LOG(LogTemp, Log, TEXT("%s has finished the meal."), *GetName());
 }

@@ -31,7 +31,7 @@ EBTNodeResult::Type UBTTask_Rampage_UseAbility::ExecuteTask(UBehaviorTreeCompone
 	if (ASC)
 	{
 		UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-		AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(TEXT("TargetEnemy")));
+		AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(TEXT("TargetPlayer")));
 		if (!TargetActor) return EBTNodeResult::Failed;
 
 		if (bRotateToTarget) RotateToTarget(OwnerComp, TargetActor);

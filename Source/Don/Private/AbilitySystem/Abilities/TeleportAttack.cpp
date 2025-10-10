@@ -16,7 +16,7 @@ bool UTeleportAttack::FindCombatTarget()
 	
 	AActor* Avatar = GetAvatarActorFromActorInfo();
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel2));
 	
 	ActorsToIgnore.Add(Avatar);
 

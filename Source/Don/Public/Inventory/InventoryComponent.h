@@ -9,6 +9,7 @@
 #include "InventoryComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryChanged, FItem, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryChangedSignature, const TArray<FItem>&, Inventory);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemSold, int32, SlotIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventorySlotChanged, const TArray<FItem>&, Inventory);
 
@@ -34,9 +35,9 @@ public:
 
 	int32 FindItemInInventory(const FItem& Item) const;
 	bool HasEnoughItems(TArray<FItem> Items);
-	void SwapInventoryItems(int32 IndexA, int32 IndexB);
+	void SwapInventoryItems(int32 FromIndex, int32 ToIndex);
 
-	const int32 MaxItemSlots = 400;
+	const int32 MaxItemSlots = 20;
 
 	void InitAndLoadInventory();
 
@@ -50,6 +51,7 @@ public:
 	UFUNCTION()
 	void OnRequestSellItem(int32 SlotIndex);
 
+	FOnInventoryChangedSignature OnInventoryChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryChanged OnInventoryItemAdded;
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
@@ -76,5 +78,5 @@ private:
 	TMap<FGameplayTag, int32> AssignedQuickSlots;
 
 	UPROPERTY(EditDefaultsOnly)
-	USoundBase* DrinkPotion;
+	USoundBase* DrinkPotion = nullptr;
 };

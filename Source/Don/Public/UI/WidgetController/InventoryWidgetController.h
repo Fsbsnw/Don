@@ -13,6 +13,8 @@ class UInventoryComponent;
 class UDonInventorySlotWidget;
 class UDragDropOperation;
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryWidgetChanged, const TArray<FItem>&, Inventory);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdate, FItem, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceChanged, int32, Money);
 
@@ -28,6 +30,8 @@ public:
 	virtual void BindCallbacksToDependencies() override;
 	virtual void BroadcastInitialValues() override;
 
+	
+
 	UInventoryComponent* GetInventoryComponent();
 
 	UPROPERTY(EditDefaultsOnly)
@@ -39,12 +43,6 @@ public:
 	/*
 	 * Delegates
 	 */
-	
-	UPROPERTY(BlueprintAssignable, Category = "Inventory")
-	FOnInventoryUpdate OnInventoryItemAdded;
-
-	UPROPERTY(BlueprintAssignable, Category = "Inventory")
-	FOnInventoryUpdate OnInventoryItemRemoved;
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnResourceChanged OnMoneyChanged;
@@ -58,27 +56,15 @@ public:
 
 	
 	// Item functions
-	
-	UFUNCTION()
-	void OnItemAdded(FItem Item);
-
-	UFUNCTION()
-	void OnItemRemoved(FItem Item);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FItem GetItemInfo(int32 SlotIndex);
 
 	UFUNCTION(BlueprintCallable)
-	void CachingDraggedSlot(UDonInventorySlotWidget* DraggedSlotInfo) { DraggedSlot = DraggedSlotInfo; }
-
-	UFUNCTION(BlueprintCallable)
-	void SwapSlotInfo(UDonInventorySlotWidget* DesiredSlot);
+	void SwapSlotInfo(int32 FromIndex, int32 ToIndex);
 
 	UFUNCTION(BlueprintCallable)
 	void AddItemToPlayer(FItem Item, int32 Amount = 1);
-	
-	UFUNCTION(BlueprintCallable)
-	void RemoveItemFromPlayer(FItem Item, int32 Amount = 1);
 
 	UFUNCTION(BlueprintCallable)
 	void UnequipAllItems();
@@ -90,6 +76,12 @@ public:
 	bool UpgradeArmorItem(int32 SlotIndex, int32 Points = 1);
 	
 	// Resource functions
+
+	UPROPERTY(BlueprintAssignable)
+	FOnInventoryWidgetChanged OnInventoryChanged;
+	
+	UFUNCTION(BlueprintCallable)
+	void HandleInventoryUpdated(const TArray<FItem>& Inventory);
 	
 	UFUNCTION()
 	void OnMoneyAdded(int32 Money);

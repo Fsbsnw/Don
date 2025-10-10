@@ -22,6 +22,8 @@ ADonEnemy::ADonEnemy()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel2);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Ignore);
 
 	AbilitySystemComponent = CreateDefaultSubobject<UDonAbilitySystemComponent>("AbilitySystemComponent");
 	AbilitySystemComponent->SetIsReplicated(true);
@@ -134,10 +136,13 @@ void ADonEnemy::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	AddCharacterAbilities();
-	DonAIController = Cast<ADonAIController>(NewController);
-
-	DonAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
-	DonAIController->RunBehaviorTree(BehaviorTree);
+	
+	
+	if (ADonAIController* DonAIController = Cast<ADonAIController>(NewController))
+	{
+		DonAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+		DonAIController->RunBehaviorTree(BehaviorTree);
+	}
 }
 
 void ADonEnemy::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
