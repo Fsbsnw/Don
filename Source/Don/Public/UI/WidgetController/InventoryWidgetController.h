@@ -65,9 +65,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AddItemToPlayer(FItem Item, int32 Amount = 1);
-
-	UFUNCTION(BlueprintCallable)
-	void UnequipAllItems();
 	
 	UFUNCTION(BlueprintCallable)
 	void UseItem(int32 SlotIndex);

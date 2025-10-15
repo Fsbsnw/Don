@@ -65,17 +65,6 @@ void UInventoryWidgetController::AddItemToPlayer(FItem Item, int32 Amount)
 	DonPlayerState->GetInventoryComponent()->AddItem(Item, Amount);
 }
 
-void UInventoryWidgetController::UnequipAllItems()
-{
-	if (APawn* ControlledPawn = Cast<APawn>(PlayerController->GetPawn()))
-	{
-		if (ControlledPawn && ControlledPawn->Implements<UCombatInterface>())
-		{
-			ICombatInterface::Execute_UnequipAllItems(ControlledPawn);
-		}
-	}
-}
-
 void UInventoryWidgetController::UseItem(int32 SlotIndex)
 {
 	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);

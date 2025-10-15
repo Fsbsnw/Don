@@ -51,354 +51,124 @@ void ADonCharacterBase::SetKnockbackState_Implementation(bool NewState, const FV
 
 bool ADonCharacterBase::IsItemEquipped_Implementation(FItem& Item)
 {
-	if (ArmorHelmet && Item.ItemName == ArmorHelmet->EquipmentName)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item '%s' matches ArmorHelmet: '%s'"), *Item.ItemName.ToString(), *ArmorHelmet->EquipmentName.ToString());
-		return true;
-	}
-	if (ArmorChest && Item.ItemName == ArmorChest->EquipmentName)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item '%s' matches ArmorChest: '%s'"), *Item.ItemName.ToString(), *ArmorChest->EquipmentName.ToString());
-		return true;
-	}
-	if (ArmorRightHand && Item.ItemName == ArmorRightHand->EquipmentName)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item '%s' matches ArmorRightHand: '%s'"), *Item.ItemName.ToString(), *ArmorRightHand->EquipmentName.ToString());
-		return true;
-	}
-	if (ArmorLegs && Item.ItemName == ArmorLegs->EquipmentName)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item '%s' matches ArmorLegs: '%s'"), *Item.ItemName.ToString(), *ArmorLegs->EquipmentName.ToString());
-		return true;
-	}
-	if (ArmorRightBoot && Item.ItemName == ArmorRightBoot->EquipmentName)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item '%s' matches ArmorRightBoot: '%s'"), *Item.ItemName.ToString(), *ArmorRightBoot->EquipmentName.ToString());
-		return true;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Item '%s' is NOT equipped."), *Item.ItemName.ToString());
-	return false;
-}
-
-void ADonCharacterBase::UnequipAllItems_Implementation()
-{
-	ICombatInterface::Execute_UnequipWeapon(this);
-	ICombatInterface::Execute_UnequipArmorHelmet(this);
-	ICombatInterface::Execute_UnequipArmorChest(this);
-	ICombatInterface::Execute_UnequipArmorHands(this);
-	ICombatInterface::Execute_UnequipArmorLegs(this);
-	ICombatInterface::Execute_UnequipArmorBoots(this);
-}
-
-void ADonCharacterBase::UnequipItem_Implementation(FItem& Item)
-{
-	const FDonGameplayTags& Tag = FDonGameplayTags::Get();
-	if (Item.ItemTag.MatchesTagExact(Tag.Item_Equippable_Weapon))
-	{
-		UnequipWeapon_Implementation();
-	}
-	else if (Item.ItemTag.MatchesTagExact(Tag.Item_Equippable_Armor_Helmet))
-	{
-		UnequipArmorHelmet_Implementation();
-	}
-	else if (Item.ItemTag.MatchesTagExact(Tag.Item_Equippable_Armor_Chest))
-	{
-		UnequipArmorChest_Implementation();
-	}
-	else if (Item.ItemTag.MatchesTagExact(Tag.Item_Equippable_Armor_Hands))
-	{
-		UnequipArmorHands_Implementation();
-	}
-	else if (Item.ItemTag.MatchesTagExact(Tag.Item_Equippable_Armor_Legs))
-	{
-		UnequipArmorLegs_Implementation();
-	}
-	else if (Item.ItemTag.MatchesTagExact(Tag.Item_Equippable_Armor_Boots))
-	{
-		UnequipArmorBoots_Implementation();
-	}
-}
-
-
-void ADonCharacterBase::UnequipWeapon_Implementation()
-{
-	if (Weapon)
-	{
-		const float AttackPower = Weapon->GetFinalAttribute();
-		Weapon->RequestDestroy();
-		Weapon = nullptr;
-		AddBonusAttackPower(-AttackPower);
-	}
-}
-
-void ADonCharacterBase::UnequipArmorHelmet_Implementation()
-{
-	if (ArmorHelmet)
-	{
-		const float Defense = ArmorHelmet->GetFinalAttribute();
-		ArmorHelmet->Destroy();
-		ArmorHelmet = nullptr;
-		AddBonusDefense(-Defense);
-	}
-}
-
-void ADonCharacterBase::UnequipArmorChest_Implementation()
-{
-	if (ArmorChest)
-	{
-		const float Defense = ArmorChest->GetFinalAttribute();
-		ArmorChest->Destroy();
-		ArmorChest = nullptr;
-		AddBonusDefense(-Defense);
-	}
-}
-
-void ADonCharacterBase::UnequipArmorHands_Implementation()
-{
-	float Defense = 0.f;
-	if (ArmorLeftHand)
-	{
-		Defense = ArmorLeftHand->GetFinalAttribute() * 2;
-		ArmorLeftHand->Destroy();
-	}
-	ArmorLeftHand = nullptr;
-
-	if (ArmorRightHand)
-	{
-		ArmorRightHand->Destroy();
-	}
-	ArmorRightHand = nullptr;
-	AddBonusDefense(-Defense);
-}
-
-void ADonCharacterBase::UnequipArmorLegs_Implementation()
-{
-	if (ArmorLegs) 
-	{
-		const float Defense = ArmorLegs->GetFinalAttribute();
-		ArmorLegs->Destroy();
-		ArmorLegs = nullptr;
-		AddBonusDefense(-Defense);
-	}
-}
-
-void ADonCharacterBase::UnequipArmorBoots_Implementation()
-{
-	float Defense = 0.f;
-	if (ArmorLeftBoot) 
-	{
-		Defense = ArmorLeftBoot->GetFinalAttribute() * 2;
-		ArmorLeftBoot->Destroy();
-	}
-	ArmorLeftBoot = nullptr;
-
-	if (ArmorRightBoot)
-	{
-		ArmorRightBoot->Destroy();
-	}
-	ArmorRightBoot = nullptr;
-	AddBonusDefense(-Defense);
+	return EquipmentParts.Contains(Item.ItemTag);
 }
 
 void ADonCharacterBase::EquipItem_Implementation(FItem& Item)
 {
-	FDonGameplayTags GameplayTags = FDonGameplayTags::Get();
-	if (Item.ItemTag.MatchesTagExact(GameplayTags.Item_Equippable_Armor_Helmet))
-	{
-		EquipArmorHelmet_Implementation(Item);
-	}
-	else if (Item.ItemTag == GameplayTags.Item_Equippable_Armor_Chest)
-	{
-		EquipArmorChest_Implementation(Item);
-	}
-	else if (Item.ItemTag == GameplayTags.Item_Equippable_Armor_Hands)
-	{
-		EquipArmorHands_Implementation(Item);
-	}
-	else if (Item.ItemTag == GameplayTags.Item_Equippable_Armor_Legs)
-	{
-		EquipArmorLegs_Implementation(Item);
-	}
-	else if (Item.ItemTag == GameplayTags.Item_Equippable_Armor_Boots)
-	{
-		EquipArmorBoots_Implementation(Item);
-	}
-}
-
-void ADonCharacterBase::EquipArmorHelmet_Implementation(FItem& Item)
-{
-	if (ArmorHelmet && Item.IsSameInstance(ArmorHelmet->GetEquipmentInfo()))
-	{
-		UnequipArmorHelmet_Implementation();
-		return;
-	}
-	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
-	if (EquipmentInfo.ItemActorClass == nullptr) return;
-
-	if (UClass* LoadedClass = EquipmentInfo.ItemActorClass.LoadSynchronous())
-	{
-		if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(LoadedClass))
-		{
-			Equipment->InitEquipmentAttributes();
-			Equipment->SetEquipmentInfo(Item);
-			ArmorHelmet = Equipment;
-			Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorHelmetSocket);
-
-			const float Defense = ArmorHelmet->GetFinalAttribute();
-			AddBonusDefense(Defense);
-		}
-	}
-}
-
-void ADonCharacterBase::EquipArmorChest_Implementation(FItem& Item)
-{
-	if (ArmorChest && Item.IsSameInstance(ArmorChest->GetEquipmentInfo()))
-	{
-		UnequipArmorChest_Implementation();
-		return;
-	}
-	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
-	if (EquipmentInfo.ItemActorClass == nullptr) return;
+	const  FDonGameplayTags& DonTags = FDonGameplayTags::Get();
 	
+	if (Item.ItemTag.MatchesTagExact(DonTags.Item_Equippable_Armor_Hands))
+	{
+		SpawnAndAttachEquipment(DonTags.Item_Equippable_Armor_Hands_Left, Item);
+		SpawnAndAttachEquipment(DonTags.Item_Equippable_Armor_Hands_Right, Item);
+	}
+	else if (Item.ItemTag.MatchesTagExact(DonTags.Item_Equippable_Armor_Boots))
+	{
+		SpawnAndAttachEquipment(DonTags.Item_Equippable_Armor_Boots_Left, Item);
+		SpawnAndAttachEquipment(DonTags.Item_Equippable_Armor_Boots_Right, Item);
+	}
+	else
+	{
+		SpawnAndAttachEquipment(Item.ItemTag, Item);
+	}
+}
+
+void ADonCharacterBase::UnequipItem_Implementation(FItem& Item)
+{
+	const FDonGameplayTags& DonTags = FDonGameplayTags::Get();
+
+	if (Item.ItemTag.MatchesTagExact(DonTags.Item_Equippable_Armor_Hands))
+	{
+		DetachAndDestroyEquipment(DonTags.Item_Equippable_Armor_Hands_Left);
+		DetachAndDestroyEquipment(DonTags.Item_Equippable_Armor_Hands_Right);
+	}
+	else if (Item.ItemTag.MatchesTagExact(DonTags.Item_Equippable_Armor_Boots))
+	{
+		DetachAndDestroyEquipment(DonTags.Item_Equippable_Armor_Boots_Left);
+		DetachAndDestroyEquipment(DonTags.Item_Equippable_Armor_Boots_Right);
+	}
+	else
+	{
+		DetachAndDestroyEquipment(Item.ItemTag);
+	}
+}
+
+void ADonCharacterBase::SpawnAndAttachEquipment(const FGameplayTag& SlotTag, const FItem& Item)
+{
+	// 기존 장비 제거
+	if (EquipmentParts.Contains(SlotTag))
+	{
+		ADonEquipmentActor* Existing = EquipmentParts[SlotTag];
+		if (Existing)
+		{
+			if (Item.IsSameInstance(Existing->GetEquipmentInfo()))
+			{
+				DetachAndDestroyEquipment(SlotTag);
+				return;
+			}
+			DetachAndDestroyEquipment(SlotTag);
+		}
+	}
+	
+	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
 	if (UClass* LoadedClass = EquipmentInfo.ItemActorClass.LoadSynchronous())
 	{
 		if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(LoadedClass))
 		{
 			Equipment->InitEquipmentAttributes();
 			Equipment->SetEquipmentInfo(Item);
-			ArmorChest = Equipment;
-			Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorChestSocket);
 
-			const float Defense = ArmorChest->GetFinalAttribute();
-			AddBonusDefense(Defense);
+			EquipmentParts.Add(SlotTag, Equipment);
+
+			// 장비 속성 추가
+			
+			Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, EquipmentSockets[SlotTag]);
+
+			OnEquipmentChanged.Broadcast();
 		}
 	}
 }
 
-void ADonCharacterBase::EquipArmorHands_Implementation(FItem& Item)
+void ADonCharacterBase::DetachAndDestroyEquipment(const FGameplayTag& SlotTag)
 {
-	if (ArmorLeftHand || ArmorRightHand && Item.IsSameInstance(ArmorLeftHand->GetEquipmentInfo()))
+	if (EquipmentParts.Contains(SlotTag))
 	{
-		UnequipArmorHands_Implementation();
-		return;
-	}
-	float Defense = 0.f;
-	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
-	if (EquipmentInfo.ItemActorClass == nullptr) return;
-	
-	if (UClass* LoadedClass = EquipmentInfo.ItemActorClass.LoadSynchronous())
-	{
-		if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(LoadedClass))
+		ADonEquipmentActor* Existing = EquipmentParts[SlotTag];
+		if (Existing)
 		{
-			Equipment->InitEquipmentAttributes();
-			Equipment->SetEquipmentInfo(Item);
-			ArmorLeftHand = Equipment;
-			Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorLeftHandSocket);
-
-			Defense = ArmorLeftHand->GetFinalAttribute() * 2;
+			Existing->Destroy();
+			EquipmentParts.Remove(SlotTag);
+			OnEquipmentChanged.Broadcast();
 		}
 	}
-	if (UClass* LoadedClass = EquipmentInfo.ItemActorClass.LoadSynchronous())
-	{
-		if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(LoadedClass))
-		{
-			Equipment->InitEquipmentAttributes();
-			Equipment->SetEquipmentInfo(Item);
-			ArmorRightHand = Equipment;
-			Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorRightHandSocket);
-		}
-	}
-	AddBonusDefense(Defense);
-}
-
-void ADonCharacterBase::EquipArmorLegs_Implementation(FItem& Item)
-{
-	if (ArmorLegs && Item.IsSameInstance(ArmorLegs->GetEquipmentInfo()))
-	{
-		UnequipArmorLegs_Implementation();
-		return;
-	}
-	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
-	if (EquipmentInfo.ItemActorClass == nullptr) return;
-	
-	if (UClass* LoadedClass = EquipmentInfo.ItemActorClass.LoadSynchronous())
-	{
-		if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(LoadedClass))
-		{
-			Equipment->InitEquipmentAttributes();
-			Equipment->SetEquipmentInfo(Item);
-			ArmorLegs = Equipment;
-			Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorLegsSocket);
-
-			const float Defense = ArmorLegs->GetFinalAttribute();
-			AddBonusDefense(Defense);
-		}
-	}
-}
-
-void ADonCharacterBase::EquipArmorBoots_Implementation(FItem& Item)
-{
-	if (ArmorLeftBoot || ArmorRightBoot && Item.IsSameInstance(ArmorLeftBoot->GetEquipmentInfo()))
-	{
-		UnequipArmorBoots_Implementation();
-		return;
-	}
-	float Defense = 0.f;
-	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
-	if (EquipmentInfo.ItemActorClass == nullptr) return;
-	
-	if (UClass* LoadedClass = EquipmentInfo.ItemActorClass.LoadSynchronous())
-	{
-		if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(LoadedClass))
-		{
-			Equipment->InitEquipmentAttributes();
-			Equipment->SetEquipmentInfo(Item);
-			ArmorLeftBoot = Equipment;
-			Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorLeftBootSocket);
-
-			Defense = ArmorLeftBoot->GetFinalAttribute();
-		}
-	}
-	if (UClass* LoadedClass = EquipmentInfo.ItemActorClass.LoadSynchronous())
-	{
-		if (ADonEquipmentActor* Equipment = GetWorld()->SpawnActor<ADonEquipmentActor>(LoadedClass))
-		{
-			Equipment->InitEquipmentAttributes();
-			Equipment->SetEquipmentInfo(Item);
-			ArmorRightBoot = Equipment;
-			Equipment->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, ArmorRightBootSocket);
-		}
-	}
-	AddBonusDefense(Defense * 2);
 }
 
 void ADonCharacterBase::UpdateUpgradedItemInfo_Implementation(const FItem& Item)
 {
-	if (ArmorHelmet && Item.IsSameInstance(ArmorHelmet->GetEquipmentInfo()))
-	{
-		UpdateUpgradedArmorPoint(ArmorHelmet, Item.EquipmentAttribute.Upgrade);
-	}
-	else if (ArmorChest && Item.IsSameInstance(ArmorChest->GetEquipmentInfo()))
-	{
-		UpdateUpgradedArmorPoint(ArmorChest, Item.EquipmentAttribute.Upgrade);
-	}
-	else if (ArmorLegs && Item.IsSameInstance(ArmorLegs->GetEquipmentInfo()))
-	{
-		UpdateUpgradedArmorPoint(ArmorLegs, Item.EquipmentAttribute.Upgrade);
-	}
-	else if (ArmorLeftBoot && Item.IsSameInstance(ArmorLeftBoot->GetEquipmentInfo()))
-	{
-		UpdateUpgradedArmorPoint(ArmorLeftBoot, Item.EquipmentAttribute.Upgrade);
-		UpdateUpgradedArmorPoint(ArmorRightBoot, Item.EquipmentAttribute.Upgrade);
-	}
-	else if (ArmorLeftHand && Item.IsSameInstance(ArmorLeftHand->GetEquipmentInfo()))
-	{
-		UpdateUpgradedArmorPoint(ArmorLeftHand, Item.EquipmentAttribute.Upgrade);
-		UpdateUpgradedArmorPoint(ArmorRightHand, Item.EquipmentAttribute.Upgrade);
-	}
+	// if (ArmorHelmet && Item.IsSameInstance(ArmorHelmet->GetEquipmentInfo()))
+	// {
+	// 	UpdateUpgradedArmorPoint(ArmorHelmet, Item.EquipmentAttribute.Upgrade);
+	// }
+	// else if (ArmorChest && Item.IsSameInstance(ArmorChest->GetEquipmentInfo()))
+	// {
+	// 	UpdateUpgradedArmorPoint(ArmorChest, Item.EquipmentAttribute.Upgrade);
+	// }
+	// else if (ArmorLegs && Item.IsSameInstance(ArmorLegs->GetEquipmentInfo()))
+	// {
+	// 	UpdateUpgradedArmorPoint(ArmorLegs, Item.EquipmentAttribute.Upgrade);
+	// }
+	// else if (ArmorLeftBoot && Item.IsSameInstance(ArmorLeftBoot->GetEquipmentInfo()))
+	// {
+	// 	UpdateUpgradedArmorPoint(ArmorLeftBoot, Item.EquipmentAttribute.Upgrade);
+	// 	UpdateUpgradedArmorPoint(ArmorRightBoot, Item.EquipmentAttribute.Upgrade);
+	// }
+	// else if (ArmorLeftHand && Item.IsSameInstance(ArmorLeftHand->GetEquipmentInfo()))
+	// {
+	// 	UpdateUpgradedArmorPoint(ArmorLeftHand, Item.EquipmentAttribute.Upgrade);
+	// 	UpdateUpgradedArmorPoint(ArmorRightHand, Item.EquipmentAttribute.Upgrade);
+	// }
 }
-
 
 float ADonCharacterBase::GetWeaponDamage_Implementation()
 {
@@ -409,26 +179,15 @@ float ADonCharacterBase::GetWeaponDamage_Implementation()
 	return 0.f;
 }
 
-float ADonCharacterBase::GetArmorDefense_Implementation()
-{
-	float FinalDefense = 0.f;
-	if (ArmorHelmet) FinalDefense += ArmorHelmet->GetFinalAttribute();
-	if (ArmorChest) FinalDefense += ArmorChest->GetFinalAttribute();
-	if (ArmorLegs) FinalDefense += ArmorLegs->GetFinalAttribute();
-	if (ArmorLeftHand) FinalDefense += ArmorLeftHand->GetFinalAttribute() * 2.f;
-	if (ArmorLeftBoot) FinalDefense += ArmorLeftBoot->GetFinalAttribute() * 2.f;
-
-	return FinalDefense;
-}
-
 int32 ADonCharacterBase::GetEquippedArmorCount_Implementation()
 {
 	int32 Count = 0;
-	if (ArmorHelmet) Count++;
-	if (ArmorChest) Count++;
-	if (ArmorLegs) Count++;
-	if (ArmorLeftHand) Count++;
-	if (ArmorLeftBoot) Count++;
+	const FDonGameplayTags& DonTags = FDonGameplayTags::Get();
+	if (EquipmentParts.Contains(DonTags.Item_Equippable_Armor_Helmet)) Count++;
+	if (EquipmentParts.Contains(DonTags.Item_Equippable_Armor_Chest)) Count++;
+	if (EquipmentParts.Contains(DonTags.Item_Equippable_Armor_Hands_Left)) Count++;
+	if (EquipmentParts.Contains(DonTags.Item_Equippable_Armor_Legs)) Count++;
+	if (EquipmentParts.Contains(DonTags.Item_Equippable_Armor_Boots_Left)) Count++;
 	return Count;
 }
 
@@ -447,6 +206,16 @@ float ADonCharacterBase::GetCharacterLevel_Implementation() const
 	{
 		return CharacterLevel;
 	}
+}
+
+float ADonCharacterBase::GetArmorDefense_Implementation()
+{
+	float Defense = 0.f;
+	for (TTuple<FGameplayTag, TObjectPtr<ADonEquipmentActor>> EquipmentInfo : EquipmentParts)
+	{
+		Defense += EquipmentInfo.Value->GetFinalAttribute();
+	}
+	return Defense;
 }
 
 void ADonCharacterBase::BeginPlay()

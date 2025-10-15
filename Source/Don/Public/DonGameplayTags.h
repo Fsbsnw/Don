@@ -147,8 +147,12 @@ public:
 	FGameplayTag Item_Equippable_Armor_Helmet;
 	FGameplayTag Item_Equippable_Armor_Chest;
 	FGameplayTag Item_Equippable_Armor_Hands;
+	FGameplayTag Item_Equippable_Armor_Hands_Left;
+	FGameplayTag Item_Equippable_Armor_Hands_Right;
 	FGameplayTag Item_Equippable_Armor_Legs;
 	FGameplayTag Item_Equippable_Armor_Boots;
+	FGameplayTag Item_Equippable_Armor_Boots_Left;
+	FGameplayTag Item_Equippable_Armor_Boots_Right;
 	
 	
 	// Rewards
