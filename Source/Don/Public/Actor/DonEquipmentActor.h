@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "Data/ItemAsset.h"
 #include "Data/ItemStructs.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/Actor.h"
@@ -52,7 +51,7 @@ public:
 	
 	void InitEquipmentAttributes();
 	float GetFinalAttribute() const;
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	FName EquipmentName;
 	FGameplayTag EquipmentType;

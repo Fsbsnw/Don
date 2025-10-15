@@ -513,6 +513,16 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("Item.Equippable.Armor.Hands"),
 	FString("Equippable Armor Hands")
 	);
+	
+	GameplayTags.Item_Equippable_Armor_Hands_Left = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Equippable.Armor.Hands.Left"),
+	FString("Equippable Armor Hands Left")
+	);
+
+	GameplayTags.Item_Equippable_Armor_Hands_Right = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Equippable.Armor.Hands.Right"),
+	FString("Equippable Armor Hands Right")
+	);
 
 	GameplayTags.Item_Equippable_Armor_Legs = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Item.Equippable.Armor.Legs"),
@@ -522,6 +532,16 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Item_Equippable_Armor_Boots = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Item.Equippable.Armor.Boots"),
 	FString("Equippable Armor Boots")
+	);
+
+	GameplayTags.Item_Equippable_Armor_Boots_Left = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Equippable.Armor.Boots.Left"),
+	FString("Equippable Armor Boots Left")
+	);
+
+	GameplayTags.Item_Equippable_Armor_Boots_Right = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Equippable.Armor.Boots.Right"),
+	FString("Equippable Armor Boots Right")
 	);
 
 

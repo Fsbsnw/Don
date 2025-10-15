@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
+struct FItem;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UCombatInterface : public UInterface
@@ -38,49 +39,13 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	bool IsItemEquipped(FItem& Item);
-
+	
 	UFUNCTION(BlueprintNativeEvent)
 	void EquipItem(FItem& Item);
 
 	UFUNCTION(BlueprintNativeEvent)
-	void EquipArmorHelmet(FItem& Item);
-
-	UFUNCTION(BlueprintNativeEvent)
-	void EquipArmorChest(FItem& Item);
-
-	UFUNCTION(BlueprintNativeEvent)
-	void EquipArmorLegs(FItem& Item);
-
-	UFUNCTION(BlueprintNativeEvent)
-	void EquipArmorHands(FItem& Item);
-
-	UFUNCTION(BlueprintNativeEvent)
-	void EquipArmorBoots(FItem& Item);
-
-	UFUNCTION(BlueprintNativeEvent)
-	void UnequipAllItems();
-
-	UFUNCTION(BlueprintNativeEvent)
 	void UnequipItem(FItem& Item);
-
-	UFUNCTION(BlueprintNativeEvent)
-	void UnequipWeapon();
 	
-	UFUNCTION(BlueprintNativeEvent)
-	void UnequipArmorHelmet();
-
-	UFUNCTION(BlueprintNativeEvent)
-	void UnequipArmorChest();
-	
-	UFUNCTION(BlueprintNativeEvent)
-	void UnequipArmorHands();
-	
-	UFUNCTION(BlueprintNativeEvent)
-	void UnequipArmorLegs();
-	
-	UFUNCTION(BlueprintNativeEvent)
-	void UnequipArmorBoots();
-
 	UFUNCTION(BlueprintNativeEvent)
 	void UpdateUpgradedItemInfo(const FItem& Item);
 

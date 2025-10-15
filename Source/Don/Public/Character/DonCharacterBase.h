@@ -6,10 +6,13 @@
 #include "AbilitySystemInterface.h"
 #include "ActiveGameplayEffectHandle.h"
 #include "Engine/DataTable.h"
+#include "GameplayTags.h"
 #include "GameFramework/Character.h"
 #include "Interface/CombatInterface.h"
 #include "DonCharacterBase.generated.h"
 
+struct FItemEquipmentInfo;
+struct FDonGameplayTags;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentChanged);
 
 class ADonEquipmentActor;
@@ -61,20 +64,8 @@ public:
 	virtual void ApplyHitEffect_Implementation() override;
 	virtual void SetKnockbackState_Implementation(bool NewState, const FVector& Force) override;
 	virtual bool IsItemEquipped_Implementation(FItem& Item) override;
-	virtual void UnequipAllItems_Implementation() override;
-	virtual void UnequipItem_Implementation(FItem& Item) override;
-	virtual void UnequipWeapon_Implementation() override;
-	virtual void UnequipArmorHelmet_Implementation() override;
-	virtual void UnequipArmorChest_Implementation() override;
-	virtual void UnequipArmorHands_Implementation() override;
-	virtual void UnequipArmorLegs_Implementation() override;
-	virtual void UnequipArmorBoots_Implementation() override;
 	virtual void EquipItem_Implementation(FItem& Item) override;
-	virtual void EquipArmorHelmet_Implementation(FItem& Item) override;
-	virtual void EquipArmorChest_Implementation(FItem& Item) override;
-	virtual void EquipArmorHands_Implementation(FItem& Item) override;
-	virtual void EquipArmorLegs_Implementation(FItem& Item) override;
-	virtual void EquipArmorBoots_Implementation(FItem& Item) override;
+	virtual void UnequipItem_Implementation(FItem& Item) override;
 	virtual void UpdateUpgradedItemInfo_Implementation(const FItem& Item) override;
 	virtual int32 GetRewardScore_Implementation() override;
 	virtual float GetWeaponDamage_Implementation() override;
@@ -90,53 +81,11 @@ protected:
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TObjectPtr<ADonEquipmentActor> Weapon;
+	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
+	TMap<FGameplayTag, TObjectPtr<ADonEquipmentActor>> EquipmentParts;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	TObjectPtr<ADonEquipmentActor> ArmorHelmet;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	TObjectPtr<ADonEquipmentActor> ArmorChest;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	TObjectPtr<ADonEquipmentActor> ArmorLeftHand;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	TObjectPtr<ADonEquipmentActor> ArmorRightHand;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	TObjectPtr<ADonEquipmentActor> ArmorLegs;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	TObjectPtr<ADonEquipmentActor> ArmorLeftBoot;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	TObjectPtr<ADonEquipmentActor> ArmorRightBoot;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	FName WeaponSocket;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	FName ArmorHelmetSocket;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	FName ArmorChestSocket;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	FName ArmorLeftHandSocket;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	FName ArmorRightHandSocket;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	FName ArmorLegsSocket;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	FName ArmorLeftBootSocket;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Armor")
-	FName ArmorRightBootSocket;
+	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
+	TMap<FGameplayTag, FName> EquipmentSockets;
 	
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
@@ -177,6 +126,7 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly)
 	ECharacterClass CharacterClass = ECharacterClass::Fighter;
+	
 public:
 	void SetCharacterLevel(float InLevel) { CharacterLevel = InLevel; }
 	void ResetMaterials();
@@ -188,6 +138,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetKnockback(bool KnockbackState) { bKnockback = KnockbackState; }
 
+	void SpawnAndAttachEquipment(const FGameplayTag& SlotTag, const FItem& Item);
+	void DetachAndDestroyEquipment(const FGameplayTag& SlotTag);
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnEquipmentChanged OnEquipmentChanged;
