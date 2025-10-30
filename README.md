@@ -44,48 +44,33 @@ Stat Game을 통한 프로파일링 <br>
 <br>
 
 **<시도한 해결 방안>** <br>
-1. Enemy Object 전용 콜리전 사용 및 캡슐 컴포넌트의 물리 충돌 Ignore, RVO 사용
-2. Overlap 관련 비용 원인 탐색 → **Mesh overlap events**이 불필요하게 켜져 있었고, 이를 해제한 상태
-
-<img width="843" height="217" alt="Image" src="https://github.com/user-attachments/assets/d1d87103-61c2-4c21-a6dc-55e6619420b1" />
-
-⇒ **UpdateOverlaps Time, PerformOverlapQuery Time** 감소 <br>
-⇒ 하지만 여전히 **Char Movement Total**의 비용이 높음, 유의미한 FPS 변화 없음 <br>
-⇒ **Character Movement Component** 자체를 사용하면 안 되는 상황 (네트워크 예측 및 지면 체크 등의 높은 비용)
-
-<br>
-
-3. **Character Movement Component → Floating Pawn Movement**로 변경 <br>
-   ⇒ 다수의 AI에게 불필요한 네트워크, 물리 상호작용 기능이 없는 경량 컴포넌트로 교체하여 이동 비용 절감
-
-<img width="846" height="174" alt="Image" src="https://github.com/user-attachments/assets/2795be6c-ee1a-4c40-b7ba-398d54624030" />
-
-⇒ 비용 자체가 확 줄었고, 60 FPS 근처 유지 가능 <br>
-⇒ 하지만 캡슐 컴포넌트 콜리전의 Block 상태로 인해 물리 계산 비용이 좀 더 발생하는 듯.
-
-<br>
-
-5. 불필요한 물리 충돌 Ignore 설정 및 **AI 뭉침 현상**을 완화하기 위해 각 AI에게 플레이어 주변의 랜덤 좌표를 할당하는 <br>
+1. Enemy Object **전용 콜리전** 사용 및 **RVO** 사용
+2. Overlap 관련 비용 원인 탐색 → **Mesh overlap events**이 불필요하게 켜져 있었고, 이를 해제
+3. **Character Movement Component → Floating Pawn Movement**로 변경(네트워크, 물리 상호작용 비용 최소화)
+4. 불필요한 물리 충돌 **Ignore** 설정 및 **AI 뭉침 현상**을 완화하기 위해 각 AI에게 플레이어 주변의 랜덤 좌표를 할당하는 <br>
    커스텀 **BTTaskNode_MoveToLocationAndRepath** 노드 사용
+⇒ **UpdateOverlaps Time, PerformOverlapQuery Time** 감소 <br>
+
+<BTTaskNode_MoveToLocationAndRepath - TickTask>
+<img width="722" height="398" alt="Image" src="https://github.com/user-attachments/assets/59248caa-4225-4829-bf49-e444c45d929f" /> <br><br>
+
+**<중간 결과>** <br>
+프레임 드랍의 주요 원인 4가지의 비용을 현저히 낮춤 <br> 
+**39** FPS -> **60** FPS <br>
+**25** ms -> **17** ms <br>
+(오브젝트 **50개** 기준)
+<br><br>
 
 <img width="848" height="203" alt="Image" src="https://github.com/user-attachments/assets/1d58f37b-d417-4c1d-86ab-da501f262399" />
 
-<br><br>
 
-<BTTaskNode_MoveToLocationAndRepath - TickTask>
 
-<img width="722" height="398" alt="Image" src="https://github.com/user-attachments/assets/59248caa-4225-4829-bf49-e444c45d929f" /> <br><br>
 
-**<1차 결과>** <br>
-프레임 드랍의 주요 원인 4가지의 비용을 현저히 저하시킴으로써 <br> 
-**39** FPS -> **60** FPS <br>
-**25** ms -> **17** ms <br>
-만큼의 개선 가능 (오브젝트 **50개** 기준)
-<br><br>
 
 **<추가 실험>**
 
-오브젝트를 **100개로** 늘렸을 때 **33 FPS** 기록, 렌더링 Lumen, 안티 앨리어싱 끄고 **46 FPS** <br>
+오브젝트를 **100개로** 늘렸을 때 : **33 FPS** <br>
+렌더링 **Lumen, 안티 앨리어싱** 껐을 때 : **46 FPS** <br>
 추가로 병목이 발생한 지점을 파악하기 위해 **stat unit**을 활용하여 프레임이 걸린 시간과 각 요소들을 파악
 
 <img width="141" height="166" alt="Image" src="https://github.com/user-attachments/assets/1ca24787-28d8-48ed-a8a1-eacd2b00b8cc" />
