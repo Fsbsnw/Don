@@ -128,6 +128,34 @@ GPU를 제외한 세 개의 스레드에서 GPU 작업 완료 후에 처리될 �
 * 200개 가까이 소환해도 60 FPS 유지
 
  ## 트러블 슈팅
+
+
+  <details>
+   <summary>많은 오브젝트가 겹쳐 있을 때 스킬 이펙트로 인한 프레임 스파이크</summary>
+   <br>
+   
+   스킬 피격 이펙트가 오브젝트마다 발생하기 때문에, 오브젝트가 뭉쳐 있는 경우 순간적으로 **60 FPS**까지 떨어짐   
+
+   <br>
+   <img width="568" height="591" alt="Image" src="https://github.com/user-attachments/assets/99d69c10-6aa3-4f51-b245-d9d58f7ee9c3" />
+   <br>
+   <br>
+   
+   => 시간과 거리 임계값을 추가해서 두 조건을 모두 만족한 경우에만 이펙트를 발생시킴. 순간적으로 튀는 상황 방지
+
+   <br>
+   <img width="1031" height="572" alt="Image" src="https://github.com/user-attachments/assets/a4c8bf68-a576-4768-9c97-35ab90e00c87" />
+
+   <br>
+   <img width="537" height="563" alt="Image" src="https://github.com/user-attachments/assets/b83e16b8-744f-4d58-ae0c-15ee1ae757cf" />
+   <br>
+
+   => **85 FPS**까지 방어 가능
+
+   
+  </details>
+
+ 
   <details>
    <summary>Physics 적용 시, Collision의 위치 고정 문제</summary>
    <br>
@@ -171,28 +199,37 @@ GPU를 제외한 세 개의 스레드에서 GPU 작업 완료 후에 처리될 �
 
    **=> 구조체의 확장성과 효율성을 어떻게 개선할 것인가?**
 
-   1. FItem 구조체에는 **공통 속성**만을 넣고, 개별 속성들을 각각의 **데이터 애셋**에서 참조하여 사용 (각 아이템 타입에 맞는 데이터 애셋을 추가로 참조하기 때문에 번거로울 수 있음)
-   2. 아이템 사용을 위한 **ItemBase** 부모 클래스를 생성하여 다형성 확보
+   1. FItem 구조체에는 **공통 속성**만을 넣고, 개별 속성들을 각각의 **데이터 애셋**에서 **FName**으로 참조하여 사용
 
-   ---
+   <br>
+   <img width="1390" height="637" alt="Image" src="https://github.com/user-attachments/assets/64542a80-7bc4-44bd-b60b-3189a4517cb5" />
+   <br>
 
    **<아이템 구조 분리>**
 
    <img src="https://github.com/user-attachments/assets/b10e95fc-64c7-45bd-9cf0-6a4cb399e97f">
-
-   <img src="https://github.com/user-attachments/assets/2198da2b-f63b-45ae-a37c-7f4bd6795fb7">
-
-   <img src="https://github.com/user-attachments/assets/e482ba2a-8320-4154-b735-5dc8e550d925">
-
+   
    ---
+   
+   2. 아이템 사용을 위한 **ItemBase** 부모 클래스를 생성하여 다형성 확보
+
+   <br>
+   <img width="1266" height="516" alt="Image" src="https://github.com/user-attachments/assets/bb133b8d-a4ed-4313-a355-ee5c9914cb02" />
+   <br>
 
    **<아이템 사용 로직>**
 
    <img src="https://github.com/user-attachments/assets/926ff9e9-cf5c-41cf-8f3f-56a909335fa5">
 
+   **<포션 사용>**
+
    <img src="https://github.com/user-attachments/assets/9e7a87e8-5fa9-420d-bfe4-11cea100529c">
 
+   **<장비 장착>**
+
    <img src="https://github.com/user-attachments/assets/e3f85f43-ed80-4dcb-8351-d82a9c026fd1">
+
+   **<아이템 사용>**
 
    <img src="https://github.com/user-attachments/assets/a72b6b3f-73fa-427e-a15a-8d72d5bab266">
    
