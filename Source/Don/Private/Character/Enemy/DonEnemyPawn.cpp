@@ -4,6 +4,8 @@
 #include "Character/Enemy/DonEnemyPawn.h"
 
 #include "BrainComponent.h"
+#include "DonGameModeBase.h"
+#include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
 #include "AI/DonAIController.h"
@@ -14,6 +16,8 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "GameInstance/SubSystem/EnemyManagerSubsystem.h"
+#include "Inventory/DonItemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/Widget/HealthBarWidget.h"
 
 ADonEnemyPawn::ADonEnemyPawn()
@@ -50,7 +54,30 @@ UAbilitySystemComponent* ADonEnemyPawn::GetAbilitySystemComponent() const
 void ADonEnemyPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	InitAbilityActorInfo();
+	HealthBarComponent->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
+
+	if (Mesh && !Mesh->GetMaterials().IsEmpty() && DynamicMaterials.IsEmpty())
+	{
+		for (int32 Index = 0; Index < Mesh->GetMaterials().Num(); Index++)
+		{
+			UMaterialInstanceDynamic* InstanceDynamic = UMaterialInstanceDynamic::Create(Mesh->GetMaterials()[Index], this);
+			Mesh->SetMaterial(Index, InstanceDynamic);
+			DynamicMaterials.AddUnique(InstanceDynamic);
+		}
+	}
+}
+
+void ADonEnemyPawn::Destroyed()
+{
+	if (ADonGameModeBase* GameModeBase = Cast<ADonGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	{
+		GameModeBase->AddToSpawnedEnemies(-1);
+	}
+	GetWorld()->GetTimerManager().ClearTimer(HealthVisibilityTimerHandle);
 	
+	Super::Destroyed();
 }
 
 void ADonEnemyPawn::InitAbilityActorInfo()
@@ -110,6 +137,37 @@ void ADonEnemyPawn::PossessedBy(AController* NewController)
 	}
 }
 
+void ADonEnemyPawn::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
+{
+	if (!bDead)
+	{
+		bDead = true;
+		if (ActorHasTag(FName("Enemy")) && DeathSound)
+		{
+			UGameplayStatics::PlaySound2D(this, DeathSound, 1);
+		}
+		UE_LOG(LogTemp, Warning, TEXT("%s is Dead"), *GetName());
+	}
+
+	const FVector SpawnLocation = GetActorLocation();
+	const FRotator SpawnRotation = GetActorRotation();
+	FCharacterClassInfo CharacterClassInfo = UDonItemLibrary::FindCharacterClassInfo(this, CharacterClass);
+
+	UDonItemLibrary::SpawnLootableXP(this, CharacterClassInfo.DroppableXP, SpawnLocation, SpawnRotation);
+	UDonItemLibrary::SpawnLootableMoney(this, CharacterClassInfo.DroppableMoney, FMath::RandRange(0, 3), SpawnLocation, SpawnRotation);
+	for (FLootableItem& LootableItem : LootableItems)
+	{
+		// Normalized Rate
+		float AdjustedRate = ItemDropRate * 0.01f * LootableItem.DropRate;
+		UDonItemLibrary::SpawnLootableItem(this, LootableItems, SpawnLocation, SpawnRotation, AdjustedRate);
+	}
+
+	if (DeathEffect) UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, DeathEffect, SpawnLocation);
+	
+	Destroy();
+}
+
+
 void ADonEnemyPawn::InitializeDefaultAttributes()
 {
 	ApplyEffectToSelf(DefaultPrimaryAttributes, GetCharacterLevel_Implementation());
@@ -128,8 +186,27 @@ void ADonEnemyPawn::AddCharacterAbilities()
 	ASC->AddCharacterStartupAbilities(StartupCommonAbilities);
 }
 
+void ADonEnemyPawn::ApplyHitEffect_Implementation()
+{
+	if (!DynamicMaterials.IsEmpty())
+	{
+		for (UMaterialInstanceDynamic* Material : DynamicMaterials)
+		{
+			Material->SetVectorParameterValue(FName("HitFlashColor"), FLinearColor(1.0f, 0.0f, 0.0f, 1.0f));
+		}
+		GetWorld()->GetTimerManager().SetTimer(HitFlashTimerHandle, this, &ADonEnemyPawn::ResetMaterials, 0.2f, false);
+	}
+}
+
 void ADonEnemyPawn::ResetMaterials()
 {
+	if (!DynamicMaterials.IsEmpty())
+	{
+		for (UMaterialInstanceDynamic* Material : DynamicMaterials)
+		{
+			Material->SetVectorParameterValue(FName("HitFlashColor"), FLinearColor(0.0f, 0.0f, 0.0f, 0.0f)); // 초기화
+		}
+	}
 }
 
 FActiveGameplayEffectHandle ADonEnemyPawn::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level)

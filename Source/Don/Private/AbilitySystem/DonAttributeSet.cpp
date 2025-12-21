@@ -93,12 +93,12 @@ bool UDonAttributeSet::HandleDodge(FEffectProperties Props)
 
 void UDonAttributeSet::HandleDie(FEffectProperties Props)
 {
-	if (Props.TargetCharacter->Implements<UCombatInterface>())
+	if (Props.TargetAvatarActor->Implements<UCombatInterface>())
 	{
-		int32 RewardScore = ICombatInterface::Execute_GetRewardScore(Props.TargetCharacter);
+		int32 RewardScore = ICombatInterface::Execute_GetRewardScore(Props.TargetAvatarActor);
 		bool bFound = true;
 		float DropRate = Props.SourceASC->GetGameplayAttributeValue(GetItemDropRateAttribute(), bFound);
-		ICombatInterface::Execute_Die(Props.TargetCharacter, FVector(), DropRate);
+		ICombatInterface::Execute_Die(Props.TargetAvatarActor, FVector(), DropRate);
 		if (Props.SourceCharacter->Implements<UPlayerInterface>())
 		{
 			IPlayerInterface::Execute_AddToScore(Props.SourceCharacter, RewardScore);
@@ -111,23 +111,26 @@ void UDonAttributeSet::HandleIncomingDamage(FEffectProperties Props)
 	const float LocalIncomingDamage = GetIncomingDamage();
 	SetIncomingDamage(0.f);
 
+	APawn* TargetPawn = Cast<APawn>(Props.TargetAvatarActor);
+	if (TargetPawn == nullptr) return;
+	
 	if (HandleDodge(Props)) return;
 
 	// Hit Effect
-	if (Props.TargetCharacter->Implements<UCombatInterface>())
+	if (TargetPawn->Implements<UCombatInterface>())
 	{
-		ICombatInterface::Execute_ApplyHitEffect(Props.TargetCharacter);
+		ICombatInterface::Execute_ApplyHitEffect(TargetPawn);
 	}
 
 	// Calculate Final Damage
 	int32 WeaponDamage = 0.f;
 	int32 ArmorDefense = 0.f;
-	if (Props.SourceCharacter->Implements<UCombatInterface>() && Props.TargetCharacter->Implements<UCombatInterface>())
+	if (Props.SourceCharacter->Implements<UCombatInterface>() && TargetPawn->Implements<UCombatInterface>())
 	{
 		WeaponDamage = FMath::RoundToInt(ICombatInterface::Execute_GetWeaponDamage(Props.SourceCharacter));
-		ArmorDefense = FMath::RoundToInt(ICombatInterface::Execute_GetArmorDefense(Props.TargetCharacter));
+		ArmorDefense = FMath::RoundToInt(ICombatInterface::Execute_GetArmorDefense(TargetPawn));
 		UE_LOG(LogTemp, Warning, TEXT("%s's Weapon Damage Added : %d Damaged"), *Props.SourceCharacter->GetName(), WeaponDamage);
-		UE_LOG(LogTemp, Warning, TEXT("%s's Armor Defense Added : %d Blocked"), *Props.TargetCharacter->GetName(), ArmorDefense);
+		UE_LOG(LogTemp, Warning, TEXT("%s's Armor Defense Added : %d Blocked"), *TargetPawn->GetName(), ArmorDefense);
 	}
 	int32 FinalDamage = FMath::Max(LocalIncomingDamage + WeaponDamage - ArmorDefense, 0.f);
 	const float NewHealth = GetHealth() - FinalDamage;
@@ -144,7 +147,7 @@ void UDonAttributeSet::HandleIncomingDamage(FEffectProperties Props)
 		{
 			ShowFloatingText(Props, FinalDamage, DonEffectContext->GetIsCriticalHit());
 			
-			if (AAIController* AIController = Cast<AAIController>(Props.TargetCharacter->GetController()))
+			if (AAIController* AIController = Cast<AAIController>(TargetPawn->GetController()))
 			{
 				if (UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent())
 				{
@@ -155,16 +158,16 @@ void UDonAttributeSet::HandleIncomingDamage(FEffectProperties Props)
 			const FVector& KnockbackForce = DonEffectContext->GetKnockbackForce();
 			if (!KnockbackForce.IsNearlyZero())
 			{
-				Props.TargetCharacter->StopAnimMontage();
-				ICombatInterface::Execute_SetKnockbackState(Props.TargetCharacter, true, KnockbackForce);
-				if (Props.TargetCharacter->Implements<UPlayerInterface>())
+				// Stop Montage
+				ICombatInterface::Execute_SetKnockbackState(TargetPawn, true, KnockbackForce);
+				if (TargetPawn->Implements<UPlayerInterface>())
 				{
 					Props.TargetASC->TryActivateAbilitiesByTag(FDonGameplayTags::Get().Effects_HitReact.GetSingleTagContainer());
 				}
 			}
 			else
 			{
-				if (ADonEnemy* Enemy = Cast<ADonEnemy>(Props.TargetCharacter))
+				if (ADonEnemy* Enemy = Cast<ADonEnemy>(TargetPawn))
 				{
 					if (!Enemy->GetGetupState()) return;
 				}
@@ -181,8 +184,12 @@ void UDonAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 	FEffectProperties Props;
 	SetEffectProperties(Data, Props);
 
-	if (!IsValid(Props.TargetCharacter)) return;
-	if (Props.TargetCharacter->Implements<UCombatInterface>() && ICombatInterface::Execute_IsDead(Props.TargetCharacter)) return;
+	if (!IsValid(Props.TargetAvatarActor)) return;
+	if (Props.TargetAvatarActor->Implements<UCombatInterface>() && ICombatInterface::Execute_IsDead(Props.TargetAvatarActor)) return;
+
+	
+	// if (!IsValid(TargetPawn)) return;
+	// if (Props.TargetCharacter->Implements<UCombatInterface>() && ICombatInterface::Execute_IsDead(Props.TargetCharacter)) return;
 	
 	FGameplayAttribute Attribute = Data.EvaluatedData.Attribute;
 	

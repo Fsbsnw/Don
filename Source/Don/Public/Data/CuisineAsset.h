@@ -43,7 +43,7 @@ struct FKitchenOrder
 	bool bIsCooking = false;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	int32 RemainingTime;
+	float RemainingTime;
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AInnChef> AssignedChef;

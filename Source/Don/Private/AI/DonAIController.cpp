@@ -5,6 +5,7 @@
 
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Inn/Character/InnCustomer.h"
 
 ADonAIController::ADonAIController()
 {

@@ -26,7 +26,7 @@ FRoomServiceOrder UDonInnLibrary::FindRoomServiceByName(const UObject* WorldCont
 	return DonGameInstance->RoomServiceDataAsset->FindRoomServiceByName(RoomServiceName);
 }
 
-void UDonInnLibrary::AddKitchenOrder(const UObject* WorldContextObject, FKitchenOrder Order)
+void UDonInnLibrary::AddKitchenOrder(const UObject* WorldContextObject, FKitchenOrder& Order)
 {
 	UKitchenOrderSubsystem* KitchenOrderSubsystem = UGameplayStatics::GetGameInstance(WorldContextObject)->GetSubsystem<UKitchenOrderSubsystem>();
 	if (KitchenOrderSubsystem == nullptr) return;

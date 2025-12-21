@@ -10,6 +10,8 @@
 #include "GameFramework/Pawn.h"
 #include "DonEnemyPawn.generated.h"
 
+struct FLootableItem;
+class UNiagaraSystem;
 class UBehaviorTree;
 class UWidgetComponent;
 class UAttributeSet;
@@ -26,15 +28,28 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
+	virtual void ApplyHitEffect_Implementation() override;
+
 protected:
 	virtual void BeginPlay() override;
+	virtual void Destroyed() override;
 	virtual void InitAbilityActorInfo();
 	virtual void PossessedBy(AController* NewController) override;
+	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
 	void InitializeDefaultAttributes();
 	void AddCharacterAbilities();
 	void ResetMaterials();
 	FActiveGameplayEffectHandle ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level);
 	void SetCharacterLevel(float InLevel) { CharacterLevel = InLevel; }
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UNiagaraSystem> DeathEffect;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FLootableItem> LootableItems;
+
+	UPROPERTY()
+	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -115,7 +130,6 @@ private:
 
 public:
 	void CheckAndUpdateAILOD(const FVector& PlayerLocation);
-	
 
 	UPROPERTY(EditAnywhere)
 	float RandomRadius = 300.f;

@@ -23,9 +23,13 @@ class DON_API UKitchenOrderSubsystem : public UGameInstanceSubsystem
 
 protected:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
+	UFUNCTION(BlueprintCallable)
+	void InitDestLocations();
 	
 public:
 	// Kitchen Order
+
+	float TickTimer = 0.1f;
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnKitchenOrderChanged OnKitchenOrderAdded;
@@ -38,7 +42,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void BroadcastInitialValues();
-	
+
 	UFUNCTION(BlueprintCallable)
 	TArray<FKitchenOrder>& GetKitchenOrderQueue() { return KitchenOrderQueue; };
 
@@ -47,7 +51,8 @@ public:
 
 	
 	// Chef
-	
+
+	void AssignChef(FKitchenOrder& Order);
 	void RegisterChef(AInnChef* Chef) { if (!Chefs.Contains(Chef)) Chefs.Add(Chef); };
 	void UnregisterChef(AInnChef* Chef) { if (Chefs.Contains(Chef)) Chefs.Remove(Chef); };
 	AInnChef* FindIdleChef();
@@ -55,19 +60,33 @@ public:
 	
 	// Seat
 
-	AInnSeat* FindEmptySeat(AInnCustomer* Customer);
-	void AssignSeatToCustomer(AInnCustomer* Customer);
+	AInnSeat* FindAndOccupyEmptySeat();
+	bool HasEmptySeat();
 
 
 	// Test
 
 	UFUNCTION(BlueprintCallable)
 	void SpawnKitchenCustomer(TSubclassOf<AInnCustomer> CustomerClass, FVector SpawnLocation);
+
+	UPROPERTY(BlueprintReadWrite)
+	FVector ExitLocation = FVector::ZeroVector;
+	UPROPERTY(BlueprintReadWrite)
+	FVector InnEntranceLocation = FVector::ZeroVector;;
+	UPROPERTY(BlueprintReadWrite)
+	FVector RoomEntranceLocation = FVector::ZeroVector;;
 	
 private:
+	UPROPERTY()
 	TArray<FKitchenOrder> KitchenOrderQueue;
+
+	UPROPERTY()
 	TArray<AInnChef*> Chefs;
+
+	UPROPERTY()
 	TArray<AInnCustomer*> Customers;
+
+	UPROPERTY()
 	TArray<AInnSeat*> Seats;
 
 	FTimerHandle OrderTimerHandle;
