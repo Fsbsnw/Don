@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "InnSeat.generated.h"
 
+class UArrowComponent;
+
 UCLASS()
 class DON_API AInnSeat : public AActor
 {
@@ -15,7 +17,14 @@ public:
 	AInnSeat();
 
 protected:
-	virtual void BeginPlay() override;
+	UPROPERTY(EditDefaultsOnly)
+	USceneComponent* SceneRoot;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMeshComponent* Mesh;
+
+	UPROPERTY(EditDefaultsOnly)
+	UArrowComponent* ArrowComponent;
 
 public:
 	FORCEINLINE bool GetIsOccupied() const { return bIsOccupied; }

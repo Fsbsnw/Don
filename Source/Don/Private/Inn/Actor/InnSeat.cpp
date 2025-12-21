@@ -3,14 +3,18 @@
 
 #include "Inn/Actor/InnSeat.h"
 
+#include "Components/ArrowComponent.h"
+
 AInnSeat::AInnSeat()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-}
-
-void AInnSeat::BeginPlay()
-{
-	Super::BeginPlay();
+	SceneRoot = CreateDefaultSubobject<USceneComponent>("Scene Root");
+	RootComponent = SceneRoot;
 	
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh Component");
+	Mesh->SetupAttachment(RootComponent);
+
+	ArrowComponent = CreateDefaultSubobject<UArrowComponent>("Arrow Component");
+	ArrowComponent->SetupAttachment(Mesh);
 }

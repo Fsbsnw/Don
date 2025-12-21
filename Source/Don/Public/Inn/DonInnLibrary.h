@@ -22,7 +22,7 @@ public:
 	static FKitchenOrder FindCuisineByName(const UObject* WorldContextObject, FName CuisineName);
 
 	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | Kitchen")
-	static void AddKitchenOrder(const UObject* WorldContextObject, FKitchenOrder Order);
+	static void AddKitchenOrder(const UObject* WorldContextObject, FKitchenOrder& Order);
 
 	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | Kitchen")
 	static FGuid FindNextQueuedKitchenOrder(const UObject* WorldContextObject);

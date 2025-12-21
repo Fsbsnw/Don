@@ -87,6 +87,26 @@ void ADonCharacter::OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponen
 		FGameplayEventData Payload;
 		Payload.Instigator = this;
 		Payload.Target = OtherActor;
+
+
+		const float CurrentTime = GetWorld()->GetTimeSeconds();
+		const float TimeDiff = CurrentTime - LastLightningTime;
+		
+		const FVector CurrentLocation = OtherActor->GetActorLocation();
+		const float Distance = FVector::Dist(LastLightningLocation, CurrentLocation);
+
+		// 번개 이펙트 발동 가능한 거리, 시간이 아닌 경우
+		if (Distance < LightningThresholdDistance || TimeDiff < LightningThresholdTime)
+		{
+			Payload.EventMagnitude = -100.f;
+		}
+		// 번개 이펙트 발동 가능한 경우 시간, 위치 갱신
+		else
+		{
+			LastLightningTime = CurrentTime;
+			LastLightningLocation = CurrentLocation;
+		}
+		
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, FDonGameplayTags::Get().Request_Abilities_Lightning, Payload);
 		
 		UDonItemLibrary::ApplyDamageEffect(DamageEffectParams);

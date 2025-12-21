@@ -79,5 +79,13 @@ public:
 	FDamageEffectParams DamageEffectParams;
 
 	TArray<AActor*> IgnoreActors;
+
+	UPROPERTY(EditAnywhere)
+	float LightningThresholdTime = 0.05f;
+	float LastLightningTime = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	float LightningThresholdDistance = 50.f;
+	FVector LastLightningLocation = FVector::Zero();
 private:
 };

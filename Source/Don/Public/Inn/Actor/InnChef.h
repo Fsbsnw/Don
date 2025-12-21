@@ -29,13 +29,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UTexture2D* ChefImage;
 
-	UPROPERTY(EditDefaultsOnly)
-	int32 ChefLevel = 1;
-
 	UFUNCTION(BlueprintCallable)
 	void ChefLevelUp() { ChefLevel += 1; }
 
+	int32 GetChefLevel() const { return ChefLevel; }
+
 private:
+	UPROPERTY(EditDefaultsOnly)
+	int32 ChefLevel = 1;
+	
 	bool bIsCooking = false;
 	FGuid OrderID;
 };

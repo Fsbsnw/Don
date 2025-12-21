@@ -3,29 +3,22 @@
 
 #include "Inn/Character/InnCustomer.h"
 
-#include "AI/DonAIController.h"
 #include "Data/CuisineAsset.h"
+#include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
 #include "Inn/DonInnLibrary.h"
+#include "Inn/Actor/InnChef.h"
 #include "Inn/Actor/InnSeat.h"
+#include "Kismet/GameplayStatics.h"
 
 AInnCustomer::AInnCustomer()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
-}
-
-void AInnCustomer::BeginPlay()
-{
-	Super::BeginPlay();
-	
 }
 
 void AInnCustomer::OrderFood()
 {
-	if (FavoriteFoods.IsEmpty()) return;
-	
 	const int32 Index = FMath::RandRange(0, FavoriteFoods.Num() - 1);
-	FKitchenOrder FoodOrder = UDonInnLibrary::FindCuisineByName(this, FavoriteFoods[Index]);
+	FoodOrder = UDonInnLibrary::FindCuisineByName(this, FavoriteFoods[Index]);
 	FoodOrder.OrderedCustomer = this;
 	UDonInnLibrary::AddKitchenOrder(this, FoodOrder);
 }
@@ -33,42 +26,18 @@ void AInnCustomer::OrderFood()
 void AInnCustomer::ReceivedFood()
 {
 	MealState = ECustomerMealState::Eating;
-	
-	FTimerHandle MealTimerHandle;
-	GetWorldTimerManager().SetTimer(
-		MealTimerHandle,
-		this,               
-		&AInnCustomer::OnMealFinished, 
-		EatingTime,                
-		false                  
-	);
 
 	UE_LOG(LogTemp, Log, TEXT("%s has received the meal."), *GetName());
 }
 
-void AInnCustomer::OnMealFinished()
+void AInnCustomer::FinishMeal()
 {
-	MealState = ECustomerMealState::FinishedEating;
-
-	ADonAIController* DonAIController = Cast<ADonAIController>(GetController());
-	if (DonAIController == nullptr) return;
-		
-	// 여관방 빈 자리 있는 경우
-	if (true)
-	{
-		InnState = ECustomerInnState::Room;
-
-		DonAIController->MoveToLocation(RoomEntrance->GetActorLocation());
-	}
-	else
-	{
-		InnState = ECustomerInnState::Exit;
-		
-		DonAIController->MoveToLocation(Exit->GetActorLocation());
-	}
-
+	Seat->SetIsOccupied(false);
 	Seat = nullptr;
 	
+	MealState = ECustomerMealState::FinishedEating;
+	SeatState = ECustomerSeatState::Idle;
+
 	UE_LOG(LogTemp, Log, TEXT("%s has finished the meal."), *GetName());
 }
 
@@ -76,4 +45,58 @@ void AInnCustomer::EnterRoom()
 {
 	// FInnCustomer 만들고 정보 저장 및 Customer 서브 시스템에 등록해야 할 듯
 	Destroy();
+}
+
+FVector AInnCustomer::SetDestination(const ECustomerInnState Destination)
+{
+	const UKitchenOrderSubsystem* KitchenOrderSubsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UKitchenOrderSubsystem>();
+	if (KitchenOrderSubsystem == nullptr) return FVector::ZeroVector;
+	
+	if (Destination == ECustomerInnState::Kitchen && Seat != nullptr)
+	{
+		InnState = ECustomerInnState::Kitchen;
+		SeatState = ECustomerSeatState::MoveToSeat;
+		
+		return Seat->GetActorLocation();
+	}
+	if (Destination == ECustomerInnState::Room)
+	{
+		InnState = ECustomerInnState::Room;
+
+		return KitchenOrderSubsystem->RoomEntranceLocation;
+	}
+	if (Destination == ECustomerInnState::Exit)
+	{
+		InnState = ECustomerInnState::Exit;
+
+		return KitchenOrderSubsystem->ExitLocation;
+	}
+
+	return FVector::ZeroVector;
+}
+
+int32 AInnCustomer::GetChefLevel() const
+{
+	if (FoodOrder.AssignedChef) return FoodOrder.AssignedChef->GetChefLevel();
+	return 0;
+}
+
+void AInnCustomer::RequestSeat()
+{
+	if (MealState == ECustomerMealState::FinishedEating) return;
+	
+	UKitchenOrderSubsystem* KitchenSystem = GetGameInstance()->GetSubsystem<UKitchenOrderSubsystem>();
+	AInnSeat* NewSeat = KitchenSystem->FindAndOccupyEmptySeat();
+
+	if (NewSeat == nullptr) return;
+
+	Seat = NewSeat;
+}
+
+void AInnCustomer::SitOnSeat()
+{
+	SeatState = ECustomerSeatState::Sit;
+
+	SetActorLocation(Seat->GetActorLocation());
+	SetActorRotation(Seat->GetActorRotation());
 }

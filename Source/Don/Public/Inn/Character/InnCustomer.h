@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/CuisineAsset.h"
 #include "GameFramework/Character.h"
 #include "InnCustomer.generated.h"
 
+struct FPathFollowingResult;
 class UBehaviorTree;
 class AInnSeat;
 struct FKitchenOrder;
@@ -26,6 +28,14 @@ enum class ECustomerMealState : uint8
 	FinishedEating      UMETA(DisplayName = "Finished Eating")   
 };
 
+UENUM(BlueprintType)
+enum class ECustomerSeatState : uint8
+{
+	Idle				UMETA(DisplayName = "Idle"),  
+	MoveToSeat          UMETA(DisplayName = "Move To Seat"),           
+	Sit					UMETA(DisplayName = "Sit")   
+};
+
 UCLASS()
 class DON_API AInnCustomer : public ACharacter
 {
@@ -34,44 +44,57 @@ class DON_API AInnCustomer : public ACharacter
 public:
 	AInnCustomer();
 
-protected:
-	virtual void BeginPlay() override;
+	// Kitchen
 
-public:
+	FKitchenOrder FoodOrder;
+	
 	UFUNCTION(BlueprintCallable)
 	void OrderFood();
+	
 	UFUNCTION(BlueprintCallable)
 	void ReceivedFood();
 	
-	void OnMealFinished();
+	void FinishMeal();
 	
 	UFUNCTION(BlueprintCallable)
 	void EnterRoom();
+
+	FVector SetDestination(const ECustomerInnState Destination);
+
+	int32 GetChefLevel() const;
+	int32 GetFoodPrice() const { return FoodOrder.Price; }
 	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE ECustomerMealState GetMealState() const { return MealState; };
-	
-	int32 GroupSize = 1;
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE ECustomerInnState GetInnState() const { return InnState; };
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE ECustomerSeatState GetSeatState() const { return SeatState; };
 
-	UPROPERTY(BlueprintReadOnly)
-	ECustomerMealState MealState = ECustomerMealState::WaitingForFood;
-	
-	UPROPERTY(BlueprintReadOnly)
-	ECustomerInnState InnState = ECustomerInnState::Kitchen;
-	
-	UPROPERTY(EditDefaultsOnly)
-	AActor* InnEntrance = nullptr;
-	UPROPERTY(EditDefaultsOnly)
-	AActor* Seat = nullptr;
-	UPROPERTY(EditDefaultsOnly)
-	AActor* RoomEntrance = nullptr;
-	UPROPERTY(EditDefaultsOnly)
-	AActor* Exit = nullptr;
+	// Seat
+
+	UFUNCTION(BlueprintCallable)
+	void RequestSeat();
+	void SitOnSeat();
+
+	// Test
+
+	UPROPERTY(EditAnywhere)
+	bool bGoToRoom = true;
 	
 private:
+	int32 GroupSize = 1;
+	
+	ECustomerInnState InnState = ECustomerInnState::Kitchen;
+	ECustomerMealState MealState = ECustomerMealState::WaitingForFood;
+	ECustomerSeatState SeatState = ECustomerSeatState::Idle;
+	
 	UPROPERTY(EditAnywhere)
 	TArray<FName> FavoriteFoods;
+	
 	UPROPERTY(EditAnywhere)
 	float EatingTime = 10.f;
 
+	UPROPERTY(VisibleInstanceOnly)
+	AInnSeat* Seat = nullptr;
 };
