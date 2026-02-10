@@ -5,16 +5,52 @@
  <br>
 
 
-
 ## 1인 프로젝트 - 최도의
 
 ## 게임 장르 : 3D 뱀파이어 서바이벌류
+
+<details>
+ <summary>개발중(여관 경영)</summary>
+ 
+ # 전체적인 흐름 설계
+ 
+ 1. 손님 그룹 입장
+ 2. 식당 빈 자리 착석
+ 3. 식사 완료 후 계산 + 숙소 체크인 or 퇴장
+ 4. 체크아웃 시간에 모든 손님 퇴장 및 계산
+
+ **<비헤이비어 트리>**
+  <br>
+  <img width="1342" height="752" alt="Image" src="https://github.com/user-attachments/assets/3b44fde5-e7da-4984-93a2-7cb66f14ee9f" />
+
+  <img width="1409" height="939" alt="Image" src="https://github.com/user-attachments/assets/1aa57389-e132-44d2-9e78-69bf8228ec9f" />
+
+  <img width="431" height="591" alt="Image" src="https://github.com/user-attachments/assets/25a8dcf5-69dc-4654-b70f-91cc188176c9" />
+
+  <img width="515" height="785" alt="Image" src="https://github.com/user-attachments/assets/24c1308f-f884-459b-850d-2223a5c9d46a" />
+
+  <img width="658" height="485" alt="Image" src="https://github.com/user-attachments/assets/f3a365f9-b1a4-4c44-ae6f-a2aae346ecaf" />
+
+  <img width="1215" height="686" alt="Image" src="https://github.com/user-attachments/assets/fe9f6ea5-c6cc-407d-8a3a-e40bf7c90f5b" />
+
+  <img width="1624" height="740" alt="Image" src="https://github.com/user-attachments/assets/39b9be3e-976e-4830-bccf-7f7b46705099" />
+
+  <img width="475" height="181" alt="Image" src="https://github.com/user-attachments/assets/dd98423e-b782-4d43-b511-c162c54628c8" />
+
+  <img width="464" height="265" alt="Image" src="https://github.com/user-attachments/assets/3b872c10-b947-45da-ab42-ad19d4094379" />
+
+  특정 시간 경과 후, 룸 서비스 요청 및 미니게임 실행
+
+  <img width="1655" height="835" alt="Image" src="https://github.com/user-attachments/assets/05e6787e-07c8-42d2-813c-5184ba97ad97" />
+
+  
+</details>
 
 ## 기획 배경
 
  이 프로젝트는 3D 환경에서 **‘뱀파이어 서바이벌’** 특유의 대규모 적을 쓸어버리는 **핵 앤 슬래시 쾌감**과 매번 **새롭게 강해지는 로그라이크적 재미**를 구현하는 것을 목표로 시작되었습니다. <br>
  
- 특히 언리얼 엔진이라는 **무거운 기능 기반의 환경**에서, 수많은 AI 오브젝트를 **효율적으로 관리하고 최적화**하는 방법에 대한 기술적 호기심이 더해져, **게임적 기획 목표**와 성능 최적화라는 **기술적 목표**를 동시에 추구하는 과제로 발전하게 되었습니다.
+ 특히 언리얼 엔진이라는 **무거운 기능 기반의 환경**에서, 수많은 AI 오브젝트를 **효율적으로 관리하고 최적화**하는 방법에 대한 기술적 호기심이 더해져, **게임적 기획 목표**와 성능 분석 및 최적화라는 **기술적 목표**를 동시에 추구하는 과제로 발전하게 되었습니다.
  
 ## 포트폴리오 요약
 * 최적화 시도들
