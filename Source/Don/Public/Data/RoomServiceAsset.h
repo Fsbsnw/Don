@@ -23,13 +23,19 @@ struct FRoomServiceOrder
 	TSoftObjectPtr<UTexture2D> ServiceIcon = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	int32 ServiceTime;
+	int32 ServiceLevel = 1;
+	
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	int32 LimitTime = 10;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	int32 RewardMoney;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TArray<FName> RewardItems;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	bool bIsRequested = false;
 };
 
 /**
@@ -45,4 +51,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	FRoomServiceOrder FindRoomServiceByName(FName RoomServiceName);
+		
+	UFUNCTION(BlueprintCallable)
+	FRoomServiceOrder GetRandomRoomService();
 };

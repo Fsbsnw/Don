@@ -12,6 +12,7 @@ class UAttributeSet;
 class UAbilitySystemComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FDonAbilityInfo&, Info);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceChanged, int32, NewValue);
 
 USTRUCT(BlueprintType)
 struct FWidgetControllerParams
@@ -45,17 +46,40 @@ class DON_API UDonWidgetController : public UObject
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);
+	
 	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitialValues();
+	
 	virtual void BindCallbacksToDependencies();
-
-	UPROPERTY(BlueprintAssignable, Category="GAS|Messages")
-	FAbilityInfoSignature AbilityInfoDelegate;
 
 	UFUNCTION(BlueprintCallable)
 	void BroadcastAbilityInfo();
 
 	UDonAbilitySystemComponent* GetDonASC();
+
+
+	/*
+	 * Delegates
+	 */
+
+	UPROPERTY(BlueprintAssignable, Category="GAS|Messages")
+	FAbilityInfoSignature AbilityInfoDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player State")
+	FOnResourceChanged OnMoneyChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player State")
+	FOnResourceChanged OnMemoryFragmentChanged;
+
+	/*
+	 * Delegates
+	 */
+	
+	UFUNCTION()
+	void OnMoneyAdded(int32 NewMoney);
+	
+	UFUNCTION()
+	void OnMemoryFragmentAdded(int32 NewMemoryFragment);
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")

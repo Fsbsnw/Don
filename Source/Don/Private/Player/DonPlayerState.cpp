@@ -8,6 +8,9 @@
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
 #include "Data/LevelUpInfo.h"
+#include "GameFramework/Character.h"
+#include "Inn/InnManagerComponent/InnManagerComponent.h"
+#include "Inn/InnStoreComponent/InnStoreComponent.h"
 #include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -22,6 +25,8 @@ ADonPlayerState::ADonPlayerState()
 	AttributeSet = CreateDefaultSubobject<UDonAttributeSet>("AttributeSet");
 
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>("Inventory Component");
+	InnManagerComponent = CreateDefaultSubobject<UInnManagerComponent>("Inn Manager Component");
+	InnStoreComponent = CreateDefaultSubobject<UInnStoreComponent>("Inn Store Component");
 	NetUpdateFrequency = 100.f;
 }
 
@@ -29,7 +34,8 @@ void ADonPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InventoryComponent->InitAndLoadInventory();
+	if (InventoryComponent)	InventoryComponent->InitAndLoadInventory();
+	if (InnStoreComponent) InnStoreComponent->InitializeStoreMerchandise();
 }
 
 void ADonPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

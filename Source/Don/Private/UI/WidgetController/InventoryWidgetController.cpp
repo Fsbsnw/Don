@@ -3,19 +3,17 @@
 
 #include "UI/WidgetController/InventoryWidgetController.h"
 
-#include "DonGameplayTags.h"
-#include "Character/Player/DonCharacter.h"
+#include "Inn/InnManagerComponent/InnManagerComponent.h"
 #include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Player/DonPlayerState.h"
-#include "UI/Widget/Inventory/DonInventorySlotWidget.h"
 
 void UInventoryWidgetController::BindCallbacksToDependencies()
 {
+	Super::BindCallbacksToDependencies();
+	
 	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
 	
-	DonPlayerState->OnMoneyChangedDelegate.AddUObject(this, &UInventoryWidgetController::OnMoneyAdded);
-	DonPlayerState->OnMemoryFragmentChangedDelegate.AddUObject(this, &UInventoryWidgetController::OnMemoryFragmentAdded);
 	DonPlayerState->GetInventoryComponent()->OnInventoryChanged.AddDynamic(this, &UInventoryWidgetController::HandleInventoryUpdated);
 }
 
@@ -90,21 +88,4 @@ bool UInventoryWidgetController::UpgradeArmorItem(int32 SlotIndex, int32 Points)
 		}
 	}
 	return false;
-}
-
-void UInventoryWidgetController::OnMoneyAdded(int32 Money)
-{
-	OnMoneyChanged.Broadcast(Money);
-}
-
-void UInventoryWidgetController::OnMemoryFragmentAdded(int32 MemoryFragment)
-{
-	OnMemoryFragmentChanged.Broadcast(MemoryFragment);
-}
-
-void UInventoryWidgetController::AddMemoryFragment(int32 InMemoryFragment)
-{
-	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
-	
-	DonPlayerState->AddToMemoryFragment(InMemoryFragment);
 }

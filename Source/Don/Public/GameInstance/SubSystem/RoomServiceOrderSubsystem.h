@@ -9,6 +9,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoomServiceOrderChanged, FRoomServiceOrder, RoomServiceOrder);
 
+
 /**
  * 
  */
@@ -31,8 +32,9 @@ public:
 
 	FRoomServiceOrder EnqueueRoomServiceOrder(const FRoomServiceOrder& Order);
 	FRoomServiceOrder DequeueRoomServiceOrder();
-
 	
 private:
+	UPROPERTY()
 	TArray<FRoomServiceOrder> RoomServiceOrderQueue;
+
 };

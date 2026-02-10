@@ -7,6 +7,8 @@
 
 AInnChef::AInnChef()
 {
+	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>("Mesh");
+	Mesh->SetVisibility(false);
 	PrimaryActorTick.bCanEverTick = false;
 }
 
@@ -38,6 +40,12 @@ void AInnChef::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AInnChef::StartOrder(FKitchenOrder& Order)
 {
+	if (Mesh)
+	{
+		Mesh->SetVisibility(true);
+		Mesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+		Mesh->Play(true);
+	}
 	Order.bIsCooking = true;
 	Order.CookingTime = FMath::Max(2, Order.CookingTime - (ChefLevel - 1));
 	Order.RemainingTime = Order.CookingTime;
@@ -47,6 +55,11 @@ void AInnChef::StartOrder(FKitchenOrder& Order)
 
 void AInnChef::EndOrder()
 {
+	if (Mesh)
+	{
+		Mesh->SetVisibility(false);
+		Mesh->Stop();
+	}
 	OrderID = FGuid();
 	bIsCooking = false;
 }

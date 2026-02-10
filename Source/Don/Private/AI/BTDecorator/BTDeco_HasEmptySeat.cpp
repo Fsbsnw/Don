@@ -3,8 +3,7 @@
 
 #include "AI/BTDecorator/BTDeco_HasEmptySeat.h"
 
-#include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
-#include "Kismet/GameplayStatics.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 UBTDeco_HasEmptySeat::UBTDeco_HasEmptySeat()
 {
@@ -13,8 +12,5 @@ UBTDeco_HasEmptySeat::UBTDeco_HasEmptySeat()
 
 bool UBTDeco_HasEmptySeat::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
-	UKitchenOrderSubsystem* KitchenOrderSubsystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UKitchenOrderSubsystem>();
-	if (KitchenOrderSubsystem == nullptr) return false;
-
-	return KitchenOrderSubsystem->HasEmptySeat();
+	return false; 
 }

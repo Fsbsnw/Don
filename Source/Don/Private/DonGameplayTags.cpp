@@ -22,11 +22,6 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("Right Mouse Button")
 	);
 
-		
-	GameplayTags.InputTag_SpaceBar = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("InputTag.SpaceBar"),
-	FString("Space Bar Button")
-	);
 
 	GameplayTags.InputTag_Tab = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("InputTag.Tab"),
@@ -88,6 +83,7 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("InputTag.K"),
 	FString("Keyboard K")
 	);
+
 		
 	/*
 	 * Primary Attributes 
@@ -544,7 +540,7 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("Equippable Armor Boots Right")
 	);
 
-
+	
 	// Rewards
 
 	GameplayTags.Reward = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -561,6 +557,93 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("Reward.Money"),
 	FString("Reward Money")
 	);
+
+
+	// UI
+	
+	GameplayTags.UI = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI"),
+	FString("UI")
+	);
+
+		
+	GameplayTags.UI_Interact = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Interact"),
+	FString("UI Interact")
+	);
+
+		
+	GameplayTags.UI_Inventory_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Inventory.Open"),
+	FString("UI Inventory Open")
+	);
+
+		
+	GameplayTags.UI_Attribute_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Attribute.Open"),
+	FString("UI Attribute Open")
+	);
+
+		
+	GameplayTags.UI_Skill_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Skill.Open"),
+	FString("UI Skill Open")
+	);
+
+			
+	GameplayTags.UI_Quest_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Quest.Open"),
+	FString("UI Quest Open")
+	);
+
+		
+	GameplayTags.UI_Setting_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Setting.Open"),
+	FString("UI Setting Open")
+	);
+
+		
+	GameplayTags.UI_Inn = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Inn"),
+	FString("UI Inn")
+	);
+
+		
+	GameplayTags.UI_Inn_Menu_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Inn.Menu.Open"),
+	FString("UI Inn Menu Open")
+	);
+
+		
+	GameplayTags.UI_Inn_Room_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Inn.Room.Open"),
+	FString("UI Inn Room Open")
+	);
+
+		
+	GameplayTags.UI_Inn_GroceryStore_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Inn.GroceryStore.Open"),
+	FString("UI Inn GroceryStore Open")
+	);
+
+			
+	GameplayTags.UI_Interact = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Interact"),
+	FString("UI Interact")
+	);
+
+			
+	GameplayTags.UI_Interact_Dialog_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Interact.Dialog.Open"),
+	FString("UI Interact Dialog Open")
+	);
+
+				
+	GameplayTags.UI_Interact_Store_Open = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Interact.Store.Open"),
+	FString("UI Interact Store Open")
+	);
+
 
 	GameplayTags.FindCooldownTags.Add(GameplayTags.Boss_Rampage_Abilities_BackDash, GameplayTags.Cooldown_Boss_Rampage_BackDash);
 	GameplayTags.FindCooldownTags.Add(GameplayTags.Boss_Rampage_Abilities_HoldingRock, GameplayTags.Cooldown_Boss_Rampage_HoldingRock);

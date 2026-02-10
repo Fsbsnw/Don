@@ -3,6 +3,8 @@
 
 #include "GameInstance/SubSystem/RoomServiceOrderSubsystem.h"
 
+#include "GameInstance/SubSystem/InnManagerSubsystem.h"
+
 bool URoomServiceOrderSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
 	if (const UWorld* World = Outer->GetWorld())

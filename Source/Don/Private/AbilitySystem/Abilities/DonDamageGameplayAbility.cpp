@@ -10,6 +10,8 @@
 
 void UDonDamageGameplayAbility::CauseDamage(AActor* TargetActor)
 {
+	if (TargetActor == nullptr) return;
+	
 	FGameplayEffectSpecHandle DamageSpecHandle = MakeOutgoingGameplayEffectSpec(DamageEffectClass, 1.f);
 	float ScaledDamage = Damage.GetValueAtLevel(GetAbilityLevel());
 	if (GetAvatarActorFromActorInfo()->Implements<UCombatInterface>())
@@ -21,7 +23,7 @@ void UDonDamageGameplayAbility::CauseDamage(AActor* TargetActor)
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(DamageSpecHandle, DamageType, ScaledDamage);
 	GetAbilitySystemComponentFromActorInfo()->ApplyGameplayEffectSpecToTarget(*DamageSpecHandle.Data.Get(), UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor));
 }
-
+	
 FDamageEffectParams UDonDamageGameplayAbility::MakeDamageEffectParamsFromClassDefaults(AActor* TargetActor,
                                                                                        FVector InRadialDamageOrigin, bool bOverrideKnockbackDirection, FVector KnockbackDirectionOverride,
                                                                                        bool bOverrideDeathImpulse, FVector DeathImpulseDirectionOverride, bool bOverridePitch, float PitchOverride) const

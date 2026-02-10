@@ -3,10 +3,14 @@
 
 #include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
 
+#include "GameInstance/SubSystem/InnManagerSubsystem.h"
 #include "Inn/Actor/InnChef.h"
-#include "Inn/Actor/InnSeat.h"
 #include "Inn/Character/InnCustomer.h"
+#include "Inn/Object/InnCustomerGroup.h"
+#include "Inventory/DonItemLibrary.h"
+#include "Inventory/InventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/DonPlayerState.h"
 
 bool UKitchenOrderSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
@@ -17,60 +21,36 @@ bool UKitchenOrderSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 	return false;
 }
 
-void UKitchenOrderSubsystem::InitDestLocations()
-{
-	TArray<AActor*> Exits;
-	UGameplayStatics::GetAllActorsWithTag(this, FName("Exit"), Exits);
-
-	for (const AActor* Target : Exits) ExitLocation = Target->GetActorLocation();
-
-	
-	TArray<AActor*> InnEntrances;
-	UGameplayStatics::GetAllActorsWithTag(this, FName("InnEntrance"), InnEntrances);
-
-	for (const AActor* Target : InnEntrances) InnEntranceLocation = Target->GetActorLocation();
-
-	
-	TArray<AActor*> RoomEntrances;
-	UGameplayStatics::GetAllActorsWithTag(this, FName("RoomEntrance"), RoomEntrances);
-
-	for (const AActor* Target : RoomEntrances) RoomEntranceLocation = Target->GetActorLocation();
-
-	TArray<AActor*> SeatActors;
-	UGameplayStatics::GetAllActorsOfClass(this, AInnSeat::StaticClass(), SeatActors);
-
-	for (AActor* Actor : SeatActors)
-	{
-		if (AInnSeat* Seat = Cast<AInnSeat>(Actor))
-		{
-			Seats.Add(Seat);
-		}
-	}
-}
-
 void UKitchenOrderSubsystem::BroadcastInitialValues()
 {
+	DonPlayerState = CastChecked<ADonPlayerState>(UGameplayStatics::GetPlayerState(this, 0));
+	
 	OnKitchenOrderUpdated.Broadcast(KitchenOrderQueue);
 }
 
-void UKitchenOrderSubsystem::AssignChef(FKitchenOrder& Order)
+void UKitchenOrderSubsystem::AssignChef()
 {
-	if (AInnChef* IdleChef = FindIdleChef())
+	for (FKitchenOrder& Order : KitchenOrderQueue)
 	{
-		Order.AssignedChef = IdleChef;
-		IdleChef->StartOrder(Order);
-		Order.OrderedCustomer->FoodOrder = Order;
+		if (Order.bIsCooking || Order.RemainingTime <= 0.f) continue;
 		
-		if (!GetWorld()->GetTimerManager().IsTimerActive(OrderTimerHandle))
+		if (AInnChef* IdleChef = FindIdleChef())
 		{
-			GetWorld()->GetTimerManager().SetTimer(
-				OrderTimerHandle,
-				this,
-				&UKitchenOrderSubsystem::UpdateKitchenOrders,
-				TickTimer,
-				true
-			);
+			Order.AssignedChef = IdleChef;
+			IdleChef->StartOrder(Order);
+			
+			if (!GetWorld()->GetTimerManager().IsTimerActive(OrderTimerHandle))
+			{
+				GetWorld()->GetTimerManager().SetTimer(
+					OrderTimerHandle,
+					this,
+					&UKitchenOrderSubsystem::UpdateKitchenOrders,
+					TickTimer,
+					true
+				);
+			}
 		}
+		else break;
 	}
 }
 
@@ -79,9 +59,9 @@ FKitchenOrder UKitchenOrderSubsystem::EnqueueKitchenOrder(FKitchenOrder& Order)
 	Order.OrderID = FGuid::NewGuid();
 	Order.RemainingTime = Order.CookingTime;
 	
-	AssignChef(Order);
-	
 	KitchenOrderQueue.Add(Order);
+	AssignChef();
+	
 	OnKitchenOrderAdded.Broadcast(Order);
 	return Order;
 }
@@ -105,33 +85,6 @@ AInnChef* UKitchenOrderSubsystem::FindIdleChef()
 		if (!Chef->IsCooking()) return Chef;
 	}
 	return nullptr;
-}
-
-AInnSeat* UKitchenOrderSubsystem::FindAndOccupyEmptySeat()
-{
-	for (AInnSeat* Seat : Seats)
-	{
-		if (!Seat->GetIsOccupied())
-		{
-			Seat->SetIsOccupied(true);
-			return Seat;
-		}
-	}
-	return nullptr;
-}
-
-bool UKitchenOrderSubsystem::HasEmptySeat()
-{
-	for (AInnSeat* Seat : Seats)
-	{
-		if (!Seat->GetIsOccupied()) return true;
-	}
-	return false;
-}
-
-void UKitchenOrderSubsystem::SpawnKitchenCustomer(TSubclassOf<AInnCustomer> CustomerClass, FVector SpawnLocation)
-{
-	AInnCustomer* Customer = GetWorld()->SpawnActor<AInnCustomer>(CustomerClass, SpawnLocation, FRotator::ZeroRotator);
 }
 
 void UKitchenOrderSubsystem::UpdateKitchenOrders()
@@ -161,29 +114,61 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 	{
 		FKitchenOrder Order = KitchenOrderQueue[i];
 		Order.AssignedChef->EndOrder();
+
+		UInnManagerSubsystem* InnSystem = GetGameInstance()->GetSubsystem<UInnManagerSubsystem>();
+		
 		if (AInnCustomer* Customer = Cast<AInnCustomer>(Order.OrderedCustomer))
 		{
-			Customer->ReceivedFood();
-		}
+			Customer->ReceiveFood();
 
-		// 완료된 요리 주문을 제거하기 전에 요리사를 다음 주문에 할당
-		for (FKitchenOrder& NewOrder : KitchenOrderQueue)
-		{
-			if (FindIdleChef() != nullptr &&
-				!NewOrder.bIsCooking &&
-				NewOrder.RemainingTime > 0.f)
+			FItem Ingredient = UDonItemLibrary::FindItemByName(this, Order.SpecialIngredient);
+			int32 Index = DonPlayerState->GetInventoryComponent()->FindItemInInventory(Ingredient);
+			int32 FinalSatisfaction = Order.DefaultSatisfaction;
+			
+			if (Index != INDEX_NONE)
 			{
-				AssignChef(NewOrder);
-				break;
+				FinalSatisfaction *= Customer->GetLevel() + 2;
+				DonPlayerState->GetInventoryComponent()->RemoveItem(Index);
 			}
+			
+			UInnCustomerGroup* Group = InnSystem->GetGroupInfo(Customer->GetGroupID());
+			Group->AddToSatisfaction(FinalSatisfaction);
+
+			// Save Completed Order
+			FCompletedFoodOrder CompletedOrder;
+			CompletedOrder.ChefLevel = Order.AssignedChef->GetChefLevel();
+			CompletedOrder.FoodName = Order.CuisineName;
+			CompletedOrder.FoodPrice = Order.Price;
+			CompletedOrder.CustomerID = Customer->GetID();
+			CompletedOrder.OrderID = Order.OrderID;
+
+			CompletedFoodOrders.Add(CompletedOrder);
 		}
 		
 		KitchenOrderQueue.RemoveAt(i);
 		OnKitchenOrderRemoved.Broadcast(Order);
 	}
 
+	AssignChef();
+
+	// 타이머 종료
 	if (KitchenOrderQueue.IsEmpty())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(OrderTimerHandle);
 	}
+}
+
+FCompletedFoodOrder UKitchenOrderSubsystem::GetCompletedOrder(FGuid ID)
+{
+	FCompletedFoodOrder FoundOrder;
+	
+	for (FCompletedFoodOrder& Order : CompletedFoodOrders)
+	{
+		if (Order.CustomerID == ID)
+		{
+			FoundOrder = Order;
+			return FoundOrder;
+		}
+	}
+	return FoundOrder;
 }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ItemStructs.h"
 #include "Engine/DataAsset.h"
 #include "CuisineAsset.generated.h"
 
@@ -50,6 +51,12 @@ struct FKitchenOrder
 	
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AInnCustomer> OrderedCustomer;
+	
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	int32 DefaultSatisfaction = 10;
+	
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FName SpecialIngredient;
 };
 
 /**

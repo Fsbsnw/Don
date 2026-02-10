@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/ItemAsset.h"
 #include "Data/ItemStructs.h"
 #include "Input/DragAndDrop.h"
 #include "UI/WidgetController/DonWidgetController.h"
@@ -16,7 +15,6 @@ class UDragDropOperation;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryWidgetChanged, const TArray<FItem>&, Inventory);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryUpdate, FItem, Item);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceChanged, int32, Money);
 
 
 /**
@@ -30,8 +28,6 @@ public:
 	virtual void BindCallbacksToDependencies() override;
 	virtual void BroadcastInitialValues() override;
 
-	
-
 	UInventoryComponent* GetInventoryComponent();
 
 	UPROPERTY(EditDefaultsOnly)
@@ -39,20 +35,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void HandleSlotSellEvent(int32 SlotIndex = -1);
-
-	/*
-	 * Delegates
-	 */
-
-	UPROPERTY(BlueprintAssignable, Category = "Inventory")
-	FOnResourceChanged OnMoneyChanged;
-
-	UPROPERTY(BlueprintAssignable, Category = "Inventory")
-	FOnResourceChanged OnMemoryFragmentChanged;
-
-	/*
-	 * Delegates
-	 */
 
 	
 	// Item functions
@@ -72,22 +54,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool UpgradeArmorItem(int32 SlotIndex, int32 Points = 1);
 	
-	// Resource functions
-
 	UPROPERTY(BlueprintAssignable)
 	FOnInventoryWidgetChanged OnInventoryChanged;
 	
 	UFUNCTION(BlueprintCallable)
 	void HandleInventoryUpdated(const TArray<FItem>& Inventory);
-	
-	UFUNCTION()
-	void OnMoneyAdded(int32 Money);
-	
-	UFUNCTION()
-	void OnMemoryFragmentAdded(int32 MemoryFragment);
-
-	UFUNCTION(BlueprintCallable)
-	void AddMemoryFragment(int32 InMemoryFragment);
-private:
-	UDonInventorySlotWidget* DraggedSlot = nullptr;
 };

@@ -7,6 +7,11 @@
 #include "GameplayTags.h"
 #include "DonPlayerController.generated.h"
 
+
+struct FInputActionValue;
+class UInputAction;
+DECLARE_DELEGATE_OneParam(FOnUIOpenRequested, FGameplayTag);
+
 class UDamageTextComponent;
 class UDonAbilitySystemComponent;
 class UDonInputConfig;
@@ -29,6 +34,8 @@ public:
 	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter, bool bCriticalHit);
 	UFUNCTION()
 	void ShowEvadeText(ACharacter* TargetCharacter, bool bEvade);
+
+	FOnUIOpenRequested OnUIOpenRequested;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -39,6 +46,11 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Inputs")
 	TObjectPtr<UDonInputConfig> InputConfig;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Inputs")
+	TObjectPtr<UInputAction> IA_Move;
+
+	void OnMoveInput(const FInputActionValue& Value);
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);

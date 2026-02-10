@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "Data/ItemAsset.h"
 #include "Data/Quest.h"
 #include "Data/Dialogue.h"
 #include "GameFramework/PlayerState.h"
 #include "DonPlayerState.generated.h"
 
+class UInnStoreComponent;
+class UInnManagerComponent;
 class UNiagaraSystem;
 class ULevelUpInfo;
 class UInventoryComponent;
@@ -29,11 +30,23 @@ class DON_API ADonPlayerState : public APlayerState, public IAbilitySystemInterf
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
-	
 	ADonPlayerState();
 
+	// Inn Manager Component
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UInnManagerComponent> InnManagerComponent;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UInnStoreComponent> InnStoreComponent;
+	
+	UFUNCTION(BlueprintCallable, Category = "Inn Store")
+	UInnStoreComponent* GetInnStoreComponent() const { return InnStoreComponent; }
+	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
+
+	
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;

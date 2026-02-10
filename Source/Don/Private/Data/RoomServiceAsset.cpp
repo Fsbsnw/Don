@@ -11,3 +11,9 @@ FRoomServiceOrder URoomServiceAsset::FindRoomServiceByName(FName RoomServiceName
 	}
 	return FRoomServiceOrder();
 }
+
+FRoomServiceOrder URoomServiceAsset::GetRandomRoomService()
+{
+	int32 Index = FMath::RandRange(0, RoomServiceInformation.Num() - 1);
+	return RoomServiceInformation[Index];
+}

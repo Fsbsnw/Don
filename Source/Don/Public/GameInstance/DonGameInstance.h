@@ -9,6 +9,10 @@
 #include "Data/Quest.h"
 #include "DonGameInstance.generated.h"
 
+class UItemConsumableAsset;
+class UItemEquipmentAsset;
+class UItemAsset;
+class UCustomerAsset;
 class URoomServiceAsset;
 class UCuisineAsset;
 class UAbilityInfo;
@@ -49,4 +53,16 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	URoomServiceAsset* RoomServiceDataAsset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCustomerAsset* CustomerDataAsset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
+	TObjectPtr<UItemAsset> ItemInfoAsset;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
+	TObjectPtr<UItemEquipmentAsset> ItemEquipmentAsset;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
+	TObjectPtr<UItemConsumableAsset> ItemConsumableAsset;
 };

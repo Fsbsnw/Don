@@ -7,9 +7,32 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "KitchenOrderSubsystem.generated.h"
 
+class ADonPlayerState;
 class AInnSeat;
 class AInnCustomer;
 class AInnChef;
+
+USTRUCT(BlueprintType)
+struct FCompletedFoodOrder
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	int32 ChefLevel = 1;
+
+	UPROPERTY()
+	FName FoodName;
+	
+	UPROPERTY()
+	int32 FoodPrice = 0;
+
+	UPROPERTY()
+	FGuid OrderID = FGuid();
+
+	UPROPERTY()
+	FGuid CustomerID = FGuid();
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKitchenOrderChanged, FKitchenOrder, KitchenOrder);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKitchenOrderUpdated, const TArray<FKitchenOrder>&, KitchenOrders);
 
@@ -23,13 +46,15 @@ class DON_API UKitchenOrderSubsystem : public UGameInstanceSubsystem
 
 protected:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
+
 	UFUNCTION(BlueprintCallable)
-	void InitDestLocations();
+	void BroadcastInitialValues();
+
+	UPROPERTY()
+	ADonPlayerState* DonPlayerState;
 	
 public:
-	// Kitchen Order
-
-	float TickTimer = 0.1f;
+	// Food Order	
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnKitchenOrderChanged OnKitchenOrderAdded;
@@ -40,43 +65,27 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnKitchenOrderUpdated OnKitchenOrderUpdated;
 
-	UFUNCTION(BlueprintCallable)
-	void BroadcastInitialValues();
 
 	UFUNCTION(BlueprintCallable)
 	TArray<FKitchenOrder>& GetKitchenOrderQueue() { return KitchenOrderQueue; };
 
 	FKitchenOrder EnqueueKitchenOrder(FKitchenOrder& Order);
 	FGuid FindNextQueuedOrderID() const;
+	void UpdateKitchenOrders();
+
+	FCompletedFoodOrder GetCompletedOrder(FGuid ID);
 
 	
 	// Chef
 
-	void AssignChef(FKitchenOrder& Order);
+	void AssignChef();
 	void RegisterChef(AInnChef* Chef) { if (!Chefs.Contains(Chef)) Chefs.Add(Chef); };
 	void UnregisterChef(AInnChef* Chef) { if (Chefs.Contains(Chef)) Chefs.Remove(Chef); };
 	AInnChef* FindIdleChef();
-
-	
-	// Seat
-
-	AInnSeat* FindAndOccupyEmptySeat();
-	bool HasEmptySeat();
-
-
-	// Test
-
-	UFUNCTION(BlueprintCallable)
-	void SpawnKitchenCustomer(TSubclassOf<AInnCustomer> CustomerClass, FVector SpawnLocation);
-
-	UPROPERTY(BlueprintReadWrite)
-	FVector ExitLocation = FVector::ZeroVector;
-	UPROPERTY(BlueprintReadWrite)
-	FVector InnEntranceLocation = FVector::ZeroVector;;
-	UPROPERTY(BlueprintReadWrite)
-	FVector RoomEntranceLocation = FVector::ZeroVector;;
 	
 private:
+	float TickTimer = 0.1f;
+	
 	UPROPERTY()
 	TArray<FKitchenOrder> KitchenOrderQueue;
 
@@ -84,11 +93,7 @@ private:
 	TArray<AInnChef*> Chefs;
 
 	UPROPERTY()
-	TArray<AInnCustomer*> Customers;
-
-	UPROPERTY()
-	TArray<AInnSeat*> Seats;
-
+	TArray<FCompletedFoodOrder> CompletedFoodOrders;
+	
 	FTimerHandle OrderTimerHandle;
-	void UpdateKitchenOrders();
 };

@@ -5,6 +5,7 @@
 
 #include "DonGameModeBase.h"
 #include "NiagaraFunctionLibrary.h"
+#include "AbilitySystem/DonAbilityLibrary.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
 #include "AI/DonAIController.h"
@@ -151,7 +152,7 @@ void ADonEnemy::Die_Implementation(const FVector& DeathImpulse, float ItemDropRa
 
 	const FVector SpawnLocation = GetActorLocation();
 	const FRotator SpawnRotation = GetActorRotation();
-	FCharacterClassInfo CharacterClassInfo = UDonItemLibrary::FindCharacterClassInfo(this, CharacterClass);
+	FCharacterClassInfo CharacterClassInfo = UDonAbilityLibrary::FindCharacterClassInfo(this, CharacterClass);
 
 	UDonItemLibrary::SpawnLootableXP(this, CharacterClassInfo.DroppableXP, SpawnLocation, SpawnRotation);
 	UDonItemLibrary::SpawnLootableMoney(this, CharacterClassInfo.DroppableMoney, FMath::RandRange(0, 3), SpawnLocation, SpawnRotation);
