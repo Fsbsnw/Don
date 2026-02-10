@@ -21,6 +21,9 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	USkeletalMeshComponent* Mesh;
+
 public:
 	FORCEINLINE bool IsCooking() const { return bIsCooking; }
 	void StartOrder(FKitchenOrder& Order);

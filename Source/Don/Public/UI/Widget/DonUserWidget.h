@@ -13,12 +13,23 @@ UCLASS()
 class DON_API UDonUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
+	
 public:
-	UFUNCTION(BlueprintCallable)
-	virtual void SetWidgetController(UObject* InWidgetController);
+	UPROPERTY()
+	UDonUserWidget* ParentWidget = nullptr;
+
+	UPROPERTY()
+	TArray<UDonUserWidget*> ChildWidgets;	
 	
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UObject> WidgetController;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetWidgetController(UObject* InWidgetController);
+
+	void AddChildWidget(UDonUserWidget* Child);
+	void CloseWidgetAndChildren();
+	void CloseSelf();
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)

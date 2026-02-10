@@ -13,8 +13,26 @@ class AInnSeat;
 struct FKitchenOrder;
 
 UENUM(BlueprintType)
+enum class ECustomerNotify : uint8
+{
+	EnterInn			UMETA(DisplayName = "EnterInn"),  
+	FinishedEating      UMETA(DisplayName = "FinishedEating"),
+	EnterRoom			UMETA(DisplayName = "EnterRoom"),
+	ExitInn				UMETA(DisplayName = "ExitInn"),
+};
+
+UENUM(BlueprintType)
+enum class ECustomerType : uint8
+{
+	First		UMETA(DisplayName = "First"),  
+	Second      UMETA(DisplayName = "Second"),
+	Third       UMETA(DisplayName = "Third"),           
+};
+
+UENUM(BlueprintType)
 enum class ECustomerInnState : uint8
 {
+	Entrance	 UMETA(DisplayName = "Entrance"),
 	Kitchen      UMETA(DisplayName = "Kitchen"),  
 	Room         UMETA(DisplayName = "Room"),
 	Exit         UMETA(DisplayName = "Exit"),           
@@ -36,34 +54,61 @@ enum class ECustomerSeatState : uint8
 	Sit					UMETA(DisplayName = "Sit")   
 };
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCustomerChanged, ECustomerNotify);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnInnGroupStateChanged, int32, ECustomerInnState);
+
 UCLASS()
 class DON_API AInnCustomer : public ACharacter
 {
 	GENERATED_BODY()
-
-public:
+protected:
 	AInnCustomer();
 
-	// Kitchen
+	virtual void BeginPlay() override;
+	
+public:
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UTexture2D*> Portraits;
+	
+	void SetDestination(const ECustomerInnState& Destination);
+	FVector GetDestination() const { return NextDestination; };
 
-	FKitchenOrder FoodOrder;
+	void EnterInn();
+	void ExitInn();
+
+	// Kitchen
+	
+	FOnInnGroupStateChanged OnInnGroupStateChanged;
+	FOnCustomerChanged OnCustomerChanged;
+
+	void OnSeatAssigned(bool State);
 	
 	UFUNCTION(BlueprintCallable)
+	FKitchenOrder CreateFoodOrder();
+
 	void OrderFood();
-	
-	UFUNCTION(BlueprintCallable)
-	void ReceivedFood();
+	void ReceiveFood();
 	
 	void FinishMeal();
+	void OnGroupMealFinished(bool State);
+	void OnGroupDecidedToStay(bool State);
+
+	int32 GetFoodPrice() const;
+	FGuid GetID() const { return ID; }
+	int32 GetLevel() const { return Level; }
+	int32 GetGroupID() const { return GroupID; };
+	int32 GetSatisfaction() const { return Satisfaction; }
+	void SetGroupID(int32 NewID) { GroupID = NewID; }
+	
+
+	// Room
 	
 	UFUNCTION(BlueprintCallable)
 	void EnterRoom();
 
-	FVector SetDestination(const ECustomerInnState Destination);
-
-	int32 GetChefLevel() const;
-	int32 GetFoodPrice() const { return FoodOrder.Price; }
 	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE ECustomerType GetType() const { return CustomerType; };
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE ECustomerMealState GetMealState() const { return MealState; };
 	UFUNCTION(BlueprintCallable)
@@ -71,30 +116,34 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE ECustomerSeatState GetSeatState() const { return SeatState; };
 
+	void SetInnState(ECustomerInnState State) { InnState = State; }
+
 	// Seat
 
-	UFUNCTION(BlueprintCallable)
-	void RequestSeat();
+	void ReserveSeat(AInnSeat* NewSeat);
 	void SitOnSeat();
 
-	// Test
-
-	UPROPERTY(EditAnywhere)
-	bool bGoToRoom = true;
+	UPROPERTY(VisibleInstanceOnly)
+	AInnSeat* Seat = nullptr;
 	
 private:
-	int32 GroupSize = 1;
-	
-	ECustomerInnState InnState = ECustomerInnState::Kitchen;
+	UPROPERTY(VisibleAnywhere)
+	FGuid ID;
+	int32 GroupID = 0;
+	int32 Level = 1;
+	int32 SelectedFood = 0;
+	int32 Satisfaction = 0;
+
+	ECustomerType CustomerType = ECustomerType::First;
+	ECustomerInnState InnState = ECustomerInnState::Entrance;
 	ECustomerMealState MealState = ECustomerMealState::WaitingForFood;
 	ECustomerSeatState SeatState = ECustomerSeatState::Idle;
+
+	FVector NextDestination = FVector::ZeroVector;
 	
 	UPROPERTY(EditAnywhere)
 	TArray<FName> FavoriteFoods;
 	
 	UPROPERTY(EditAnywhere)
 	float EatingTime = 10.f;
-
-	UPROPERTY(VisibleInstanceOnly)
-	AInnSeat* Seat = nullptr;
 };

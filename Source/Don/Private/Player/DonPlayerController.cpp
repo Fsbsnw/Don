@@ -78,6 +78,27 @@ void ADonPlayerController::SetupInputComponent()
 
 	DonInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 
+	if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		EIC->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ThisClass::OnMoveInput);
+	}
+}
+
+void ADonPlayerController::OnMoveInput(const FInputActionValue& Value)
+{
+	APawn* ControlledPawn = GetPawn();
+
+	const FVector2D Input = Value.Get<FVector2D>();
+	if (Input.IsNearlyZero()) return;
+
+	const FRotator ControlRot = GetControlRotation();
+	const FRotator YawRot(0.f, ControlRot.Yaw, 0.f);
+
+	const FVector Forward = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
+	const FVector Right   = FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y);
+
+	ControlledPawn->AddMovementInput(Forward, Input.Y);
+	ControlledPawn->AddMovementInput(Right,   Input.X);
 }
 
 void ADonPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
@@ -118,52 +139,12 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		}
 	}
 
-	// Open Menu
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_ESC))
+	if (InputTag.MatchesTag(FDonGameplayTags::Get().UI))
 	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
-		{
-			DonHUD->OpenMenu();
-		}		
+		OnUIOpenRequested.ExecuteIfBound(InputTag);
 	}
-
 	
-	// Open Inventory
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_Tab))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
-		{
-			DonHUD->OpenInventory();
-		}		
-	}
-
-	// Open Attribute Menu
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_J))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
-		{
-			DonHUD->OpenAttributeMenu();
-		}		
-	}
-
-	
-	// Open Skill Menu
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_K))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
-		{
-			DonHUD->OpenSkillMenu();
-		}		
-	}
-
-	// Open Quests
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_Q))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
-		{
-			DonHUD->OpenQuests();
-		}		
-	}
+	// j k q e esc
 
 	// Interact with NPC
 	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_E))

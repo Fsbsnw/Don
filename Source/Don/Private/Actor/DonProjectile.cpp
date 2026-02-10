@@ -13,6 +13,7 @@
 #include "Inventory/DonItemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
+#include "AbilitySystem/DonAbilityLibrary.h"
 
 ADonProjectile::ADonProjectile()
 {
@@ -105,7 +106,7 @@ void ADonProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, A
 		}
 		
 		DamageEffectParams.TargetAbilitySystemComponent = TargetASC;
-		FGameplayEffectContextHandle ContextHandle = UDonItemLibrary::ApplyDamageEffect(DamageEffectParams);
+		FGameplayEffectContextHandle ContextHandle = UDonAbilityLibrary::ApplyDamageEffect(DamageEffectParams);
 		if (const FDonGameplayEffectContext* EffectContext = static_cast<const FDonGameplayEffectContext*>(ContextHandle.Get()))
 		{
 			bCriticalHit = EffectContext->GetIsCriticalHit();

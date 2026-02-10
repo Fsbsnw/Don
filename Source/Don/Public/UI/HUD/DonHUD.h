@@ -4,8 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "GameplayTagContainer.h"
 #include "DonHUD.generated.h"
 
+
+class UDonWidgetController;
+class UInnWidgetController;
 class UAttributeMenuWidgetController;
 class UQuestListWidgetController;
 class UAttributeSet;
@@ -14,6 +18,9 @@ struct FWidgetControllerParams;
 class UOverlayWidgetController;
 class UInventoryWidgetController;
 class UDonUserWidget;
+
+using FUICommand = TFunction<void()>;
+
 /**
  * 
  */
@@ -21,14 +28,21 @@ UCLASS()
 class DON_API ADonHUD : public AHUD
 {
 	GENERATED_BODY()
+	
 public:
+
+	virtual void BeginPlay() override;
 
 	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams& WCParams);
 	UAttributeMenuWidgetController* GetAttributeMenuWidgetController(const FWidgetControllerParams& WCParams);
 	UInventoryWidgetController* GetInventoryWidgetController(const FWidgetControllerParams& WCParams);
 	UQuestListWidgetController* GetQuestListWidgetController(const FWidgetControllerParams& WCParams);
+	UInnWidgetController* GetInnWidgetController(const FWidgetControllerParams& WCParams);
 
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
+
+	bool IsValidInViewport(UDonUserWidget* Widget);
+	bool CloseWidgetIfOpened(TObjectPtr<UDonUserWidget>& Widget);
 
 	UFUNCTION(BlueprintCallable)
 	UDonUserWidget* GetOverlayWidget() const { return OverlayWidget; }
@@ -47,8 +61,23 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OpenSkillMenu();
+	
+	void OpenSetting();
+	void OpenDialog();
+	void OpenStore();
+	void OpenInnRoom();
+
+	void HandleUIOpenRequest(FGameplayTag Tag);
+	
+	// Inn
+
+	void OpenInnMenu();
+	void OpenGroceryStore();
 
 private:
+	TMap<FGameplayTag, FUICommand> UICommandMap;
+
+	
 	UPROPERTY()
 	TObjectPtr<UDonUserWidget> OverlayWidget;
 	
@@ -78,4 +107,26 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UAttributeMenuWidgetController> AttributeMenuWidgetControllerClass;
+
+
+	
+	// Inn
+	
+	UPROPERTY()
+	TObjectPtr<UInnWidgetController> InnWidgetController;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UInnWidgetController> InnWidgetControllerClass;
+
+	UPROPERTY()
+	TObjectPtr<UDonUserWidget> InnMenuWidget;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UDonUserWidget> InnMenuWidgetClass;
+	
+	UPROPERTY()
+	TObjectPtr<UDonUserWidget> GroceryStoreWidget;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UDonUserWidget> GroceryStoreWidgetClass;
 };

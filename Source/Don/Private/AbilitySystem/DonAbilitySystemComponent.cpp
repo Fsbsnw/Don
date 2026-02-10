@@ -5,8 +5,10 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "DonGameplayTags.h"
+#include "AbilitySystem/DonAbilityLibrary.h"
 #include "AbilitySystem/Abilities/DonGameplayAbility.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
+#include "Character/DonCharacterBase.h"
 #include "Character/Player/Interface/PlayerInterface.h"
 #include "Inventory/DonItemLibrary.h"
 
@@ -223,7 +225,7 @@ UGameplayAbility* UDonAbilitySystemComponent::GetAbilityFromAbilityTagInBlueprin
 
 void UDonAbilitySystemComponent::UpdateAbilityStatuses(int32 Level)
 {
-	UAbilityInfo* AbilityInfo = UDonItemLibrary::GetAbilityInfo(GetAvatarActor(), ECharacterClass::Fighter);
+	UAbilityInfo* AbilityInfo = UDonAbilityLibrary::GetAbilityInfo(GetAvatarActor(), ECharacterClass::Fighter);
 	for (const FDonAbilityInfo& Info : AbilityInfo->AbilityInformation)
 	{
 		if (!Info.AbilityTag.IsValid()) continue;

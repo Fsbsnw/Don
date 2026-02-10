@@ -4,6 +4,8 @@
 #include "AI/BTTask/BTTask_MoveToDestination.h"
 
 #include "AIController.h"
+#include "GameInstance/SubSystem/InnManagerSubsystem.h"
+#include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 
 UBTTask_MoveToDestination::UBTTask_MoveToDestination()
@@ -18,7 +20,8 @@ EBTNodeResult::Type UBTTask_MoveToDestination::ExecuteTask(UBehaviorTreeComponen
 
 	if (AInnCustomer* Customer = Cast<AInnCustomer>(Pawn))
 	{
-		FVector TargetLocation = Customer->SetDestination(Destination);
+		Customer->SetDestination(Destination);
+		FVector TargetLocation = Customer->GetDestination();
 		OwnerComp.GetAIOwner()->MoveToLocation(TargetLocation);
 		return EBTNodeResult::InProgress;
 	}
@@ -31,12 +34,18 @@ void UBTTask_MoveToDestination::TickTask(UBehaviorTreeComponent& OwnerComp, uint
 
 	if (AAIController* AIController = OwnerComp.GetAIOwner())
 	{
-		// 이동 상태를 체크 (Request가 완료되었거나, 경로가 없거나, 도착했는지)
 		EPathFollowingStatus::Type Status = AIController->GetMoveStatus();
 
 		if (Status == EPathFollowingStatus::Idle)
 		{
-			// 이동이 끝났다면 (목적지 도착) 태스크 성공 종료!
+			APawn* Pawn = OwnerComp.GetAIOwner()->GetPawn();
+			if (AInnCustomer* Customer = Cast<AInnCustomer>(Pawn))
+			{
+				if (Customer->GetInnState() == ECustomerInnState::Entrance)	Customer->EnterInn();
+				else if (Customer->GetInnState() == ECustomerInnState::Room) Customer->EnterRoom();
+				else if (Customer->GetInnState() == ECustomerInnState::Exit) Customer->ExitInn();
+			}
+			
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		}
 	}

@@ -19,7 +19,6 @@ public:
 
 	FGameplayTag InputTag_LMB;
 	FGameplayTag InputTag_RMB;
-	FGameplayTag InputTag_SpaceBar;
 	FGameplayTag InputTag_Tab;
 	FGameplayTag InputTag_ESC;
 	FGameplayTag InputTag_NumKey_1;
@@ -73,6 +72,14 @@ public:
 	// Cheat Attributes
 
 	FGameplayTag Cheat_Immortal;
+
+	// Move
+
+	FGameplayTag Move_Up;
+	FGameplayTag Move_Down;
+	FGameplayTag Move_Left;
+	FGameplayTag Move_Right;
+	FGameplayTag Move_Jump;
 
 
 	// Abilities
@@ -160,6 +167,32 @@ public:
 	FGameplayTag Reward;
 	FGameplayTag Reward_XP;
 	FGameplayTag Reward_Money;
+
+	
+	/*
+	 * UI Tags
+	 */
+
+	FGameplayTag UI;
+	FGameplayTag UI_Inventory_Open;
+	FGameplayTag UI_Attribute_Open;
+	FGameplayTag UI_Skill_Open;
+	FGameplayTag UI_Quest_Open;
+	FGameplayTag UI_Setting_Open;
+	FGameplayTag UI_Store_Normal_Open;
+	FGameplayTag UI_Interact;
+	FGameplayTag UI_Interact_Dialog_Open;
+	FGameplayTag UI_Interact_Store_Open;
+
+	
+		// UI Inn
+	
+		FGameplayTag UI_Inn;
+		FGameplayTag UI_Inn_Menu_Open;
+		FGameplayTag UI_Inn_GroceryStore_Open;
+		FGameplayTag UI_Inn_Room_Open;
+
+	
 
 
 	TMap<FGameplayTag, FGameplayTag> FindCooldownTags;

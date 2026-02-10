@@ -6,7 +6,23 @@
 #include "GameFramework/Actor.h"
 #include "InnSeat.generated.h"
 
+class AInnSeat;
 class UArrowComponent;
+
+USTRUCT(BlueprintType)
+struct FSeatGroup
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Seat Group")
+	int32 AssignedGroupID = -1;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Seat Group")
+	int32 GroupSize = 0;
+    
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Seat Group")
+	TArray<AInnSeat*> Seats;
+};
 
 UCLASS()
 class DON_API AInnSeat : public AActor
@@ -30,6 +46,8 @@ public:
 	FORCEINLINE bool GetIsOccupied() const { return bIsOccupied; }
 	FORCEINLINE void SetIsOccupied(const bool& bNewOccupied) { bIsOccupied = bNewOccupied; }
 
+	UPROPERTY(EditAnywhere)
+	int32 SeatGroup = 0;
 private:
 	bool bIsOccupied = false;
 };

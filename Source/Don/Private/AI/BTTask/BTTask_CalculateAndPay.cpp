@@ -4,7 +4,10 @@
 #include "AI/BTTask/BTTask_CalculateAndPay.h"
 
 #include "AIController.h"
+#include "DonInnGameMode.h"
+#include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
 #include "Inn/Character/InnCustomer.h"
+#include "Kismet/GameplayStatics.h"
 
 UBTTask_CalculateAndPay::UBTTask_CalculateAndPay()
 {
@@ -17,12 +20,24 @@ EBTNodeResult::Type UBTTask_CalculateAndPay::ExecuteTask(UBehaviorTreeComponent&
 
 	if (AInnCustomer* Customer = Cast<AInnCustomer>(Pawn))
 	{
-		int32 Level = Customer->GetChefLevel();
-		int32 Price = Customer->GetFoodPrice();
+		if (ADonInnGameMode* InnGameMode = Cast<ADonInnGameMode>(UGameplayStatics::GetGameMode(this)))
+		{
+			UKitchenOrderSubsystem* KitchenSystem = GetWorld()->GetGameInstance()->GetSubsystem<UKitchenOrderSubsystem>();
+			FCompletedFoodOrder CompletedOrder = KitchenSystem->GetCompletedOrder(Customer->GetID());
+			
+			int32 Level = CompletedOrder.ChefLevel;
+			int32 Price = CompletedOrder.FoodPrice;
+			int32 Reputation = InnGameMode->GetReputation();
+			int32 Popularity = InnGameMode->GetPopularity();
+			int32 Interior = InnGameMode->GetInterior();
 
-		UE_LOG(LogTemp, Warning, TEXT("Level : %d, Price : %d, Pay : %d"), Level, Price, Level * Price);
-		
-		return EBTNodeResult::Succeeded;
+			int32 FinalPrice = Level * Price + 10 * (Reputation + Popularity + Interior);
+			
+			UE_LOG(LogTemp, Warning, TEXT("Level : %d, Price : %d, Pay : %d"), Level, Price, FinalPrice);
+			
+			InnGameMode->AddToRevenue(FinalPrice);
+			return EBTNodeResult::Succeeded;
+		}
 	}
 
 	return EBTNodeResult::Failed;

@@ -6,6 +6,7 @@
 #include "Character/Component/InteractComponent.h"
 #include "Character/NPC/NPCCharacterBase.h"
 #include "Data/Dialogue.h"
+#include "Interaction/DonInteractionLibrary.h"
 #include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Player/DonPlayerState.h"
@@ -81,7 +82,7 @@ FDialogue UInteractWidgetController::FindCurrentDialogueProgress() const
 	else
 	{
 		FDonDialogueContext DialogueContext(NPCCharacter->NPCName, 1, "", "Default", 1);
-		UDonItemLibrary::FindDialogueRow(GetWorld(), InitialDialogue, DialogueContext);
+		UDonInteractionLibrary::FindDialogueRow(GetWorld(), InitialDialogue, DialogueContext);
 	}
 	return InitialDialogue;
 }
@@ -89,7 +90,7 @@ FDialogue UInteractWidgetController::FindCurrentDialogueProgress() const
 FDialogue UInteractWidgetController::FindDialogueRow(FDonDialogueContext& DialogueContext) const
 {
 	FDialogue Dialogue;
-	UDonItemLibrary::FindDialogueRow(GetWorld(), Dialogue, DialogueContext);
+	UDonInteractionLibrary::FindDialogueRow(GetWorld(), Dialogue, DialogueContext);
 	return Dialogue;
 }
 
@@ -157,7 +158,7 @@ FQuest UInteractWidgetController::FindQuestInDialogue()
 bool UInteractWidgetController::HasQuestInPlayerState(ENPCName NPCName, FString QuestTitle) const
 {
 	FQuest Quest;
-	if (!UDonItemLibrary::FindQuestRow(GetWorld(), Quest, NPCName, QuestTitle)) return false;
+	if (!UDonInteractionLibrary::FindQuestRow(GetWorld(), Quest, NPCName, QuestTitle)) return false;
 
 	ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
 	if (DonPlayerState)

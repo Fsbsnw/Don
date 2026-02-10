@@ -4,6 +4,7 @@
 #include "AI/BTDecorator/BTDeco_WantToStay.h"
 
 #include "AIController.h"
+#include "GameInstance/SubSystem/InnManagerSubsystem.h"
 #include "Inn/Character/InnCustomer.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -15,15 +16,13 @@ UBTDeco_WantToStay::UBTDeco_WantToStay()
 bool UBTDeco_WantToStay::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	APawn* Pawn = OwnerComp.GetAIOwner()->GetPawn();
-	// UKitchenOrderSubsystem* KitchenSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UKitchenOrderSubsystem>();
-	// if (KitchenSystem == nullptr) return false;
 	
 	if (AInnCustomer* Customer = Cast<AInnCustomer>(Pawn))
 	{
-		Customer->bGoToRoom = FMath::RandBool();
-		// URoomSystem으로 빈방 확인
-		return Customer->bGoToRoom;
+		UInnManagerSubsystem* InnSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UInnManagerSubsystem>();
+		ECustomerInnState InnState = InnSystem->GetGroupInnState(Customer->GetGroupID());
+		
+		return InnState == ECustomerInnState::Room;
 	}
-	
 	return false;
 }

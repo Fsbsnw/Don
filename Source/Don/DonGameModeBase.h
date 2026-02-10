@@ -54,15 +54,6 @@ public:
 
 	// Data Asset
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
-	TObjectPtr<UItemAsset> ItemInfoAsset;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
-	TObjectPtr<UItemEquipmentAsset> ItemEquipmentAsset;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
-	TObjectPtr<UItemConsumableAsset> ItemConsumableAsset;
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "NPC Information")
 	TObjectPtr<UNPCInfo> NPCInfoAsset;
 

@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "DonInnLibrary.generated.h"
 
+class UInnWidgetController;
 struct FRoomServiceOrder;
 struct FKitchenOrder;
 /**
@@ -16,6 +17,13 @@ class DON_API UDonInnLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
+
+	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | Inn")
+	static UInnWidgetController* GetInnWidgetController(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | Inn")
+	static TSubclassOf<AInnCustomer> GetCustomerClass(const UObject* WorldContextObject, ECustomerType Type);
+	
 	// Kitchen
 	
 	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | Kitchen")
@@ -32,6 +40,9 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | RoomService")
 	static FRoomServiceOrder FindRoomServiceByName(const UObject* WorldContextObject, FName RoomServiceName);
+
+	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | RoomService")
+	static FRoomServiceOrder GetRandomRoomService(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | RoomService")
 	static void AddRoomServiceOrder(const UObject* WorldContextObject, FRoomServiceOrder RoomServiceOrder);

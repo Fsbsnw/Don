@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "DonGameplayTags.h"
+#include "AbilitySystem/DonAbilityLibrary.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/DonDamageGameplayAbility.h"
 #include "Camera/CameraComponent.h"
@@ -109,7 +110,7 @@ void ADonCharacter::OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponen
 		
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, FDonGameplayTags::Get().Request_Abilities_Lightning, Payload);
 		
-		UDonItemLibrary::ApplyDamageEffect(DamageEffectParams);
+		UDonAbilityLibrary::ApplyDamageEffect(DamageEffectParams);
 	}
 }
 
