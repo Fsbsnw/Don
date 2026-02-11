@@ -41,7 +41,7 @@
 
   특정 시간 경과 후, 룸 서비스 요청 및 미니게임 실행
 
-  <img width="1655" height="835" alt="Image" src="https://github.com/user-attachments/assets/05e6787e-07c8-42d2-813c-5184ba97ad97" />
+  <img width="1683" height="847" alt="Image" src="https://github.com/user-attachments/assets/5aca43d0-50bf-4f0e-a0ec-11af1bda5cb2" />
 
   
 </details>
