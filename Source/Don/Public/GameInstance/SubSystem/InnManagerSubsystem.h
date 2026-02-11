@@ -163,7 +163,7 @@ public:
 	FInnCustomerGroupSnapshot GetLodgerInfo(int32 RoomNumber);
 	bool CheckInCustomer(int32 GroupID);
 	void MorningCheckOut();
-	void AssignCustomerToRoom(int32 GroupID, int32 RoomIndex);
+	bool AssignCustomerToRoom(int32 GroupID, int32 RoomIndex);
 	
 	FORCEINLINE bool HasEmptyRoom() const { return LodgerGroups.Num() < RoomCapacity; }
 

@@ -186,6 +186,7 @@ void UInnCustomerGroup::SetRoomServiceTimer()
 void UInnCustomerGroup::InitRoomService()
 {
 	GroupRoomService = UDonInnLibrary::GetRandomRoomService(this);
+	MaxRoomServiceTimeLimit = GroupRoomService.LimitTime;
 
 	UE_LOG(LogTemp, Warning, TEXT("Init Room Service"));
 }
@@ -193,7 +194,25 @@ void UInnCustomerGroup::InitRoomService()
 void UInnCustomerGroup::RequestRoomService()
 {
 	GroupRoomService.bIsRequested = true;
+
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUObject(this, &UInnCustomerGroup::TickRoomService);
+	GetWorld()->GetTimerManager().SetTimer(RoomServiceTimeLimitHandle, TimerDelegate, 0.01f, true);
+	
 	OnGroupRoomServiceRequested.Broadcast(GroupID);
+}
+
+void UInnCustomerGroup::TickRoomService()
+{
+	GroupRoomService.LimitTime -= GetWorld()->GetDeltaSeconds();
+	if (GroupRoomService.LimitTime <= 0.f)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(RoomServiceTimeLimitHandle);
+		OnRoomServiceChanged.Broadcast(GroupRoomService.LimitTime);
+		OnRoomServiceChanged.Clear();
+		return;
+	}
+	OnRoomServiceChanged.Broadcast(GroupRoomService.LimitTime);
 }
 
 void UInnCustomerGroup::ExitInn()

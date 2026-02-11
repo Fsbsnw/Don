@@ -26,7 +26,7 @@ struct FRoomServiceOrder
 	int32 ServiceLevel = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	int32 LimitTime = 10;
+	float LimitTime = 10;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	int32 RewardMoney;

@@ -9,6 +9,7 @@
 #include "Data/ItemStructs.h"
 #include "InnWidgetController.generated.h"
 
+class UInnRoomInfoWidget;
 struct FItem;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInnGroupChangedUI, const TArray<UInnCustomerGroup*>&, CurrentGroups);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInnGroupRoomServiceReceivedUI, int32, GroupID);
@@ -29,6 +30,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FInnCustomerGroupSnapshot GetCurrentLodgerInfo(int32 RoomNumber, UPARAM(ref)bool& bOutOccupied, UPARAM(ref)bool& bOutServiceRequested);
 
+	UFUNCTION(BlueprintCallable)
+	UInnCustomerGroup* GetGroupInfo(int32 RoomNumber) const;
+	
 	UFUNCTION(BlueprintCallable)
 	FRoomInfo GetRoomInfo(int32 RoomNumber);
 
@@ -68,7 +72,7 @@ public:
 	bool IsSuitableForGroup(int32 GroupID, int32 RoomNumber);
 
 	UFUNCTION(BlueprintCallable)
-	void AssignCustomerToRoom(int32 GroupID, int32 RoomNumber);
+	bool AssignCustomerToRoom(int32 GroupID, int32 RoomNumber, UInnRoomInfoWidget* TargetWidget);
 
 	// Store
 
