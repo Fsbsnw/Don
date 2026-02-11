@@ -8,6 +8,7 @@
 #include "Inn/InnManagerComponent/InnManagerComponent.h"
 #include "Inn/InnStoreComponent/InnStoreComponent.h"
 #include "Inn/Object/InnCustomerGroup.h"
+#include "Inn/UI/Widget/InnRoomInfoWidget.h"
 #include "Inventory/InventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerController.h"
@@ -65,6 +66,12 @@ FInnCustomerGroupSnapshot UInnWidgetController::GetCurrentLodgerInfo(int32 RoomN
 	return GroupSnapshot;
 }
 
+UInnCustomerGroup* UInnWidgetController::GetGroupInfo(int32 RoomNumber) const
+{
+	UInnManagerSubsystem* InnSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UInnManagerSubsystem>();
+	return InnSystem->GetGroupInfo(InnSystem->GetRoomInfo(RoomNumber).GroupID);
+}
+
 FRoomInfo UInnWidgetController::GetRoomInfo(int32 RoomNumber)
 {
 	UInnManagerSubsystem* InnSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UInnManagerSubsystem>();
@@ -118,10 +125,21 @@ bool UInnWidgetController::IsSuitableForGroup(int32 GroupID, int32 RoomNumber)
 	return InnSystem->GetGroupSize(GroupID) <= InnSystem->RoomInfos[RoomNumber].Size;
 }
 
-void UInnWidgetController::AssignCustomerToRoom(int32 GroupID, int32 RoomNumber)
+bool UInnWidgetController::AssignCustomerToRoom(int32 GroupID, int32 RoomNumber, UInnRoomInfoWidget* TargetWidget)
 {
 	UInnManagerSubsystem* InnSystem = UGameplayStatics::GetGameInstance(this)->GetSubsystem<UInnManagerSubsystem>();
-	InnSystem->AssignCustomerToRoom(GroupID, RoomNumber);
+	const bool bAssigned = InnSystem->AssignCustomerToRoom(GroupID, RoomNumber);
+
+	if (bAssigned && TargetWidget)
+	{
+		UInnCustomerGroup* Group = InnSystem->GetGroupInfo(GroupID);
+		if (Group)
+		{
+			TargetWidget->BindCustomer(Group);
+			return true;
+		}
+	}
+	return false;
 }
 
 void UInnWidgetController::OpenGroceryStore()

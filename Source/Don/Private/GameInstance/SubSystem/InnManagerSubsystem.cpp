@@ -270,16 +270,17 @@ void UInnManagerSubsystem::MorningCheckOut()
 	OnInnGroupChanged.Broadcast(GetInnGroupsArray());
 }
 
-void UInnManagerSubsystem::AssignCustomerToRoom(int32 GroupID, int32 RoomIndex)
+bool UInnManagerSubsystem::AssignCustomerToRoom(int32 GroupID, int32 RoomIndex)
 {
 	UInnCustomerGroup* Group = GetGroupInfo(GroupID);
-	if (!Group || Group->AssignedRoomNumber != -1) return;
+	if (!Group || Group->AssignedRoomNumber != -1) return false;
 
 	Group->InitRoomService();
 	Group->AssignedRoomNumber = RoomIndex;
 	RoomInfos[RoomIndex].GroupID = GroupID;
 	RoomInfos[RoomIndex].bIsOccupied = true;
 	Group->SetRoomServiceTimer();
+	return true;
 }
 
 FString UInnManagerSubsystem::NewCustomerName()

@@ -8,6 +8,7 @@
 #include "InnCustomerGroup.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGroupChanged, int32);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnRoomServiceChanged, float);
 
 struct FCustomer;
 class AInnCustomer;
@@ -44,6 +45,7 @@ public:
 	FString GroupName;
 	FOnGroupChanged OnGroupChanged;
 	FOnGroupChanged OnGroupRoomServiceRequested;
+	FOnRoomServiceChanged OnRoomServiceChanged;
 	
 	// Kitchen Services
 	
@@ -83,6 +85,10 @@ public:
 	void SetRoomServiceTimer();
 	void InitRoomService();
 	void RequestRoomService();
+	void TickRoomService();
+	float MaxRoomServiceTimeLimit;
+
+	FTimerHandle RoomServiceTimeLimitHandle;
 
 	void ExitInn();
 	
