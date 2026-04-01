@@ -9,6 +9,7 @@
 #include "AbilitySystem/DonAttributeSet.h"
 #include "Data/LevelUpInfo.h"
 #include "GameFramework/Character.h"
+#include "GameInstance/DonGameInstance.h"
 #include "Inn/InnManagerComponent/InnManagerComponent.h"
 #include "Inn/InnStoreComponent/InnStoreComponent.h"
 #include "Inventory/DonItemLibrary.h"
@@ -30,12 +31,83 @@ ADonPlayerState::ADonPlayerState()
 	NetUpdateFrequency = 100.f;
 }
 
-void ADonPlayerState::BeginPlay()
+void ADonPlayerState::PostInitializeComponents()
 {
-	Super::BeginPlay();
+	Super::PostInitializeComponents();
 
-	if (InventoryComponent)	InventoryComponent->InitAndLoadInventory();
-	if (InnStoreComponent) InnStoreComponent->InitializeStoreMerchandise();
+	UDonGameInstance* GI = Cast<UDonGameInstance>(GetGameInstance());
+	if (!GI) return; 
+
+	TArray<UActorComponent*> SaveableComponents;
+	GetComponents(SaveableComponents);
+
+	LoadPlayerData(GI->SavedPlayerData);
+
+	for (UActorComponent* Comp : SaveableComponents)
+	{
+		if (Comp->IsA(UInnStoreComponent::StaticClass())) continue;
+		
+		if (ISaveableInterface* SaveInterface = Cast<ISaveableInterface>(Comp))
+		{
+			SaveInterface->LoadPlayerData(GI->SavedPlayerData);
+		}
+	}
+
+	if (ISaveableInterface* SaveInterface = Cast<ISaveableInterface>(InnStoreComponent))
+	{
+		SaveInterface->LoadPlayerData(GI->SavedPlayerData);
+	}
+}
+
+void ADonPlayerState::SavePlayerData(FPlayerSaveData& Data)
+{
+	Data.Level = Level;
+	Data.Money = Money;
+	Data.AttributePoints = AttributePoints;
+	Data.AxeUpgrade = AxeUpgrade;
+	Data.GameScore = GameScore;
+	Data.MemoryFragment = MemoryFragment;
+	Data.SkillPoints = SkillPoints;
+	Data.XP = XP;
+}
+
+void ADonPlayerState::LoadPlayerData(const FPlayerSaveData& InData)
+{
+	Level = InData.Level;
+	Money = InData.Money;
+	AttributePoints = InData.AttributePoints;
+	AxeUpgrade = InData.AxeUpgrade;
+	GameScore = InData.GameScore;
+	MemoryFragment = InData.MemoryFragment;
+	SkillPoints = InData.SkillPoints;
+	XP = InData.XP;
+}
+
+void ADonPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	UDonGameInstance* GI = Cast<UDonGameInstance>(GetGameInstance());
+	if (!GI) return;
+
+	FPlayerSaveData NewData;
+
+	// PlayerState가 가진 모든 컴포넌트 중 인터페이스를 상속받은 녀석들을 찾음
+	TArray<UActorComponent*> SaveableComponents;
+	GetComponents(SaveableComponents);
+
+	SavePlayerData(NewData);
+
+	for (UActorComponent* Comp : SaveableComponents)
+	{
+		if (ISaveableInterface* SaveInterface = Cast<ISaveableInterface>(Comp))
+		{
+			SaveInterface->SavePlayerData(NewData);
+		}
+	}
+
+	// 최종 결과물을 GameInstance에 저장
+	GI->SavedPlayerData = NewData;
 }
 
 void ADonPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

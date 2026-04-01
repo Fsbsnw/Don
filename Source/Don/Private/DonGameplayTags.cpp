@@ -69,6 +69,18 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("Keyboard E")
 	);
 
+		
+	GameplayTags.InputTag_F = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.F"),
+	FString("Keyboard F")
+	);
+
+		
+	GameplayTags.InputTag_G = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("InputTag.G"),
+	FString("Keyboard G")
+	);
+
 	GameplayTags.InputTag_Q = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("InputTag.Q"),
 	FString("Keyboard Q")
@@ -147,6 +159,11 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Attributes_Secondary_ItemDropRate = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Attributes.Secondary.ItemDropRate"),
 	FString("Increases the Rate of Item Drop")
+	);
+	
+	GameplayTags.Attributes_Secondary_MoveSpeed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Attributes.Secondary.MoveSpeed"),
+	FString("Move Speed")
 	);
 
 
@@ -248,6 +265,30 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("DodgeRolling Ability")
 	);
 
+
+	// Dungeon
+
+		
+	GameplayTags.Abilities_Dungeon_Smash = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Abilities.Dungeon.Smash"),
+	FString("Dungeon Smash Ability")
+	);
+
+			
+	GameplayTags.Abilities_Dungeon_Sweep = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Abilities.Dungeon.Sweep"),
+	FString("Dungeon Sweep Ability")
+	);
+
+
+		
+	GameplayTags.Abilities_Dungeon_Haste = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Abilities.Dungeon.Haste"),
+	FString("Dungeon Haste Ability")
+	);
+
+
+	
 	GameplayTags.Request_Abilities_Lightning = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Request.Abilities.Lightning"),
 	FString("Request Lightning Ability")
@@ -328,8 +369,25 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("Cooldown.FireBolt"),
 	FString("FireBolt Cooldown")
 	);
-	
 
+	
+	GameplayTags.Cooldown_Dungeon_Haste = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Dungeon.Haste"),
+	FString("Dungeon Haste Cooldown")
+	);
+
+		
+	GameplayTags.Cooldown_Dungeon_Smash = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Dungeon.Smash"),
+	FString("Dungeon Smash Cooldown")
+	);
+
+			
+	GameplayTags.Cooldown_Dungeon_Sweep = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Cooldown.Dungeon.Sweep"),
+	FString("Dungeon Sweep Cooldown")
+	);
+	
 
 	// Boss Abilities
 
@@ -479,7 +537,12 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FName("Item.Quest"),
 	FString("Quest Item")
 	);
-
+	
+	GameplayTags.Item_Grocery = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Item.Grocery"),
+	FString("Grocery Item")
+	);
+	
 	GameplayTags.Item_Equippable = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Item.Equippable"),
 	FString("Equippable Item")

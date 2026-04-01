@@ -41,6 +41,12 @@ protected:
 	virtual void BeginPlay() override;
 	
 public:
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void GameOverForUI(int32 Type);
+
+	void GameOver(int32 Type);
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnSpawnedAmountSignature OnSpawnedAmountDelegate;
 	
@@ -98,4 +104,15 @@ public:
 	void SpawnNPC(TSubclassOf<ACharacter> NPC);
 	UFUNCTION()
 	void SpawnBonusEnemy(TSubclassOf<ACharacter> Enemy);
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> InnLevel;
+
+	UFUNCTION(BlueprintCallable)
+	void EnterInnMap();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ExitDungeonForUI(int32 KillCount, int32 RemainCount);
+	void HandleDaybreak();
+	void ExitDungeon();
 };

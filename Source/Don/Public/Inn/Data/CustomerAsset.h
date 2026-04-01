@@ -7,6 +7,8 @@
 #include "Inn/Character/InnCustomer.h"
 #include "CustomerAsset.generated.h"
 
+class ADonEnemy;
+
 USTRUCT(BlueprintType)
 struct FCustomerData
 {
@@ -17,6 +19,12 @@ struct FCustomerData
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TSubclassOf<AInnCustomer> CustomerClass;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<ADonEnemy> LodgerEnemyClass;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TObjectPtr<UTexture2D> CustomerPortrait;
 };
 
 /**
@@ -31,5 +39,5 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FCustomerData> CustomerData;
 
-	TSubclassOf<AInnCustomer> GetCustomerClassByType(ECustomerType Type);
+	FCustomerData GetCustomerDataByType(ECustomerType Type);
 };

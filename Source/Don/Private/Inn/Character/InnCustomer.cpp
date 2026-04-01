@@ -6,10 +6,12 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Data/CuisineAsset.h"
+#include "GameInstance/DonGameInstance.h"
 #include "GameInstance/SubSystem/InnManagerSubsystem.h"
 #include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
 #include "Inn/DonInnLibrary.h"
 #include "Inn/Actor/InnSeat.h"
+#include "Inventory/DonItemLibrary.h"
 
 AInnCustomer::AInnCustomer()
 {
@@ -23,38 +25,41 @@ void AInnCustomer::BeginPlay()
 	ID = FGuid::NewGuid();
 }
 
-FKitchenOrder AInnCustomer::CreateFoodOrder()
+void AInnCustomer::CreateFoodOrder()
 {
-	SelectedFood = FMath::RandRange(0, FavoriteFoods.Num() - 1);
-	FKitchenOrder FoodOrder = UDonInnLibrary::FindCuisineByName(this, FavoriteFoods[SelectedFood]);
-	FoodOrder.OrderedCustomer = this;
-	return FoodOrder;
+	if (UDonGameInstance* DGI = Cast<UDonGameInstance>(GetGameInstance()))
+	{
+		OrderedFood = DGI->GetRandomCuisine();
+		OrderedFood.OrderedCustomer = this;
+	}
 }
 
 void AInnCustomer::OrderFood()
 {
 	if (MealState == ECustomerMealState::FinishedEating) return;
 	UKitchenOrderSubsystem* KitchenSystem = GetGameInstance()->GetSubsystem<UKitchenOrderSubsystem>();
-	
-	FKitchenOrder Order = CreateFoodOrder();
-	KitchenSystem->EnqueueKitchenOrder(Order);	
+	CreateFoodOrder();
+	KitchenSystem->EnqueueKitchenOrder(OrderedFood);	
 }
 
 void AInnCustomer::ReceiveFood()
 {
 	MealState = ECustomerMealState::Eating;
 
+	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 60;
+	SpawnLocation.Z = 162.f;
+	FTransform SpawnTransform(FRotator(), SpawnLocation);
+	if (AActor* FoodActor = GetWorld()->SpawnActor<AActor>(OrderedFood.FoodActor, SpawnTransform))
+	{
+		ReceivedFoodActor = FoodActor;
+	}
+	ReceiveFoodUI();
+
 	UE_LOG(LogTemp, Log, TEXT("%s has received the meal."), *GetName());
 }
 
 void AInnCustomer::FinishMeal()
 {
-	Seat->SetIsOccupied(false);
-	Seat = nullptr;
-
-	MealState = ECustomerMealState::FinishedEating;
-	SeatState = ECustomerSeatState::Idle;
-
 	UE_LOG(LogTemp, Log, TEXT("%s has finished the meal."), *GetName());
 	OnCustomerChanged.Broadcast(ECustomerNotify::FinishedEating);
 }
@@ -64,12 +69,22 @@ void AInnCustomer::OnGroupMealFinished(bool State)
 	if (AAIController* AIController = Cast<AAIController>(GetController()))
 	{
 		AIController->GetBlackboardComponent()->SetValueAsBool(FName("bAllFinishedEating"), State);
+
+		MealState = ECustomerMealState::FinishedEating;
+		SeatState = ECustomerSeatState::Idle;
+
+		if (Seat)
+		{
+			Seat->SetIsOccupied(false);
+			Seat = nullptr;
+		}
+		if (ReceivedFoodActor) ReceivedFoodActor->Destroy();
 	}
 }
 
 int32 AInnCustomer::GetFoodPrice() const
 {
-	return UDonInnLibrary::FindCuisineByName(this, FavoriteFoods[SelectedFood]).Price;
+	return OrderedFood.Price;
 }
 
 void AInnCustomer::OnSeatAssigned(bool State)
@@ -166,6 +181,6 @@ void AInnCustomer::SitOnSeat()
 	
 	SeatState = ECustomerSeatState::Sit;
 
-	SetActorLocation(Seat->GetActorLocation());
-	SetActorRotation(Seat->GetActorRotation());
+	SetActorLocation(Seat->SitPoint->GetComponentLocation());
+	SetActorRotation(Seat->SitPoint->GetComponentRotation());
 }

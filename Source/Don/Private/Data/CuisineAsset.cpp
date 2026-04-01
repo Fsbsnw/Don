@@ -14,3 +14,10 @@ FKitchenOrder UCuisineAsset::FindCuisineByName(FName CuisineName)
 	}
 	return FKitchenOrder();
 }
+
+FKitchenOrder UCuisineAsset::GetRandomCuisine()
+{
+	if (CuisineInformation.Num() <= 0) return FKitchenOrder();
+	int32 Index = FMath::RandRange(0, CuisineInformation.Num() - 1);
+	return CuisineInformation[Index];
+}

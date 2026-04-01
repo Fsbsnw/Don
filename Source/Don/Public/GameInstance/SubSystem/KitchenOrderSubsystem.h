@@ -20,10 +20,10 @@ struct FCompletedFoodOrder
 	UPROPERTY()
 	int32 ChefLevel = 1;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	FName FoodName;
 	
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	int32 FoodPrice = 0;
 
 	UPROPERTY()
@@ -31,6 +31,9 @@ struct FCompletedFoodOrder
 
 	UPROPERTY()
 	FGuid CustomerID = FGuid();
+
+	UPROPERTY()
+	int32 CustomerSatisfaction = 0;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKitchenOrderChanged, FKitchenOrder, KitchenOrder);
@@ -45,7 +48,6 @@ class DON_API UKitchenOrderSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 protected:
-	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 
 	UFUNCTION(BlueprintCallable)
 	void BroadcastInitialValues();
@@ -73,14 +75,17 @@ public:
 	FGuid FindNextQueuedOrderID() const;
 	void UpdateKitchenOrders();
 
-	FCompletedFoodOrder GetCompletedOrder(FGuid ID);
-
+	UPROPERTY()
+	TArray<FCompletedFoodOrder> CompletedFoodOrders;
+	FCompletedFoodOrder* GetCompletedOrder(FGuid ID);
+	void CloseKitchen();
+	
 	
 	// Chef
 
 	void AssignChef();
-	void RegisterChef(AInnChef* Chef) { if (!Chefs.Contains(Chef)) Chefs.Add(Chef); };
-	void UnregisterChef(AInnChef* Chef) { if (Chefs.Contains(Chef)) Chefs.Remove(Chef); };
+	void RegisterChef(AInnChef* Chef) { Chefs.AddUnique(Chef); }
+	void UnregisterChef(AInnChef* Chef) { if (Chefs.Contains(Chef)) Chefs.Remove(Chef); }
 	AInnChef* FindIdleChef();
 	
 private:
@@ -91,9 +96,6 @@ private:
 
 	UPROPERTY()
 	TArray<AInnChef*> Chefs;
-
-	UPROPERTY()
-	TArray<FCompletedFoodOrder> CompletedFoodOrders;
 	
 	FTimerHandle OrderTimerHandle;
 };

@@ -27,9 +27,10 @@ void UInnWidgetController::BindCallbacksToDependencies()
 	DonPlayerState->InnManagerComponent->OnReputationChanged.AddUObject(this, &UInnWidgetController::OnReputationAdded);
 	DonPlayerState->InnManagerComponent->OnPopularityChanged.AddUObject(this, &UInnWidgetController::OnPopularityAdded);
 	DonPlayerState->InnManagerComponent->OnInteriorChanged.AddUObject(this, &UInnWidgetController::OnInteriorAdded);
-
-	// Inn Store
-	DonPlayerState->GetInnStoreComponent()->OnInnMerchandiseChanged.AddUObject(this, &UInnWidgetController::OnMerchandiseUpdated);
+	DonPlayerState->InnManagerComponent->OnSuspicionChanged.AddUObject(this, &UInnWidgetController::OnSuspicionAdded);
+	DonPlayerState->InnStoreComponent->OnTableUpgradeChanged.AddUObject(this, &UInnWidgetController::OnTableUpgradeChanged);
+	DonPlayerState->InnStoreComponent->OnChefUpgradeChanged.AddUObject(this, &UInnWidgetController::OnChefUpgradeChanged);
+	DonPlayerState->InnStoreComponent->OnInnMerchandiseChanged.AddUObject(this, &UInnWidgetController::OnMerchandiseUpdated);
 
 	// Player
 	DonPlayerState->GetInventoryComponent()->OnInventoryChanged.AddDynamic(this, &UInnWidgetController::OnPlayerInventoryUpdated);
@@ -47,12 +48,15 @@ void UInnWidgetController::BroadcastInitialValues()
 
 	// Inn Store
 	OnInnMerchandiseChangedUI.Broadcast(DonPlayerState->GetInnStoreComponent()->InnMerchandise);
+	OnTableUpgradeChangedDelegate.Broadcast(DonPlayerState->GetInnStoreComponent()->GetTableUpgradeResources());
+	OnChefUpgradeChangedDelegate.Broadcast(DonPlayerState->GetInnStoreComponent()->GetChefUpgradeResources());
 
 	// Player
 	OnMoneyChanged.Broadcast(DonPlayerState->GetMoney());
 	OnReputationChanged.Broadcast(DonPlayerState->InnManagerComponent->GetReputation());
 	OnPopularityChanged.Broadcast(DonPlayerState->InnManagerComponent->GetPopularity());
 	OnInteriorChanged.Broadcast(DonPlayerState->InnManagerComponent->GetInterior());
+	OnSuspicionChanged.Broadcast(DonPlayerState->InnManagerComponent->GetSuspicion());
 }
 
 FInnCustomerGroupSnapshot UInnWidgetController::GetCurrentLodgerInfo(int32 RoomNumber, bool& bOutOccupied, bool& bOutServiceRequested)
@@ -108,6 +112,21 @@ void UInnWidgetController::OnInteriorAdded(int32 NewInterior)
 	OnInteriorChanged.Broadcast(NewInterior);
 }
 
+void UInnWidgetController::OnSuspicionAdded(int32 NewSuspicion)
+{
+	OnSuspicionChanged.Broadcast(NewSuspicion);
+}
+
+void UInnWidgetController::OnTableUpgradeChanged(const FInnUpgradeResources& UpgradeResources)
+{
+	OnTableUpgradeChangedDelegate.Broadcast(UpgradeResources);
+}
+
+void UInnWidgetController::OnChefUpgradeChanged(const FInnUpgradeResources& UpgradeResources)
+{
+	OnChefUpgradeChangedDelegate.Broadcast(UpgradeResources);
+}
+
 void UInnWidgetController::AddToGroupSatisfaction(int32 RoomNumber, int32 Satisfaction)
 {
 	UInnManagerSubsystem* InnSystem = GetWorld()->GetGameInstance()->GetSubsystem<UInnManagerSubsystem>();
@@ -156,6 +175,15 @@ bool UInnWidgetController::SellMerchandise(int32 ItemIndex)
 	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
 	{
 		return DonPlayerState->GetInnStoreComponent()->SellMerchandise(ItemIndex);
+	}
+	return false;
+}
+
+bool UInnWidgetController::UpgradeInn(bool bTargetIsTable)
+{
+	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState))
+	{
+		return DonPlayerState->GetInnStoreComponent()->UpgradeInn(bTargetIsTable);
 	}
 	return false;
 }

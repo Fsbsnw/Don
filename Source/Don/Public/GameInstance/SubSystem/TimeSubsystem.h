@@ -8,7 +8,7 @@
 #include "TimeSubsystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnGameTimeChanged, int32, Day, int32, Hour, int32, Minute);
-DECLARE_MULTICAST_DELEGATE(FOnMorning);
+DECLARE_MULTICAST_DELEGATE(FOnTimePeriodChanged);
 
 /**
  * 
@@ -19,6 +19,7 @@ class DON_API UTimeSubsystem : public UGameInstanceSubsystem, public FTickableGa
 	GENERATED_BODY()
 
 public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override;
 	virtual bool IsTickable() const override { return true; }
@@ -28,9 +29,19 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnGameTimeChanged OnGameTimeChanged;
 
-	FOnMorning OnMorning;
+	FOnTimePeriodChanged OnMorning;
+	FOnTimePeriodChanged OnMidnight;
+	FOnTimePeriodChanged OnDaybreak;
+
+	UFUNCTION(BlueprintCallable)
+	bool SkipToMidnight();
+
+	UFUNCTION(BlueprintCallable)
+	bool SkipToDaybreak();
+
+	void PauseTime() { bIsPaused = true; };
+	void ResumeTime() { bIsPaused = false; };
 	
-protected:
 	UFUNCTION(BlueprintPure, BlueprintCallable)
 	float GetCurrentTime() const { return CurrentTime; }
 
@@ -41,9 +52,11 @@ protected:
 	int32 GetCurrentHour() const { return (FMath::FloorToInt(CurrentTime) / 60) % 24; }
 
 	UFUNCTION(BlueprintPure, BlueprintCallable)
-	int32 GetCurrentMinute() const { return FMath::FloorToInt(CurrentTime) % 60 / 10; }
+	int32 GetCurrentTenMinuteUnit() const { return FMath::FloorToInt(CurrentTime) % 60 / 10; }
 	
 	
 private:
-	float CurrentTime = 0.f;
+	bool bIsPaused = false;
+	float CurrentTime = 360.f;
+	float TimeMultiplier = 0.f;
 };

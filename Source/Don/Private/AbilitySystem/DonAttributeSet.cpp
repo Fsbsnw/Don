@@ -32,6 +32,9 @@ UDonAttributeSet::UDonAttributeSet()
 	TagsToAttributes.Add(Tags.Attributes_Secondary_ExpGainRate, GetExpGainRateAttribute);
 	TagsToAttributes.Add(Tags.Attributes_Secondary_MoneyGainRate, GetMoneyGainRateAttribute);
 	TagsToAttributes.Add(Tags.Attributes_Secondary_ItemDropRate, GetItemDropRateAttribute);
+
+	
+	TagsToAttributes.Add(Tags.Attributes_Secondary_MoveSpeed, GetMoveSpeedAttribute);
 }
 
 void UDonAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -41,6 +44,7 @@ void UDonAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_CONDITION_NOTIFY(UDonAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UDonAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UDonAttributeSet, MoneyGainRate, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UDonAttributeSet, MoveSpeed, COND_None, REPNOTIFY_Always);
 }
 
 void UDonAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -186,10 +190,6 @@ void UDonAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 
 	if (!IsValid(Props.TargetAvatarActor)) return;
 	if (Props.TargetAvatarActor->Implements<UCombatInterface>() && ICombatInterface::Execute_IsDead(Props.TargetAvatarActor)) return;
-
-	
-	// if (!IsValid(TargetPawn)) return;
-	// if (Props.TargetCharacter->Implements<UCombatInterface>() && ICombatInterface::Execute_IsDead(Props.TargetCharacter)) return;
 	
 	FGameplayAttribute Attribute = Data.EvaluatedData.Attribute;
 	
@@ -308,6 +308,11 @@ void UDonAttributeSet::OnRep_MoneyGainRate(const FGameplayAttributeData& OldMone
 void UDonAttributeSet::OnRep_ExpGainRate(const FGameplayAttributeData& OldExpGainRate) const
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UDonAttributeSet, ExpGainRate, OldExpGainRate);
+}
+
+void UDonAttributeSet::OnRep_MoveSpeed(const FGameplayAttributeData& OldMoveSpeed) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UDonAttributeSet, MoveSpeed, OldMoveSpeed);
 }
 
 void UDonAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const

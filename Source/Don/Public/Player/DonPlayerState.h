@@ -7,6 +7,7 @@
 #include "Data/Quest.h"
 #include "Data/Dialogue.h"
 #include "GameFramework/PlayerState.h"
+#include "Interface/SaveableInterface.h"
 #include "DonPlayerState.generated.h"
 
 class UInnStoreComponent;
@@ -26,15 +27,21 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLevelChanged, int32 /*StatValue*/, bool 
  * 
  */
 UCLASS()
-class DON_API ADonPlayerState : public APlayerState, public IAbilitySystemInterface
+class DON_API ADonPlayerState : public APlayerState, public IAbilitySystemInterface, public ISaveableInterface
 {
 	GENERATED_BODY()
 public:
 	ADonPlayerState();
 
+	// Saveable Interface
+
+	virtual void PostInitializeComponents() override;
+	virtual void SavePlayerData(FPlayerSaveData& Data) override;
+	virtual void LoadPlayerData(const FPlayerSaveData& InData) override;
+
 	// Inn Manager Component
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UInnManagerComponent> InnManagerComponent;
 	
 	UPROPERTY(VisibleAnywhere)
@@ -47,7 +54,7 @@ public:
 	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 
 	
-	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }

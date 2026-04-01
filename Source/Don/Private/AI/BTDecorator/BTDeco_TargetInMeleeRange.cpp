@@ -24,6 +24,5 @@ bool UBTDeco_TargetInMeleeRange::CalculateRawConditionValue(UBehaviorTreeCompone
 			return DistanceToPlayer <= Distance;
 		}
 	}
-	
 	return false;
 }

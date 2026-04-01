@@ -30,12 +30,11 @@ UInnWidgetController* UDonInnLibrary::GetInnWidgetController(const UObject* Worl
 	return nullptr;
 }
 
-TSubclassOf<AInnCustomer> UDonInnLibrary::GetCustomerClass(const UObject* WorldContextObject, ECustomerType Type)
+FCustomerData UDonInnLibrary::GetCustomerAssetData(const UObject* WorldContextObject, ECustomerType Type)
 {
 	const UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	if (DonGameInstance == nullptr || DonGameInstance->CustomerDataAsset == nullptr) return nullptr;
-
-	return DonGameInstance->CustomerDataAsset->GetCustomerClassByType(Type);
+	if (DonGameInstance == nullptr || DonGameInstance->CustomerDataAsset == nullptr) return FCustomerData();
+	return DonGameInstance->CustomerDataAsset->GetCustomerDataByType(Type);
 }
 
 FKitchenOrder UDonInnLibrary::FindCuisineByName(const UObject* WorldContextObject, FName CuisineName)

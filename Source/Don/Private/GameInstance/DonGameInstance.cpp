@@ -4,6 +4,7 @@
 #include "GameInstance/DonGameInstance.h"
 
 #include "Engine/DataTable.h"
+#include "Inn/Data/CustomerAsset.h"
 
 void UDonGameInstance::Init()
 {
@@ -12,6 +13,24 @@ void UDonGameInstance::Init()
 	if (!InitDialogueDataTable()) UE_LOG(LogTemp, Warning, TEXT("Cannot initialize Dialogue Data Table"));
 	if (!InitQuestDataTable()) UE_LOG(LogTemp, Warning, TEXT("Cannot initialize Quest Data Table"));
 	if (!InitEquipmentDataTable()) UE_LOG(LogTemp, Warning, TEXT("Cannot initialize Equipment Data Table"));
+}
+
+FCustomerData UDonGameInstance::GetCustomerAssetData(ECustomerType Type)
+{
+	if (CustomerDataAsset)
+	{
+		return CustomerDataAsset->GetCustomerDataByType(Type);
+	}
+	return FCustomerData();
+}
+
+FKitchenOrder UDonGameInstance::GetRandomCuisine()
+{
+	if (CuisineDataAsset)
+	{
+		return CuisineDataAsset->GetRandomCuisine();
+	}
+	return FKitchenOrder();
 }
 
 bool UDonGameInstance::InitDialogueDataTable()

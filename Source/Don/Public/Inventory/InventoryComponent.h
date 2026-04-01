@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Data/ItemStructs.h"
+#include "Player/Interface/SaveableInterface.h"
 #include "InventoryComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryChanged, FItem, Item);
@@ -13,12 +14,15 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemSold, int32, SlotInd
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventorySlotChanged, const TArray<FItem>&, Inventory);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class DON_API UInventoryComponent : public UActorComponent
+class DON_API UInventoryComponent : public UActorComponent, public ISaveableInterface
 {
 	GENERATED_BODY()
 
 public:	
 	UInventoryComponent();
+
+	virtual void SavePlayerData(FPlayerSaveData& Data) override;
+	virtual void LoadPlayerData(const FPlayerSaveData& InData) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	TArray<FItem>& GetInventory() { return Inventory; }
@@ -38,7 +42,7 @@ public:
 
 	const int32 MaxItemSlots = 20;
 
-	void InitAndLoadInventory();
+	void InitInventory();
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void BroadcastInventory();
@@ -47,6 +51,7 @@ public:
 	void AddItem(FItem Item, int32 Amount = 1);
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void RemoveItem(int32 SlotIndex, int32 Amount = 1);
+	void SellItem(FItem Item, int32 Amount = 1);
 	UFUNCTION()
 	void OnRequestSellItem(int32 SlotIndex);
 

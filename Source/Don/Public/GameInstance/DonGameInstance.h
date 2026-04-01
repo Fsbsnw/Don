@@ -4,11 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Actor/DonEquipmentActor.h"
+#include "Data/CuisineAsset.h"
 #include "Engine/GameInstance.h"
 #include "Data/Dialogue.h"
 #include "Data/Quest.h"
+#include "Player/Interface/SaveableInterface.h"
 #include "DonGameInstance.generated.h"
 
+enum class ECustomerType : uint8;
+struct FCustomerData;
 class UItemConsumableAsset;
 class UItemEquipmentAsset;
 class UItemAsset;
@@ -65,4 +69,13 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Information")
 	TObjectPtr<UItemConsumableAsset> ItemConsumableAsset;
+
+	UPROPERTY()
+	FPlayerSaveData SavedPlayerData;
+
+	UPROPERTY(EditDefaultsOnly)
+	float SubSystemTimeMultiplier = 3.f;
+
+	FCustomerData GetCustomerAssetData(ECustomerType Type);
+	FKitchenOrder GetRandomCuisine();
 };

@@ -109,6 +109,8 @@ void UDonAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<
 		
 		if (const UDonGameplayAbility* DonAbility = Cast<UDonGameplayAbility>(AbilitySpec.Ability))
 		{
+			UE_LOG(LogTemp, Warning, TEXT("AbilitySpec: %s"),
+				*AbilitySpec.Ability->GetName());
 			AbilitySpec.DynamicAbilityTags.AddTag(DonAbility->StartupInputTag);
 			AbilitySpec.DynamicAbilityTags.AddTag(FDonGameplayTags::Get().Abilities_Status_Equipped);
 			for (FGameplayTag AbilityTag : DonAbility->AbilityTags)
@@ -168,7 +170,6 @@ void UDonAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTa
 	{
 		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
 		{
-			AbilitySpecInputPressed(AbilitySpec);
 			if (!AbilitySpec.IsActive())
 			{
 				TryActivateAbility(AbilitySpec.Handle);

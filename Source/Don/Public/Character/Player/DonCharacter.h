@@ -28,7 +28,7 @@ public:
 
 	UFUNCTION()
 	void OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent,	AActor* OtherActor,	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
+	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowGameOver();
 
@@ -78,6 +78,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
 	FDamageEffectParams DamageEffectParams;
 
+	UPROPERTY()
 	TArray<AActor*> IgnoreActors;
 
 	UPROPERTY(EditAnywhere)
@@ -87,5 +88,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	float LightningThresholdDistance = 50.f;
 	FVector LastLightningLocation = FVector::Zero();
+
 private:
+
+	void OnMoveSpeedChanged(const FOnAttributeChangeData& Data);
+	
 };

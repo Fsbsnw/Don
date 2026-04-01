@@ -6,6 +6,8 @@
 #include "BehaviorTree/BTTaskNode.h"
 #include "BTTask_Attack.generated.h"
 
+struct FAbilityEndedData;
+class UAbilitySystemComponent;
 /**
  * 
  */
@@ -16,6 +18,13 @@ class DON_API UBTTask_Attack : public UBTTaskNode
 public:
 	UBTTask_Attack();
 
+	UPROPERTY(EditAnywhere)
+	bool bRotateToTarget = false;
+
+	UPROPERTY(EditAnywhere)
+	FGameplayTag AttackTag;
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+	void RotateToTarget(UBehaviorTreeComponent& OwnerComp, AActor* TargetActor);
 };

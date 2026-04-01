@@ -28,6 +28,8 @@ public:
 	FGameplayTag InputTag_NumKey_5;
 	FGameplayTag InputTag_NumKey_6;
 	FGameplayTag InputTag_E;
+	FGameplayTag InputTag_F;
+	FGameplayTag InputTag_G;
 	FGameplayTag InputTag_Q;
 	FGameplayTag InputTag_J;
 	FGameplayTag InputTag_K;
@@ -50,6 +52,7 @@ public:
 	FGameplayTag Attributes_Secondary_ExpGainRate;
 	FGameplayTag Attributes_Secondary_MoneyGainRate;
 	FGameplayTag Attributes_Secondary_ItemDropRate;
+	FGameplayTag Attributes_Secondary_MoveSpeed;
 
 
 	// Meta Attributes
@@ -95,6 +98,11 @@ public:
 	FGameplayTag Abilities_Lightning;
 	FGameplayTag Abilities_DodgeRolling;
 	FGameplayTag Abilities_FireBolt;
+	
+	FGameplayTag Abilities_Dungeon_Smash;
+	FGameplayTag Abilities_Dungeon_Sweep;
+	FGameplayTag Abilities_Dungeon_Haste;
+	
 	FGameplayTag Request_Abilities_Lightning;
 	
 	FGameplayTag Cooldown_Attack;
@@ -103,6 +111,10 @@ public:
 	FGameplayTag Cooldown_TeleportAttack;
 	FGameplayTag Cooldown_DodgeRolling;
 	FGameplayTag Cooldown_FireBolt;
+	
+	FGameplayTag Cooldown_Dungeon_Smash;
+	FGameplayTag Cooldown_Dungeon_Sweep;
+	FGameplayTag Cooldown_Dungeon_Haste;
 
 	FGameplayTag Abilities_HitReact;
 
@@ -148,6 +160,7 @@ public:
 	FGameplayTag Item_Consumable_Potion_Supernatural;
 	FGameplayTag Item_Quest;
 	FGameplayTag Item_Miscellaneous;
+	FGameplayTag Item_Grocery;
 	FGameplayTag Item_Equippable;
 	FGameplayTag Item_Equippable_Weapon;
 	FGameplayTag Item_Equippable_Armor;

@@ -140,7 +140,7 @@ void ADonHUD::HandleUIOpenRequest(FGameplayTag Tag)
 
 void ADonHUD::OpenInnMenu()
 {
-	if (CloseWidgetIfOpened(InnMenuWidget)) return;
+	if (CloseWidgetIfOpened(InnMenuWidget) || InnMenuWidgetClass == nullptr) return;
 	
 	InnMenuWidget = CreateWidget<UDonUserWidget>(GetWorld(), InnMenuWidgetClass);
 	InnWidgetController = Cast<UInnWidgetController>(OverlayWidgetController);
@@ -151,7 +151,7 @@ void ADonHUD::OpenInnMenu()
 
 void ADonHUD::OpenGroceryStore()
 {
-	if (CloseWidgetIfOpened(GroceryStoreWidget)) return;
+	if (CloseWidgetIfOpened(GroceryStoreWidget) || GroceryStoreWidgetClass == nullptr) return;
 	
 	GroceryStoreWidget = CreateWidget<UDonUserWidget>(GetWorld(), GroceryStoreWidgetClass);
 	if (IsValid(InnMenuWidget)) InnMenuWidget->AddChildWidget(GroceryStoreWidget);
