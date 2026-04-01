@@ -9,12 +9,15 @@
 #include "Data/ItemStructs.h"
 #include "InnWidgetController.generated.h"
 
+struct FInnUpgradeResources;
 class UInnRoomInfoWidget;
 struct FItem;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInnGroupChangedUI, const TArray<UInnCustomerGroup*>&, CurrentGroups);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInnGroupRoomServiceReceivedUI, int32, GroupID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerInventoryChanged, const TArray<FItem>&, Inventory);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInnMerchandiseChangedUI, const TArray<FItem>&, InnMerchandise);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpgradeResourcesChangedUI, const FInnUpgradeResources&, UpgradeResources);
+
 
 /**
  * 
@@ -27,15 +30,6 @@ public:
 	virtual void BindCallbacksToDependencies() override;
 	virtual void BroadcastInitialValues() override;
 	
-	UFUNCTION(BlueprintCallable)
-	FInnCustomerGroupSnapshot GetCurrentLodgerInfo(int32 RoomNumber, UPARAM(ref)bool& bOutOccupied, UPARAM(ref)bool& bOutServiceRequested);
-
-	UFUNCTION(BlueprintCallable)
-	UInnCustomerGroup* GetGroupInfo(int32 RoomNumber) const;
-	
-	UFUNCTION(BlueprintCallable)
-	FRoomInfo GetRoomInfo(int32 RoomNumber);
-
 	UPROPERTY(BlueprintAssignable, Category = "Inn Manager")
 	FOnInnMerchandiseChangedUI OnInnMerchandiseChangedUI;
 	UPROPERTY(BlueprintAssignable, Category = "Inn Manager")
@@ -49,6 +43,24 @@ public:
 	FOnResourceChanged OnPopularityChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Inn Manager")
 	FOnResourceChanged OnInteriorChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Inn Manager")
+	FOnResourceChanged OnSuspicionChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Inn Upgrade")
+	FOnUpgradeResourcesChangedUI OnTableUpgradeChangedDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Inn Upgrade")
+	FOnUpgradeResourcesChangedUI OnChefUpgradeChangedDelegate;
+
+
+	UFUNCTION(BlueprintCallable)
+	FInnCustomerGroupSnapshot GetCurrentLodgerInfo(int32 RoomNumber, UPARAM(ref)bool& bOutOccupied, UPARAM(ref)bool& bOutServiceRequested);
+
+	UFUNCTION(BlueprintCallable)
+	UInnCustomerGroup* GetGroupInfo(int32 RoomNumber) const;
+	
+	UFUNCTION(BlueprintCallable)
+	FRoomInfo GetRoomInfo(int32 RoomNumber);
+
 
 	UFUNCTION()
 	void OnInnGroupUpdated(const TArray<UInnCustomerGroup*> Groups);
@@ -65,6 +77,15 @@ public:
 	UFUNCTION()
 	void OnInteriorAdded(int32 NewInterior);
 
+	UFUNCTION()
+	void OnSuspicionAdded(int32 NewSuspicion);
+
+	UFUNCTION()
+	void OnTableUpgradeChanged(const FInnUpgradeResources& UpgradeResources);
+
+	UFUNCTION()
+	void OnChefUpgradeChanged(const FInnUpgradeResources& UpgradeResources);
+
 	UFUNCTION(BlueprintCallable)
 	void AddToGroupSatisfaction(int32 RoomNumber, int32 Satisfaction);
 
@@ -74,6 +95,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool AssignCustomerToRoom(int32 GroupID, int32 RoomNumber, UInnRoomInfoWidget* TargetWidget);
 
+	
 	// Store
 
 	UFUNCTION(BlueprintCallable)
@@ -81,6 +103,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool SellMerchandise(int32 ItemIndex);
+
+	UFUNCTION(BlueprintCallable)
+	bool UpgradeInn(bool bTargetIsTable);
 
 	UFUNCTION()
 	void OnMerchandiseUpdated(const TArray<FItem>& InnMerchandise);

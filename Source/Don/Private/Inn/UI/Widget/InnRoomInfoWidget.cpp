@@ -7,8 +7,10 @@
 
 void UInnRoomInfoWidget::BindCustomer(UInnCustomerGroup* Group)
 {
+	AssignedGroup = Group;
 	Group->OnRoomServiceChanged.AddUObject(this, &UInnRoomInfoWidget::OnRoomServiceLimitUpdated);
 	OnCustomerBound();
+	
 	MaxTimeLimit = Group->MaxRoomServiceTimeLimit;
 	OnRoomServiceChangedUI.Broadcast(Group->GroupRoomService.LimitTime);
 }
@@ -16,4 +18,15 @@ void UInnRoomInfoWidget::BindCustomer(UInnCustomerGroup* Group)
 void UInnRoomInfoWidget::OnRoomServiceLimitUpdated(float TimeLimit)
 {
 	OnRoomServiceChangedUI.Broadcast(TimeLimit);
+}
+
+void UInnRoomInfoWidget::SetMiniGameSuccess(bool bIsSuccess)
+{
+	if (AssignedGroup) AssignedGroup->GroupRoomService.bIsMiniGameSuccess = bIsSuccess;
+}
+
+bool UInnRoomInfoWidget::IsMiniGameSuccess()
+{
+	if (AssignedGroup) return AssignedGroup->GroupRoomService.bIsMiniGameSuccess;
+	return false;
 }

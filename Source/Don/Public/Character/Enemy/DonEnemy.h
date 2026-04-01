@@ -6,6 +6,9 @@
 #include "Character/DonCharacterBase.h"
 #include "DonEnemy.generated.h"
 
+class APatrolPath;
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDungeonGroupKilled, int32);
+
 struct FLootableItem;
 class UNiagaraSystem;
 class UBehaviorTree;
@@ -72,6 +75,16 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	bool bBossEnemy = false;
+
+	UPROPERTY(EditInstanceOnly)
+	APatrolPath* PatrolPath;
+
+	int32 PatrolIndex = 0;
+
+	// Dungeon
+
+	int32 GroupID = -1;
+	FOnDungeonGroupKilled OnDungeonGroupKilled;
 
 protected:
 	virtual void BeginPlay() override;

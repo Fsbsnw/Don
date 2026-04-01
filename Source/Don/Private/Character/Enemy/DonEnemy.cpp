@@ -66,9 +66,10 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 	if (NewState)
 	{
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		
-		GetMesh()->SetSimulatePhysics(true);
+
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetMesh()->SetSimulatePhysics(true);
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *GetMesh()->GetName());
 		FVector ScaledForce = FVector(Force.X * (ForceMultiplier / TestXDivide), Force.Y * ForceMultiplier, Force.Z * ForceMultiplier); 
 		GetMesh()->AddImpulse(ScaledForce, NAME_None, true);
 
@@ -76,6 +77,7 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 		KnockbackCollisionTimerDelegate.BindLambda(
 			[this]()
 			{
+				if (!IsValid(this) || !IsValid(GetMesh())) return;
 				if (!bKnockback)
 				{
 					GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
@@ -126,6 +128,8 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 		// 6️⃣ 메시를 캡슐에 부착하고 위치 및 회전값 조정
 		GetMesh()->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.f, -90.f, 0.f));
+		GetMesh()->ResetAllBodiesSimulatePhysics();
+		GetMesh()->RecreatePhysicsState();
 
 		// 7️⃣ 애니메이션 실행
 		SetKnockback(false);
@@ -149,7 +153,9 @@ void ADonEnemy::PossessedBy(AController* NewController)
 void ADonEnemy::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
 {
 	Super::Die_Implementation(DeathImpulse, ItemDropRate);
-
+	
+	OnDungeonGroupKilled.Broadcast(GroupID);
+	
 	const FVector SpawnLocation = GetActorLocation();
 	const FRotator SpawnRotation = GetActorRotation();
 	FCharacterClassInfo CharacterClassInfo = UDonAbilityLibrary::FindCharacterClassInfo(this, CharacterClass);

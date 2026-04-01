@@ -8,6 +8,8 @@
 #include "Character/Enemy/DonEnemy.h"
 #include "Character/NPC/MerchantNPC.h"
 #include "Character/NPC/NPCCharacterBase.h"
+#include "GameInstance/SubSystem/DungeonSubsystem.h"
+#include "GameInstance/SubSystem/TimeSubsystem.h"
 #include "GameState/DonGameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
@@ -15,6 +17,12 @@
 void ADonGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UTimeSubsystem* TimeSystem = GetGameInstance()->GetSubsystem<UTimeSubsystem>();
+	if (TimeSystem)
+	{
+		TimeSystem->OnDaybreak.AddUObject(this, &ADonGameModeBase::HandleDaybreak);
+	}
 
 	if (!bStartLevel) return;
 
@@ -56,6 +64,27 @@ void ADonGameModeBase::BeginPlay()
 	}
 }
 
+void ADonGameModeBase::GameOver(int32 Type)
+{
+	if (Type == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Game Over : Player has died in the Dungeon."));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Game Over : Suspicion reached 100. You have been deported from the Inn!"));
+	}
+
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		PC->SetShowMouseCursor(true);
+		FInputModeUIOnly InputMode;
+		PC->SetInputMode(InputMode);
+	}
+	
+	GameOverForUI(Type);
+}
+
 void ADonGameModeBase::AddToSpawnedEnemies(int32 Value)
 {
 	SpawnedEnemyAmount += Value;
@@ -85,6 +114,32 @@ void ADonGameModeBase::SpawnBonusEnemy(TSubclassOf<ACharacter> Enemy)
 			SpawnEnemy(0.f, Enemy, 1);
 		}
 	}
+}
+
+void ADonGameModeBase::EnterInnMap()
+{
+	if (!InnLevel.IsNull())
+	{
+		UTimeSubsystem* TimeSystem = GetGameInstance()->GetSubsystem<UTimeSubsystem>();
+		if (TimeSystem)
+		{
+			TimeSystem->ResumeTime();
+		}
+		FName LevelName = FName(*InnLevel.GetAssetName());
+		UGameplayStatics::OpenLevel(this, LevelName);
+	}
+}
+
+void ADonGameModeBase::HandleDaybreak()
+{
+	ExitDungeon();
+	UDungeonSubsystem* DungeonSystem = GetGameInstance()->GetSubsystem<UDungeonSubsystem>();
+	ExitDungeonForUI(DungeonSystem->LevelEnemyKillCount, DungeonSystem->LevelEnemyCount);
+}
+
+void ADonGameModeBase::ExitDungeon()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Daybreak : Exit Dungeon."));
 }
 
 void ADonGameModeBase::SpawnEnemy(float SpawnTime, TSubclassOf<ACharacter> Enemy, int32 Amount)

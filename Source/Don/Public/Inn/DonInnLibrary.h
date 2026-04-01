@@ -3,9 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/CustomerAsset.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "DonInnLibrary.generated.h"
 
+class ADonEnemy;
+class AInnCustomer;
 class UInnWidgetController;
 struct FRoomServiceOrder;
 struct FKitchenOrder;
@@ -22,7 +25,7 @@ public:
 	static UInnWidgetController* GetInnWidgetController(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | Inn")
-	static TSubclassOf<AInnCustomer> GetCustomerClass(const UObject* WorldContextObject, ECustomerType Type);
+	static FCustomerData GetCustomerAssetData(const UObject* WorldContextObject, ECustomerType Type);
 	
 	// Kitchen
 	

@@ -67,8 +67,8 @@ protected:
 	virtual void BeginPlay() override;
 	
 public:
-	UPROPERTY(EditDefaultsOnly)
-	TArray<UTexture2D*> Portraits;
+	UPROPERTY()
+	UTexture2D* Portrait;
 	
 	void SetDestination(const ECustomerInnState& Destination);
 	FVector GetDestination() const { return NextDestination; };
@@ -84,7 +84,7 @@ public:
 	void OnSeatAssigned(bool State);
 	
 	UFUNCTION(BlueprintCallable)
-	FKitchenOrder CreateFoodOrder();
+	void CreateFoodOrder();
 
 	void OrderFood();
 	void ReceiveFood();
@@ -98,7 +98,9 @@ public:
 	int32 GetLevel() const { return Level; }
 	int32 GetGroupID() const { return GroupID; };
 	int32 GetSatisfaction() const { return Satisfaction; }
+	
 	void SetGroupID(int32 NewID) { GroupID = NewID; }
+	void SetLevel(int32 NewLevel) { Level = NewLevel; }
 	
 
 	// Room
@@ -125,6 +127,13 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly)
 	AInnSeat* Seat = nullptr;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ReceiveFoodUI();
+	
+	ECustomerType CustomerType = ECustomerType::First;
+
+	FKitchenOrder OrderedFood;
 	
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -134,7 +143,6 @@ private:
 	int32 SelectedFood = 0;
 	int32 Satisfaction = 0;
 
-	ECustomerType CustomerType = ECustomerType::First;
 	ECustomerInnState InnState = ECustomerInnState::Entrance;
 	ECustomerMealState MealState = ECustomerMealState::WaitingForFood;
 	ECustomerSeatState SeatState = ECustomerSeatState::Idle;
@@ -142,8 +150,8 @@ private:
 	FVector NextDestination = FVector::ZeroVector;
 	
 	UPROPERTY(EditAnywhere)
-	TArray<FName> FavoriteFoods;
-	
-	UPROPERTY(EditAnywhere)
 	float EatingTime = 10.f;
+
+	UPROPERTY()
+	AActor* ReceivedFoodActor;
 };

@@ -19,6 +19,17 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UInventoryComponent::SavePlayerData(FPlayerSaveData& Data)
+{
+	Data.Inventory = Inventory;
+}
+
+void UInventoryComponent::LoadPlayerData(const FPlayerSaveData& InData)
+{
+	Inventory = InData.Inventory;
+	if (Inventory.IsEmpty()) InitInventory();
+}
+
 void UInventoryComponent::AssignQuickSlotItem(const FGameplayTag& InputTag, const int32 InventoryIndex)
 {
 	AssignedQuickSlots.Add(InputTag, InventoryIndex);
@@ -57,15 +68,13 @@ void UInventoryComponent::SwapInventoryItems(int32 FromIndex, int32 ToIndex)
 	OnInventoryChanged.Broadcast(Inventory);
 }
 
-void UInventoryComponent::InitAndLoadInventory()
+void UInventoryComponent::InitInventory()
 {
 	Inventory.SetNum(MaxItemSlots);
 	for (int32 i = 0; i < MaxItemSlots; i++)
 	{
 		Inventory[i].InventorySlotIndex = i;
 	}
-
-	// Load Inventory Info
 }
 
 void UInventoryComponent::BroadcastInventory()
@@ -174,6 +183,26 @@ void UInventoryComponent::RemoveItem(int32 SlotIndex, int32 Amount)
 			}
 
 			IndexToCheck = FindItemInInventory(Item);
+		}
+		OnInventoryChanged.Broadcast(Inventory);
+	}
+}
+
+void UInventoryComponent::SellItem(FItem Item, int32 Amount)
+{
+	int32 ItemIndex = FindItemInInventory(Item);
+	if (ItemIndex != INDEX_NONE)
+	{
+		if (Inventory[ItemIndex].Amount - Amount > 0)
+		{
+			Inventory[ItemIndex].Amount -= Amount;		
+		}
+		else
+		{
+			FItem DefaultItem;
+			DefaultItem.Amount = 0;
+			DefaultItem.InventorySlotIndex = ItemIndex;
+			Inventory[ItemIndex] = DefaultItem;
 		}
 		OnInventoryChanged.Broadcast(Inventory);
 	}

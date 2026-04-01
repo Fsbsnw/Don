@@ -15,6 +15,9 @@ AInnSeat::AInnSeat()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh Component");
 	Mesh->SetupAttachment(RootComponent);
 
+	SitPoint = CreateDefaultSubobject<UStaticMeshComponent>("Sit Point");
+	SitPoint->SetupAttachment(Mesh);
+
 	ArrowComponent = CreateDefaultSubobject<UArrowComponent>("Arrow Component");
 	ArrowComponent->SetupAttachment(Mesh);
 }

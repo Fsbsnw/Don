@@ -38,16 +38,21 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* Mesh;
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	UArrowComponent* ArrowComponent;
 
 public:
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMeshComponent* SitPoint;
+	
 	FORCEINLINE bool GetIsOccupied() const { return bIsOccupied; }
 	FORCEINLINE void SetIsOccupied(const bool& bNewOccupied) { bIsOccupied = bNewOccupied; }
 
 	UPROPERTY(EditAnywhere)
 	int32 SeatGroup = 0;
+
+	bool bIsAvailable = false;
 private:
 	bool bIsOccupied = false;
 };

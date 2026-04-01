@@ -16,7 +16,8 @@ void UDonProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 ADonProjectile* UDonProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag,
 	bool bOverridePitch, float PitchOverride)
 {
-	const FVector SocketLocation = GetAvatarActorFromActorInfo()->GetActorLocation();
+	FVector SocketLocation = GetAvatarActorFromActorInfo()->GetActorLocation();
+	SocketLocation.Z += 50.f;
 	
 	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
 	if (bOverridePitch)

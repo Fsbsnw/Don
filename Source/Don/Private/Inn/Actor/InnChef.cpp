@@ -12,6 +12,11 @@ AInnChef::AInnChef()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
+void AInnChef::BroadcastInitialAttributes()
+{
+	OnChefAttributeChanged.Broadcast(GetChefUIData());
+}
+
 void AInnChef::BeginPlay()
 {
 	Super::BeginPlay();
@@ -38,6 +43,23 @@ void AInnChef::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+FChefUIData AInnChef::GetChefUIData() const
+{
+	FChefUIData UIData;
+	UIData.bIsHired = bIsHired;
+	UIData.ChefImage = ChefImage;
+	UIData.ChefLevel = ChefLevel;
+	UIData.ChefXP = ChefXP;
+	return UIData;
+}
+
+void AInnChef::Hired(bool NewState)
+{
+	bIsHired = NewState;
+	OnChefAttributeChanged.Broadcast(GetChefUIData());
+	OnChefHiredChanged(NewState);
+}
+
 void AInnChef::StartOrder(FKitchenOrder& Order)
 {
 	if (Mesh)
@@ -62,4 +84,18 @@ void AInnChef::EndOrder()
 	}
 	OrderID = FGuid();
 	bIsCooking = false;
+	OnChefAttributeChanged.Broadcast(GetChefUIData());
+}
+
+void AInnChef::ChefLevelUp()
+{
+	ChefXP = ChefXP - ChefLevel * 100;
+	ChefLevel = FMath::Min(20, ChefLevel + 1);
+}
+
+void AInnChef::AddToXP(int32 InXP)
+{
+	ChefXP += InXP;
+	if (ChefXP >= ChefLevel * 100) ChefLevelUp();
+	OnChefAttributeChanged.Broadcast(GetChefUIData());
 }

@@ -7,6 +7,26 @@
 #include "GameFramework/Actor.h"
 #include "InnChef.generated.h"
 
+USTRUCT(BlueprintType)
+struct FChefUIData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	UTexture2D* ChefImage;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsHired = false;
+	
+	UPROPERTY(BlueprintReadOnly)
+	int32 ChefLevel = 1;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 ChefXP = 0;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChefAttributeChangedUI, const FChefUIData&, ChefUIData);
+
 struct FKitchenOrder;
 
 UCLASS()
@@ -24,7 +44,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	USkeletalMeshComponent* Mesh;
 
+	FChefUIData GetChefUIData() const;
+	
 public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnChefHiredChanged(bool bIsChefHired);
+
+	void Hired(bool NewState);
+	
 	FORCEINLINE bool IsCooking() const { return bIsCooking; }
 	void StartOrder(FKitchenOrder& Order);
 	void EndOrder();
@@ -33,14 +60,26 @@ public:
 	UTexture2D* ChefImage;
 
 	UFUNCTION(BlueprintCallable)
-	void ChefLevelUp() { ChefLevel += 1; }
-
 	int32 GetChefLevel() const { return ChefLevel; }
+	
+	UFUNCTION(BlueprintCallable)
+	void ChefLevelUp();
 
-private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 ChefLevel = 1;
+	int32 ChefXP = 0;
+	
+	void AddToXP(int32 InXP);
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsHired = false;
 	
 	bool bIsCooking = false;
 	FGuid OrderID;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnChefAttributeChangedUI OnChefAttributeChanged;
+
+	UFUNCTION(BlueprintCallable)
+	void BroadcastInitialAttributes();
 };

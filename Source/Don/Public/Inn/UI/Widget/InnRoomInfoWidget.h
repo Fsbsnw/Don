@@ -25,6 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BindCustomer(UInnCustomerGroup* Group);
 
+	UFUNCTION(BlueprintCallable)
+	void SetMiniGameSuccess(bool bIsSuccess);
+
 	UPROPERTY(BlueprintAssignable)
 	FOnRoomServiceChangedUI OnRoomServiceChangedUI;
 
@@ -33,4 +36,11 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	float MaxTimeLimit;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsMiniGameSuccess();
+
+private:
+	TObjectPtr<UInnCustomerGroup> AssignedGroup;
+	
 };

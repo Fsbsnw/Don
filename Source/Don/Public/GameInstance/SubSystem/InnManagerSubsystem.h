@@ -120,18 +120,24 @@ private:
 
 	int32 TodayCustomerGroupCount = 0;
 	int32 NextGroupID = 1;
-	int32 MaxSeatGroupSize = 11;
-	
+	int32 MaxSeatGroupSize = 12;
+
+	bool bInitialized = false;
+
+	void StartInnLevel();
+	void ScheduleNextSpawn();
+	FTimerHandle SpawnTimerHandle;
 public:
 	FString NewCustomerName();
 	UInnCustomerGroup* GetGroupInfo(int32 GroupID) const;
+
 	
 	// Seat
 
 	bool FindAndOccupyEmptySeat(int32 GroupID);
 
 	UFUNCTION(BlueprintCallable)
-	void SpawnAndRegisterCustomerGroup(TSubclassOf<AInnCustomer> CustomerClass, FVector SpawnLocation, int32 Size = 1);
+	void SpawnAndRegisterCustomerGroup(FVector SpawnLocation, int32 Size = 1);
 
 	UFUNCTION()
 	void UpdateInnGroup(int32 GroupID);
@@ -149,6 +155,7 @@ public:
 	void RemoveGroup(int32 GroupID);
 	
 	TArray<UInnCustomerGroup*> GetInnGroupsArray() const;
+	TArray<UInnCustomerGroup*> GetLodgersArray() const;
 
 	FOnInnGroupChanged OnInnGroupChanged;
 	FOnInnGroupRequested OnInnGroupRoomServiceReceived;
@@ -156,16 +163,22 @@ public:
 	FVector ExitLocation = FVector::ZeroVector;
 	FVector InnEntranceLocation = FVector::ZeroVector;
 	FVector RoomEntranceLocation = FVector::ZeroVector;
+	FVector CustomerSpawnLocation = FVector::ZeroVector;
 
 	// Room
 
 	FRoomInfo GetRoomInfo(int32 RoomNumber) { return RoomInfos[RoomNumber]; }
 	FInnCustomerGroupSnapshot GetLodgerInfo(int32 RoomNumber);
 	bool CheckInCustomer(int32 GroupID);
+
+	UFUNCTION(BlueprintCallable)
 	void MorningCheckOut();
+	
+	void CloseInnAtMidnight();
+	
 	bool AssignCustomerToRoom(int32 GroupID, int32 RoomIndex);
 	
-	FORCEINLINE bool HasEmptyRoom() const { return LodgerGroups.Num() < RoomCapacity; }
+	bool HasEmptyRoom() const;
 
 	UPROPERTY(BlueprintReadOnly)
 	TArray<FRoomInfo> RoomInfos;

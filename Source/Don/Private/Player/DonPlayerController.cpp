@@ -10,13 +10,11 @@
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
-#include "Blueprint/UserWidget.h"
 #include "Character/Player/DonCharacter.h"
 #include "Components/SplineComponent.h"
 #include "Input/DonInputComponent.h"
 #include "Inventory/InventoryComponent.h"
 #include "Player/DonPlayerState.h"
-#include "UI/HUD/DonHUD.h"
 #include "UI/Widget/DamageTextComponent.h"
 
 ADonPlayerController::ADonPlayerController()
@@ -29,8 +27,20 @@ ADonPlayerController::ADonPlayerController()
 void ADonPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	this->bShowMouseCursor = true;
+
+	FString MapName = GetWorld()->GetMapName();
+	if (MapName.Contains("Dungeon"))
+	{
+		FInputModeGameOnly Mode;
+		this->SetInputMode(Mode);
+		this->bShowMouseCursor = false;
+	}
+	else
+	{
+		FInputModeGameAndUI Mode;
+		this->SetInputMode(Mode);
+		this->bShowMouseCursor = true;
+	}
 
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
@@ -103,9 +113,11 @@ void ADonPlayerController::OnMoveInput(const FInputActionValue& Value)
 
 void ADonPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Pressed %s"), *InputTag.ToString());
 	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_RMB))
 	{
 		bAutoRunning = false;
+		return;
 	}
 	
 	if (GetASC()) GetASC()->AbilityInputTagPressed(InputTag);

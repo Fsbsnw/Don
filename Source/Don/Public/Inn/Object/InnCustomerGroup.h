@@ -71,6 +71,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	int32 Satisfaction = 0;
 
+	int32 DeadMemberCount = 0;
+
 	void AddToSatisfaction(int32 InSatisfaction);
 	
 	// Room Services
@@ -86,6 +88,7 @@ public:
 	void InitRoomService();
 	void RequestRoomService();
 	void TickRoomService();
+	void SetMiniGameSuccess(bool bIsSuccess);
 	float MaxRoomServiceTimeLimit;
 
 	FTimerHandle RoomServiceTimeLimitHandle;

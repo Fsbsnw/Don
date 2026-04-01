@@ -79,7 +79,7 @@ struct FItem
 	FGuid ItemID;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSoftObjectPtr<UTexture2D> Icon = nullptr;
+	TObjectPtr<UTexture2D> Icon = nullptr;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	FGameplayTag ItemTag;

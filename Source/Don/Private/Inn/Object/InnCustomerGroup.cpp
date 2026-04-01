@@ -5,6 +5,7 @@
 
 #include "DonInnGameMode.h"
 #include "GameInstance/SubSystem/InnManagerSubsystem.h"
+#include "GameInstance/SubSystem/TimeSubsystem.h"
 #include "Inn/DonInnLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -78,18 +79,28 @@ void UInnCustomerGroup::FinishedEating()
 void UInnCustomerGroup::DecideToLodge()
 {
 	if (InnState == ECustomerInnState::Entrance) return;
+
+	UTimeSubsystem* TimeSystem = GetWorld()->GetGameInstance()->GetSubsystem<UTimeSubsystem>();
 	
 	int32 Temp = FMath::RandRange(1, 100);
 	bool bHasEmptyRoom = GetWorld()->GetGameInstance()->GetSubsystem<UInnManagerSubsystem>()->HasEmptyRoom();
 	
 	for (AInnCustomer* Member : MemberActors)
 	{
-		if (bHasEmptyRoom && Temp <= 50 + Satisfaction)
+		if (bHasEmptyRoom && Temp <= 50 + Satisfaction && TimeSystem->GetCurrentHour() >= 9)
 		{
-			Member->OnGroupDecidedToStay(true);
 			UInnManagerSubsystem* InnSystem = GetWorld()->GetGameInstance()->GetSubsystem<UInnManagerSubsystem>();
-			InnSystem->CheckInCustomer(GroupID);
-			InnState = ECustomerInnState::Room;
+			const bool bCanCheckIn = InnSystem->CheckInCustomer(GroupID);
+			if (bCanCheckIn)
+			{
+				Member->OnGroupDecidedToStay(true);
+				InnState = ECustomerInnState::Room;
+			}
+			else
+			{
+				Member->OnGroupDecidedToStay(false);
+				InnState = ECustomerInnState::Exit;
+			}
 		}
 		else
 		{
@@ -132,7 +143,7 @@ void UInnCustomerGroup::RespawnMembers()
 {
 	for (FCustomerSnapshot& MemberSnapshot : MemberSnapshots)
 	{
-		TSubclassOf<AInnCustomer> CustomerClass = UDonInnLibrary::GetCustomerClass(this, MemberSnapshot.Type);
+		FCustomerData CustomerData = UDonInnLibrary::GetCustomerAssetData(this, MemberSnapshot.Type);
 		UInnManagerSubsystem* InnSystem = GetWorld()->GetGameInstance()->GetSubsystem<UInnManagerSubsystem>();
 		FVector RandomOffset(
 			FMath::FRandRange(-25.f, 25.f),
@@ -144,7 +155,7 @@ void UInnCustomerGroup::RespawnMembers()
 			InnSystem->RoomEntranceLocation + RandomOffset
 		);
 		
-		AInnCustomer* Customer = GetWorld()->SpawnActor<AInnCustomer>(CustomerClass, SpawnTransform);
+		AInnCustomer* Customer = GetWorld()->SpawnActor<AInnCustomer>(CustomerData.CustomerClass, SpawnTransform);
 		if (Customer)
 		{
 			Customer->OnGroupMealFinished(true);
@@ -213,6 +224,12 @@ void UInnCustomerGroup::TickRoomService()
 		return;
 	}
 	OnRoomServiceChanged.Broadcast(GroupRoomService.LimitTime);
+}
+
+void UInnCustomerGroup::SetMiniGameSuccess(bool bIsSuccess)
+{
+	GroupRoomService.bIsMiniGameSuccess = bIsSuccess;
+	OnRoomServiceChanged.Clear();
 }
 
 void UInnCustomerGroup::ExitInn()

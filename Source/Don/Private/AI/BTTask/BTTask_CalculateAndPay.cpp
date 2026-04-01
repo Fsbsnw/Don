@@ -23,15 +23,17 @@ EBTNodeResult::Type UBTTask_CalculateAndPay::ExecuteTask(UBehaviorTreeComponent&
 		if (ADonInnGameMode* InnGameMode = Cast<ADonInnGameMode>(UGameplayStatics::GetGameMode(this)))
 		{
 			UKitchenOrderSubsystem* KitchenSystem = GetWorld()->GetGameInstance()->GetSubsystem<UKitchenOrderSubsystem>();
-			FCompletedFoodOrder CompletedOrder = KitchenSystem->GetCompletedOrder(Customer->GetID());
+			FCompletedFoodOrder* CompletedOrder = KitchenSystem->GetCompletedOrder(Customer->GetID());
 			
-			int32 Level = CompletedOrder.ChefLevel;
-			int32 Price = CompletedOrder.FoodPrice;
+			int32 Level = CompletedOrder->ChefLevel;
+			int32 Satisfaction = CompletedOrder->CustomerSatisfaction;
+			int32 Price = CompletedOrder->FoodPrice + (Satisfaction * 5);
 			int32 Reputation = InnGameMode->GetReputation();
 			int32 Popularity = InnGameMode->GetPopularity();
 			int32 Interior = InnGameMode->GetInterior();
 
 			int32 FinalPrice = Level * Price + 10 * (Reputation + Popularity + Interior);
+			CompletedOrder->FoodPrice = FinalPrice;
 			
 			UE_LOG(LogTemp, Warning, TEXT("Level : %d, Price : %d, Pay : %d"), Level, Price, FinalPrice);
 			

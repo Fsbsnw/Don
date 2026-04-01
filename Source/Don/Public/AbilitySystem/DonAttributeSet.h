@@ -142,6 +142,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MoneyGainRate, Category = "Secondary Attributes")
 	FGameplayAttributeData MoneyGainRate;
 	ATTRIBUTE_ACCESSORS(UDonAttributeSet, MoneyGainRate);
+	
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MoveSpeed, Category = "Secondary Attributes")
+	FGameplayAttributeData MoveSpeed;
+	ATTRIBUTE_ACCESSORS(UDonAttributeSet, MoveSpeed);
 
 	
 	/*
@@ -209,6 +213,9 @@ public:
 
 	UFUNCTION()
 	void OnRep_ItemDropRate(const FGameplayAttributeData& OldItemDropRate) const;
+
+	UFUNCTION()
+	void OnRep_MoveSpeed(const FGameplayAttributeData& OldMoveSpeed) const;
 
 private:
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;

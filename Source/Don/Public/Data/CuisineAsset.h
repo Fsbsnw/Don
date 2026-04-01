@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemStructs.h"
 #include "Engine/DataAsset.h"
 #include "CuisineAsset.generated.h"
 
@@ -32,7 +31,7 @@ struct FKitchenOrder
 	FGuid OrderID;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TSoftObjectPtr<UTexture2D> CuisineIcon = nullptr;
+	TObjectPtr<UTexture2D> CuisineIcon = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	int32 CookingTime;
@@ -57,6 +56,12 @@ struct FKitchenOrder
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FName SpecialIngredient;
+	
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	int32 XP = 10;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TSubclassOf<AActor> FoodActor;
 };
 
 /**
@@ -72,4 +77,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	FKitchenOrder FindCuisineByName(FName CuisineName);
+
+	UFUNCTION(BlueprintCallable)
+	FKitchenOrder GetRandomCuisine();
 };

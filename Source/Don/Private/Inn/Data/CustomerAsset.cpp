@@ -3,11 +3,11 @@
 
 #include "Inn/Data/CustomerAsset.h"
 
-TSubclassOf<AInnCustomer> UCustomerAsset::GetCustomerClassByType(ECustomerType Type)
+FCustomerData UCustomerAsset::GetCustomerDataByType(ECustomerType Type)
 {
-	for (FCustomerData Data : CustomerData)
+	for (FCustomerData& Data : CustomerData)
 	{
-		if (Data.Type == Type) return Data.CustomerClass;
+		if (Data.Type == Type) return Data;
 	}
-	return nullptr;
+	return FCustomerData();
 }

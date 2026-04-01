@@ -12,20 +12,16 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
 
-bool UKitchenOrderSubsystem::ShouldCreateSubsystem(UObject* Outer) const
-{
-	if (const UWorld* World = Outer->GetWorld())
-	{
-		return World->GetMapName().Contains("InnMap");
-	}
-	return false;
-}
-
 void UKitchenOrderSubsystem::BroadcastInitialValues()
 {
-	DonPlayerState = CastChecked<ADonPlayerState>(UGameplayStatics::GetPlayerState(this, 0));
-	
+	DonPlayerState = Cast<ADonPlayerState>(UGameplayStatics::GetPlayerState(this, 0));
+	CompletedFoodOrders.Empty();
 	OnKitchenOrderUpdated.Broadcast(KitchenOrderQueue);
+
+	for (AInnChef* Chef : Chefs)
+	{
+		Chef->Hired(Chef->bIsHired);
+	}
 }
 
 void UKitchenOrderSubsystem::AssignChef()
@@ -82,7 +78,7 @@ AInnChef* UKitchenOrderSubsystem::FindIdleChef()
 {
 	for (AInnChef* Chef : Chefs)
 	{
-		if (!Chef->IsCooking()) return Chef;
+		if (!Chef->IsCooking() && Chef->bIsHired) return Chef;
 	}
 	return nullptr;
 }
@@ -127,7 +123,7 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 			
 			if (Index != INDEX_NONE)
 			{
-				FinalSatisfaction *= Customer->GetLevel() + 2;
+				FinalSatisfaction *= 2;
 				DonPlayerState->GetInventoryComponent()->RemoveItem(Index);
 			}
 			
@@ -141,9 +137,12 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 			CompletedOrder.FoodPrice = Order.Price;
 			CompletedOrder.CustomerID = Customer->GetID();
 			CompletedOrder.OrderID = Order.OrderID;
+			CompletedOrder.CustomerSatisfaction = FinalSatisfaction;
 
 			CompletedFoodOrders.Add(CompletedOrder);
 		}
+		
+		Order.AssignedChef->AddToXP(Order.XP + Order.AssignedChef->ChefLevel * 5);
 		
 		KitchenOrderQueue.RemoveAt(i);
 		OnKitchenOrderRemoved.Broadcast(Order);
@@ -158,17 +157,20 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 	}
 }
 
-FCompletedFoodOrder UKitchenOrderSubsystem::GetCompletedOrder(FGuid ID)
+FCompletedFoodOrder* UKitchenOrderSubsystem::GetCompletedOrder(FGuid ID)
 {
-	FCompletedFoodOrder FoundOrder;
-	
 	for (FCompletedFoodOrder& Order : CompletedFoodOrders)
 	{
 		if (Order.CustomerID == ID)
 		{
-			FoundOrder = Order;
-			return FoundOrder;
+			return &Order;
 		}
 	}
-	return FoundOrder;
+	return nullptr;
+}
+
+void UKitchenOrderSubsystem::CloseKitchen()
+{
+	KitchenOrderQueue.Empty();
+	GetWorld()->GetTimerManager().ClearTimer(OrderTimerHandle);
 }

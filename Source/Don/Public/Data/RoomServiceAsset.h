@@ -36,6 +36,9 @@ struct FRoomServiceOrder
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	bool bIsRequested = false;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	bool bIsMiniGameSuccess = false;
 };
 
 /**

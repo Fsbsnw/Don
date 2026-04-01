@@ -5,13 +5,17 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "DonGameModeBase.h"
 #include "DonGameplayTags.h"
+#include "DonInnGameMode.h"
 #include "AbilitySystem/DonAbilityLibrary.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
+#include "AbilitySystem/DonAttributeSet.h"
 #include "AbilitySystem/Abilities/DonDamageGameplayAbility.h"
 #include "Camera/CameraComponent.h"
 #include "Character/Interface/InteractInterface.h"
 #include "Components/SphereComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
@@ -118,7 +122,17 @@ void ADonCharacter::Die_Implementation(const FVector& DeathImpulse, float ItemDr
 {
 	Super::Die_Implementation(DeathImpulse, ItemDropRate);
 
-	if (bCanDead) ShowGameOver();
+	if (bCanDead)
+	{
+		if (ADonGameModeBase* GameMode = Cast<ADonGameModeBase>(GetWorld()->GetAuthGameMode()))
+		{
+			GameMode->GameOver(0);
+		}
+		else
+		{
+			ShowGameOver();
+		}
+	}
 }
 
 void ADonCharacter::UpdateAttributesFromLevel(int32 NewLevel, bool bLevelUp)
@@ -202,7 +216,14 @@ void ADonCharacter::InitAbilityActorInfo()
 	
 	AbilitySystemComponent = DonPlayerState->GetAbilitySystemComponent();
 	AttributeSet = DonPlayerState->GetAttributeSet();
-
+	
+	if (UDonAttributeSet* DonAS = Cast<UDonAttributeSet>(AttributeSet))
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+			DonAS->GetMoveSpeedAttribute()
+		).AddUObject(this, &ADonCharacter::OnMoveSpeedChanged);
+	}
+	
 	if (ADonPlayerController* DonPlayerController = Cast<ADonPlayerController>(GetController()))
 	{
 		if (ADonHUD* DonHUD = Cast<ADonHUD>(DonPlayerController->GetHUD()))
@@ -212,6 +233,12 @@ void ADonCharacter::InitAbilityActorInfo()
 	}
 
 	InitializeDefaultAttributes();
+}
+
+void ADonCharacter::OnMoveSpeedChanged(const FOnAttributeChangeData& Data)
+{
+	GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
+	UE_LOG(LogTemp, Warning, TEXT("Move Speed : %f"), Data.NewValue);
 }
 
 void ADonCharacter::ExecuteInteract()
