@@ -103,6 +103,12 @@ protected:
 	TObjectPtr<UNiagaraSystem> DeathEffect;
 
 private:
+	UPROPERTY(EditDefaultsOnly)
+	FName BodyCenterBone = FName("Hips");
+
+	UPROPERTY(EditDefaultsOnly)
+	FName NeckBone = FName("Neck");
+	
 	bool bForwardRagdoll = false;
 	bool bIsHoldingRock = false;
 	bool bGetupState = true;

@@ -83,8 +83,8 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 					GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
 					return;
 				}
-				const FVector PelvisLocation = GetMesh()->GetSocketLocation(FName("pelvis"));
-				GetCapsuleComponent()->SetWorldLocation(PelvisLocation);
+				const FVector PelvisLocation = GetMesh()->GetSocketLocation(BodyCenterBone);
+				GetCapsuleComponent()->SetWorldLocation(PelvisLocation, true);
 			}
 		);
 		GetWorld()->GetTimerManager().SetTimer(KnockbackCollisionTimerHandle, KnockbackCollisionTimerDelegate, 0.1f, true);
@@ -94,8 +94,8 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 	else
 	{
 		// 1️⃣ 현재 캐릭터의 중요 위치(골반, 목) 가져오기
-		const FVector NeckLocation = GetMesh()->GetSocketLocation(FName("neck_01"));
-		const FVector PelvisLocation = GetMesh()->GetSocketLocation(FName("pelvis"));
+		const FVector NeckLocation = GetMesh()->GetSocketLocation(NeckBone);
+		const FVector PelvisLocation = GetMesh()->GetSocketLocation(BodyCenterBone);
 
 		// 2️⃣ 물리 및 충돌 설정 변경 (일시적으로 비활성화)
 		GetMesh()->SetSimulatePhysics(false);
@@ -107,7 +107,7 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 		NewCapsuleRotation.Roll = 0.f;
 
 		// 4️⃣ 메시의 오른쪽 벡터를 사용해 캡슐 회전 보정
-		FRotator MeshRotation = GetMesh()->GetSocketRotation(FName("pelvis"));
+		FRotator MeshRotation = GetMesh()->GetSocketRotation(BodyCenterBone);
 		FVector SocketUpVector = FRotationMatrix(MeshRotation).GetUnitAxis(EAxis::Y);
 		float Dot = FVector::DotProduct(SocketUpVector, FVector::UpVector);
 
@@ -122,7 +122,7 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 		}
 
 		// 5️⃣ 캡슐을 새로운 위치 및 회전값으로 설정
-		GetCapsuleComponent()->SetWorldLocationAndRotation(PelvisLocation, NewCapsuleRotation);
+		GetCapsuleComponent()->SetWorldLocationAndRotation(PelvisLocation, NewCapsuleRotation, true);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 		// 6️⃣ 메시를 캡슐에 부착하고 위치 및 회전값 조정
