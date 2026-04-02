@@ -40,7 +40,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsMiniGameSuccess();
 
-private:
+	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UInnCustomerGroup> AssignedGroup;
+private:
 	
 };
