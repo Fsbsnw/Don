@@ -1,6 +1,70 @@
 # Don
  언리얼 게임 클라이언트 포트폴리오 - 'Don'
 
+
+<details>
+ <summary>3D 뱀파이어 서바이벌 모드</summary>
+</details>
+
+<details>
+ <summary>여관 경영 액션 모드</summary>
+
+ <img width="744" height="793" alt="Image" src="https://github.com/user-attachments/assets/652ede33-c267-4a17-984c-7b72f6838c3a" /><br><br>
+
+ <img width="1684" height="948" alt="Image" src="https://github.com/user-attachments/assets/5a67b3df-9669-4993-a633-ffca5363b88e" /><br><br>
+
+ <img width="1300" height="807" alt="image" src="https://github.com/user-attachments/assets/4a62b2b7-6840-41f7-8b90-9b50cd63b0b7" /><br><br>
+
+ <img width="1652" height="931" alt="image" src="https://github.com/user-attachments/assets/98dd55db-5465-46d7-a51b-0098ded25e32" /><br><br>
+
+ <img width="1023" height="911" alt="image" src="https://github.com/user-attachments/assets/11219a71-ae14-439d-b15f-9d78eda72b9f" /><br><br>
+
+ <img width="1312" height="789" alt="image" src="https://github.com/user-attachments/assets/1d779ac1-9978-4a44-a249-def9d616c577" /><br><br>
+
+ **Observer 패턴을 활용한 그룹 단위 상태 동기화**
+
+ 집단 지성 로직: 개별 멤버(AInnCustomer)가 자신의 상태 변화를 그룹(UInnCustomerGroup)에 통보(Notify)하면, 그룹은 모든 멤버의 상태를 카운팅하여 '전원 입장', '전원 식사 완료' 같은 그룹 단위의 의사결정을 내립니다.
+
+ 이를 통해 개별 액터 간의 직접적인 참조를 줄여 스파게티 코드를 방지하고, 그룹의 다음 단계(좌석 요청, 숙소 입장 등)를 한 곳에서 안전하게 제어합니다.
+
+ <img width="518" height="813" alt="image" src="https://github.com/user-attachments/assets/3df56eb7-d135-4e91-8470-a7a56e9bd29a" /><br><br>
+
+ **가벼운 데이터 구조(Snapshot) 기반의 메모리 최적화**
+
+ 데이터와 로직의 분리: 손님이 숙소에 입장하여 화면에서 사라지는 순간, 무거운 AActor 객체를 유지하지 않고 필수 정보만 담은 FCustomerSnapshot 구조체로 변환합니다.
+
+ 리소스 절약: Destroy()를 호출해 월드 내 액터 수를 줄임으로써 Draw Call 및 AI(Behavior Tree) 업데이트 오버헤드를 차단합니다.
+
+ 데이터 보존: 액터는 사라지지만 핵심 데이터는 UObject인 그룹에 남겨, 밤의 던전 시스템에서 다시 활용할 수 있는 데이터 무결성을 확보했습니다.
+
+ <img width="651" height="483" alt="image" src="https://github.com/user-attachments/assets/17812744-33c4-4e8f-8230-14ce3eff1f65" /><br><br>
+
+
+ **트러블 슈팅**
+
+ <details>
+  <summary>집단 행동의 의사결정 주체 설정</summary>
+
+  1. 문제 상황 : 다수의 그룹 멤버들이 동일한 목적지로 이동하도록 의사결정을 공유해야 하는 상황 발생
+     => 멤버마다 동일한 그룹 ID를 부여하여 개별 로직 처리를 유도했으나, 데이터의 동기화 및 중복 연산 문제 발생
+     => 멤버 중 한 명을 리더로 설정했으나, 리더 액터의 예외 상황(파괴) 발생 시 전체 그룹의 의사결정 마비
+     => 개별 액터의 판단을 기반으로 하기 때문에, 하나의 좌석에 같은 그룹의 멤버가 중복으로 앉으려고 시도하는 경쟁 상태 발생
+  2. 해결 해야 되는 과제 : 액터 파괴 시에 발생하는 불안정한 문제를 해결하고, 그룹의 의사결정을 멤버들에게 동기화시켜야 한다
+  3. 해결 방안 : 의사결정을 책임질 액터 대신에 UObject를 기반으로 한 그룹 오브젝트가 각각의 멤버들의 행동을 동기화시킴으로써 해결
+  4. 결과 : 개별 액터의 판단으로 인해 발생하는 논리적 충돌 제거 및 의사결정 코드를 한 곳에 정리 가능
+
+
+
+
+ </details>
+
+
+
+
+ 
+</details>
+
+
  <img width="409" height="429" alt="Image" src="https://github.com/user-attachments/assets/7191d90b-b254-4b12-9a9a-7bd03c5b7981" />
  <br>
 
