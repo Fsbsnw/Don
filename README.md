@@ -248,7 +248,7 @@
 </details>
 
 <details>
- <summary>여관 경영 액션</summary>
+ <summary>여관 경영 시뮬레이션</summary>
  <br>
 
  # 게임 장르
