@@ -19,8 +19,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterTables();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void UpgradeTavernInterior(int32 InteriorLevel);
+	UFUNCTION(BlueprintCallable)
+	void BroadcastInitialTables();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<AInnTable*> Tables;

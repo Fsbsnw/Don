@@ -69,7 +69,7 @@ void ALootableActor::InitializeSpawnLocation()
 	TraceParams.bTraceComplex = true;
 	TraceParams.bReturnPhysicalMaterial = false;
 
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, TraceParams))
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_WorldStatic, TraceParams))
 	{
 		OffsetLocation.Z = HitResult.ImpactPoint.Z;
 	}

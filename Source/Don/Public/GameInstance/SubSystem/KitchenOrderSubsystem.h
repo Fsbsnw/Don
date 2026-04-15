@@ -34,6 +34,9 @@ struct FCompletedFoodOrder
 
 	UPROPERTY()
 	int32 CustomerSatisfaction = 0;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsCharged = false;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKitchenOrderChanged, FKitchenOrder, KitchenOrder);

@@ -46,9 +46,13 @@ void AInnCustomer::ReceiveFood()
 {
 	MealState = ECustomerMealState::Eating;
 
-	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 60;
-	SpawnLocation.Z = 162.f;
-	FTransform SpawnTransform(FRotator(), SpawnLocation);
+	const FVector FoodSpawnLocation = 
+	GetActorLocation()
+	+ GetActorForwardVector() * FoodSpawnOffset.X
+	+ GetActorRightVector()   * FoodSpawnOffset.Y
+	+ FoodSpawnOffset.Z;
+	
+	FTransform SpawnTransform(FRotator(), FoodSpawnLocation);
 	if (AActor* FoodActor = GetWorld()->SpawnActor<AActor>(OrderedFood.FoodActor, SpawnTransform))
 	{
 		ReceivedFoodActor = FoodActor;

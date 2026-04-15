@@ -23,7 +23,7 @@ void UTimeSubsystem::Tick(float DeltaTime)
 	
 	int32 PrevHour = GetCurrentHour();
 	int32 PrevTenMinute = GetCurrentTenMinuteUnit();
-	CurrentTime += DeltaTime * TimeMultiplier;
+	CurrentTime += GetWorld()->GetDeltaSeconds() * TimeMultiplier;
 	int32 CurrHour = GetCurrentHour();
 	int32 CurrTenMinute = GetCurrentTenMinuteUnit();
 
@@ -79,6 +79,10 @@ bool UTimeSubsystem::SkipToMidnight()
 		return false;
 	}
 
+	if (GetCurrentHour() < 9)
+	{
+		OnMorning.Broadcast();
+	}
 	CurrentTime += MinutesToMidnight;
 
 	int32 CurrHour = GetCurrentHour();
@@ -118,4 +122,10 @@ bool UTimeSubsystem::SkipToDaybreak()
 	OnDaybreak.Broadcast();
 	PauseTime();
 	return true;
+}
+
+void UTimeSubsystem::ResetSystem()
+{
+	CurrentTime = 360.f;
+	OnMorning.Clear();
 }

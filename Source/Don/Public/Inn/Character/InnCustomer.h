@@ -152,6 +152,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	float EatingTime = 10.f;
 
+	UPROPERTY(EditAnywhere)
+	FVector FoodSpawnOffset = FVector(60.f, 0.f, 162.f);
+
 	UPROPERTY()
 	AActor* ReceivedFoodActor;
 };

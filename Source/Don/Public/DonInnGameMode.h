@@ -17,14 +17,14 @@ class DON_API ADonInnGameMode : public AGameModeBase
 	GENERATED_BODY()
 protected:
 	virtual void BeginPlay() override;
-
+	
+	void CloseInnSystem(int32& OutRoomServiceRevenue);
+	void CloseInnKitchen(TArray<FCompletedFoodOrder>& OutCompletedOrder);
 	void HandleMidnight();
-	void CloseInnKitchen();
-	void CloseInn();
 	
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void EnterMidnightForUI(const TArray<FCompletedFoodOrder>& CompletedOrder);
+	void EnterMidnightForUI(const TArray<FCompletedFoodOrder>& CompletedOrder, int32 RoomServiceRevenue);
 
 	UFUNCTION(BlueprintCallable)
 	void EnterDungeon();

@@ -28,7 +28,7 @@ struct FCustomerSnapshot
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class DON_API UInnCustomerGroup : public UObject
 {
 	GENERATED_BODY()
@@ -36,7 +36,7 @@ class DON_API UInnCustomerGroup : public UObject
 public:
 	// Common
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY()
 	UTexture2D* Portrait;
 	
 	UPROPERTY(BlueprintReadOnly)

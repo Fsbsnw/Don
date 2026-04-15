@@ -50,3 +50,11 @@ void AInnTavern::UpgradeTavernInterior(int32 InteriorLevel)
 		}
 	}
 }
+
+void AInnTavern::BroadcastInitialTables()
+{
+	if (ADonPlayerState* DPC = Cast<ADonPlayerState>(UGameplayStatics::GetPlayerState(this, 0)))
+	{
+		UpgradeTavernInterior(DPC->InnManagerComponent->GetInnLevel());
+	}
+}

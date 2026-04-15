@@ -67,6 +67,7 @@ void UDungeonSubsystem::SpawnLodgerEnemy()
 		PathIndex = (PathIndex + 1) % Paths.Num();
 	}
 	LevelEnemyCount = Count;
+	LevelEnemyKillCount = 0;
 }
 
 void UDungeonSubsystem::CalculateDeadMembers(int32 GroupID)

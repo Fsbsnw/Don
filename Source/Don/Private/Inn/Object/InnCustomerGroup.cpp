@@ -240,4 +240,7 @@ void UInnCustomerGroup::ExitInn()
 		
 		Member->Destroy();
 	}
+	MemberActors.Empty();
+
+	MarkAsGarbage();
 }
