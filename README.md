@@ -177,40 +177,7 @@
    
   </details>
 
-  <details>
-   <summary>아이템 구조 설계</summary>
-   <br>
-   처음엔 아이템 구조체 안에 선언된 타입별 Gameplay Tag에 따라 장착/사용/기타 등으로 동작을 분기하여 처리했으나,
-   
-   아이템 **종류가 다양**해지고 **속성이 복잡**해지면서 기존 방식에 **구조적 한계**가 발생.
 
-
-   **<기존 Item 구조체>**
-   <br>
-   <img src="https://github.com/user-attachments/assets/fb3ec98e-0375-4055-abb4-f8c6e3e32357">
-   <br>
-
-   하나의 구조체 안에 공통 속성과 개별 속성을 통합된 상태로 선언했기 때문에, 구분이 어렵고 확장될수록 더 비대한 구조를 가지게 됨.
-   
-   그로 인해 **가독성 저하, 불필요한 메모리 낭비** 등 유지보수의 어려움이 발생.
-
-   예시) 아이템의 희귀도, 희귀도에 따른 추가 속성, 장전이 필요한 무기 등이 추가될수록 더욱 복잡해짐.
-
-   1. FItem 구조체에는 **공통 속성**만을 넣고, 개별 속성들을 각각의 **데이터 애셋**에서 **FName**으로 참조하여 사용
-
-   <br>
-   <img width="1390" height="637" alt="Image" src="https://github.com/user-attachments/assets/64542a80-7bc4-44bd-b60b-3189a4517cb5" />
-   <br>
-   
-   ---
-   
-   2. 아이템 사용을 위한 **ItemBase** 부모 클래스를 생성하여 다형성 확보
-
-   <br>
-   <img width="1266" height="516" alt="Image" src="https://github.com/user-attachments/assets/bb133b8d-a4ed-4313-a355-ee5c9914cb02" />
-   <br>
-   
-  </details>
 
 ## 게임 소개
 ![Image](https://github.com/user-attachments/assets/0dc82893-94c5-41f8-bbc4-038b61fd2ee1)
