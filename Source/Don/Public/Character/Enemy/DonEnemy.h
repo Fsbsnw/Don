@@ -24,6 +24,7 @@ class DON_API ADonEnemy : public ADonCharacterBase
 public:
 	ADonEnemy();
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Destroyed() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;

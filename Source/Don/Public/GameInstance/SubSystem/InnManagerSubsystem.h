@@ -94,13 +94,13 @@ class DON_API UInnManagerSubsystem : public UGameInstanceSubsystem
 protected:
 	UFUNCTION(BlueprintCallable)
 	void InitInformation();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetData();
 	
 private:	
 	UPROPERTY()
 	TMap<int32, UInnCustomerGroup*> InnGroups;
-
-	UPROPERTY()
-	TSet<int32> KitchenGroups;
 	
 	UPROPERTY()
 	TSet<int32> LodgerGroups;
@@ -108,13 +108,11 @@ private:
 	UPROPERTY()
 	TArray<FSeatGroup> SeatGroups;
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY()
 	TArray<FString> InnGroupFirstNames;
-	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY()
 	TArray<FString> InnGroupSecondNames;
-	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY()
 	TArray<FString> InnGroupThirdNames;
 
 
@@ -127,6 +125,7 @@ private:
 	void StartInnLevel();
 	void ScheduleNextSpawn();
 	FTimerHandle SpawnTimerHandle;
+	
 public:
 	FString NewCustomerName();
 	UInnCustomerGroup* GetGroupInfo(int32 GroupID) const;
@@ -149,7 +148,7 @@ public:
 
 	ECustomerInnState GetGroupInnState(int32 GroupID);
 	int32 GetGroupSize(int32 GroupID);
-	int32 GetGroupTable(int32 GroupID);
+	// int32 GetGroupTable(int32 GroupID);
 
 	void ReturnGroupSeats(int32 GroupID);
 	void RemoveGroup(int32 GroupID);
@@ -165,6 +164,7 @@ public:
 	FVector RoomEntranceLocation = FVector::ZeroVector;
 	FVector CustomerSpawnLocation = FVector::ZeroVector;
 
+	
 	// Room
 
 	FRoomInfo GetRoomInfo(int32 RoomNumber) { return RoomInfos[RoomNumber]; }
@@ -173,15 +173,14 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void MorningCheckOut();
-	
 	void CloseInnAtMidnight();
 	
 	bool AssignCustomerToRoom(int32 GroupID, int32 RoomIndex);
-	
 	bool HasEmptyRoom() const;
 
 	UPROPERTY(BlueprintReadOnly)
 	TArray<FRoomInfo> RoomInfos;
 
 	int32 RoomCapacity = 10;
+	int32 RoomServiceRevenue = 0;
 };

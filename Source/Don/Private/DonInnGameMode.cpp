@@ -19,6 +19,7 @@ void ADonInnGameMode::BeginPlay()
 	if (TimeSystem)
 	{
 		TimeSystem->OnMidnight.AddUObject(this, &ADonInnGameMode::HandleMidnight);
+		TimeSystem->ResumeTime();
 	}
 
 	ADonPlayerState* DPS = Cast<ADonPlayerState>(UGameplayStatics::GetPlayerState(this, 0));
@@ -35,26 +36,36 @@ void ADonInnGameMode::BeginPlay()
 
 void ADonInnGameMode::HandleMidnight()
 {
-	CloseInnKitchen();
-	CloseInn();
-	UKitchenOrderSubsystem* KitchenSystem = GetGameInstance()->GetSubsystem<UKitchenOrderSubsystem>();
-	EnterMidnightForUI(KitchenSystem->CompletedFoodOrders);
+	int32 RoomServiceRevenue = 0;
+	UInnManagerSubsystem* InnSystem = GetGameInstance()->GetSubsystem<UInnManagerSubsystem>();
+	if (InnSystem)
+	{
+		// InnSystem->CloseInnAtMidnight();
+		RoomServiceRevenue = InnSystem->RoomServiceRevenue;
+	}
+	
+	TArray<FCompletedFoodOrder> CompletedFoodOrders;
+	CloseInnKitchen(CompletedFoodOrders);
+
+	EnterMidnightForUI(CompletedFoodOrders, RoomServiceRevenue);
 }
 
-void ADonInnGameMode::CloseInnKitchen()
+void ADonInnGameMode::CloseInnKitchen(TArray<FCompletedFoodOrder>& OutCompletedOrder)
 {
 	UKitchenOrderSubsystem* KitchenSystem = GetGameInstance()->GetSubsystem<UKitchenOrderSubsystem>();
 	if (KitchenSystem)
 	{
+		OutCompletedOrder = KitchenSystem->CompletedFoodOrders;
 		KitchenSystem->CloseKitchen();
 	}
 }
 
-void ADonInnGameMode::CloseInn()
+void ADonInnGameMode::CloseInnSystem(int32& OutRoomServiceRevenue)
 {
 	UInnManagerSubsystem* InnSystem = GetGameInstance()->GetSubsystem<UInnManagerSubsystem>();
 	if (InnSystem)
 	{
+		OutRoomServiceRevenue = InnSystem->RoomServiceRevenue;
 		InnSystem->CloseInnAtMidnight();
 	}
 }
@@ -159,7 +170,7 @@ void ADonInnGameMode::GameOver(int32 Type)
 		UE_LOG(LogTemp, Warning, TEXT("Game Clear! : You’ve turned into a devil."));
 	}
 
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	if (APlayerController	* PC = GetWorld()->GetFirstPlayerController())
 	{
 		PC->SetShowMouseCursor(true);
 		FInputModeUIOnly InputMode;

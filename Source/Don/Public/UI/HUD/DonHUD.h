@@ -49,9 +49,6 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OpenMenu();
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void OpenInventory();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OpenQuests();
@@ -62,6 +59,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OpenSkillMenu();
 	
+	void OpenInventory();
 	void OpenSetting();
 	void OpenDialog();
 	void OpenStore();
@@ -129,4 +127,10 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UDonUserWidget> GroceryStoreWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UDonUserWidget> InventoryWidget;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UDonUserWidget> InventoryWidgetClass;
 };

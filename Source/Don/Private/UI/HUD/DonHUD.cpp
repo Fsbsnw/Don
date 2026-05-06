@@ -4,6 +4,7 @@
 #include "UI/HUD/DonHUD.h"
 
 #include "DonGameplayTags.h"
+#include "Inventory/DonItemLibrary.h"
 #include "Player/DonPlayerController.h"
 #include "UI/Widget/DonUserWidget.h"
 #include "UI/WidgetController/AttributeMenuWidgetController.h"
@@ -117,11 +118,6 @@ bool ADonHUD::CloseWidgetIfOpened(TObjectPtr<UDonUserWidget>& Widget)
 	Widget->CloseSelf();
 	Widget = nullptr;
 
-	if (APlayerController* PC = GetOwningPlayerController())
-	{
-		PC->SetInputMode(FInputModeGameAndUI());
-	}
-
 	return true;
 }
 
@@ -158,6 +154,19 @@ void ADonHUD::OpenGroceryStore()
 	GroceryStoreWidget->SetWidgetController(InnWidgetController);
 
 	GroceryStoreWidget->AddToViewport();
+}
+
+void ADonHUD::OpenInventory()
+{
+	if (CloseWidgetIfOpened(InventoryWidget) || InventoryWidgetClass == nullptr) return;
+	
+	InventoryWidget = CreateWidget<UDonUserWidget>(GetWorld(), InventoryWidgetClass);
+	if (IsValid(InnMenuWidget)) InnMenuWidget->AddChildWidget(InventoryWidget);
+	
+	UInventoryWidgetController* WidgetController = UDonItemLibrary::GetInventoryWidgetController(this);
+	InventoryWidget->SetWidgetController(WidgetController);
+
+	InventoryWidget->AddToViewport();
 }
 
 void ADonHUD::OpenSetting()

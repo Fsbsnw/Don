@@ -42,6 +42,7 @@ void UInventoryComponent::UnassignQuickSlotItem(const FGameplayTag& InputTag)
 
 int32 UInventoryComponent::FindItemInInventory(const FItem& Item) const
 {
+	if (Item.ItemName.IsNone()) return -1;
 	return Inventory.Find(Item);
 }
 

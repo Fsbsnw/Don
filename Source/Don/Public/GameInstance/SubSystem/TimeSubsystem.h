@@ -39,8 +39,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool SkipToDaybreak();
 
+	UFUNCTION(BlueprintCallable)
 	void PauseTime() { bIsPaused = true; };
+	UFUNCTION(BlueprintCallable)
 	void ResumeTime() { bIsPaused = false; };
+	UFUNCTION(BlueprintCallable)
+	void ResetSystem();
 	
 	UFUNCTION(BlueprintPure, BlueprintCallable)
 	float GetCurrentTime() const { return CurrentTime; }
@@ -56,7 +60,7 @@ public:
 	
 	
 private:
-	bool bIsPaused = false;
+	bool bIsPaused = true;
 	float CurrentTime = 360.f;
 	float TimeMultiplier = 0.f;
 };

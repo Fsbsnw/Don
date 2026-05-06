@@ -35,6 +35,15 @@ ADonEnemy::ADonEnemy()
 	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>("Health Bar Widget Component");
 }
 
+void ADonEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void ADonEnemy::Destroyed()
 {
 	if (ADonGameModeBase* GameModeBase = Cast<ADonGameModeBase>(UGameplayStatics::GetGameMode(this)))
@@ -67,8 +76,13 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 	{
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
+		GetMesh()->GetAnimInstance()->Montage_Stop(0.f);
+
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		GetMesh()->SetSimulatePhysics(true);
+		GetMesh()->SetPhysicsBlendWeight(1.0f);
+		GetMesh()->bBlendPhysics = false;
+		GetMesh()->WakeAllRigidBodies();
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *GetMesh()->GetName());
 		FVector ScaledForce = FVector(Force.X * (ForceMultiplier / TestXDivide), Force.Y * ForceMultiplier, Force.Z * ForceMultiplier); 
 		GetMesh()->AddImpulse(ScaledForce, NAME_None, true);
@@ -77,14 +91,14 @@ void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
 		KnockbackCollisionTimerDelegate.BindLambda(
 			[this]()
 			{
-				if (!IsValid(this) || !IsValid(GetMesh())) return;
+				if (!IsValid(this) || !IsValid(this->GetMesh())) return;
 				if (!bKnockback)
 				{
 					GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
 					return;
 				}
-				const FVector PelvisLocation = GetMesh()->GetSocketLocation(BodyCenterBone);
-				GetCapsuleComponent()->SetWorldLocation(PelvisLocation, true);
+				const FVector PelvisLocation = this->GetMesh()->GetSocketLocation(BodyCenterBone);
+				this->GetCapsuleComponent()->SetWorldLocation(PelvisLocation, true);
 			}
 		);
 		GetWorld()->GetTimerManager().SetTimer(KnockbackCollisionTimerHandle, KnockbackCollisionTimerDelegate, 0.1f, true);

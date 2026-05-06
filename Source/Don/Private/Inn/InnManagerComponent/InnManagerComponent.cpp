@@ -83,6 +83,8 @@ void UInnManagerComponent::LoadPlayerData(const FPlayerSaveData& InData)
 			}
 		}
 	}
+
+	OnInnLevelChanged.Broadcast(InnLevel);
 }
 
 void UInnManagerComponent::AddToReputation(int32 InReputation)

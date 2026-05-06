@@ -39,10 +39,10 @@ struct FKitchenOrder
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	int32 Price;
 	
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UPROPERTY(BlueprintReadOnly)
 	bool bIsCooking = false;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UPROPERTY(BlueprintReadOnly)
 	float RemainingTime;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -67,7 +67,7 @@ struct FKitchenOrder
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class DON_API UCuisineAsset : public UDataAsset
 {
 	GENERATED_BODY()

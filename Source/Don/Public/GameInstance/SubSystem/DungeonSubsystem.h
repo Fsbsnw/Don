@@ -31,7 +31,6 @@ public:
 
 	UPROPERTY()
 	TArray<APatrolPath*> Paths;
-
 	
 	int32 PathIndex = 0;
 	int32 LevelEnemyCount = 0;

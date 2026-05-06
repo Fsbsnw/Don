@@ -82,6 +82,15 @@ void UInnManagerSubsystem::InitInformation()
 	bInitialized = true;
 }
 
+void UInnManagerSubsystem::ResetData()
+{
+	bInitialized = false;
+	InnGroups.Empty();
+	LodgerGroups.Empty();
+	
+	GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+}
+
 void UInnManagerSubsystem::StartInnLevel()
 {
 	ScheduleNextSpawn();
@@ -261,12 +270,6 @@ int32 UInnManagerSubsystem::GetGroupSize(int32 GroupID)
 	return InnGroups[GroupID]->MemberActors.Num(); 
 }
 
-int32 UInnManagerSubsystem::GetGroupTable(int32 GroupID)
-{
-	if (!InnGroups.Contains(GroupID)) return -1;
-	return InnGroups[GroupID]->AssignedTable;
-}
-
 void UInnManagerSubsystem::SetGroupTable(int32 GroupID, int32 TableNumber)
 {
 	if (!InnGroups.Contains(GroupID)) return;
@@ -304,15 +307,9 @@ void UInnManagerSubsystem::MorningCheckOut()
 		int32 RoomNumber = InnGroups[LodgerGroup]->AssignedRoomNumber;
 		if (RoomNumber != -1)
 		{
-			FRoomInfo& AssignedRoom = RoomInfos[InnGroups[LodgerGroup]->AssignedRoomNumber];
+			FRoomInfo& AssignedRoom = RoomInfos[RoomNumber];
 			AssignedRoom.bIsOccupied = false;
 			AssignedRoom.GroupID = -1;
-			int32 BasePrice = AssignedRoom.BasePrice;
-			int32 ExtraPrice = AssignedRoom.ExtraPrice * InnGroups[LodgerGroup]->Satisfaction;
-			if (ADonInnGameMode* InnGameMode = Cast<ADonInnGameMode>(UGameplayStatics::GetGameMode(this)))
-			{
-				InnGameMode->AddToRevenue(BasePrice + ExtraPrice);
-			}
 		}
 		int32 Suspicion = (InnGroups[LodgerGroup]->MemberActors.Num() - InnGroups[LodgerGroup]->DeadMemberCount) * 25;
 		if (ADonInnGameMode* InnGameMode = Cast<ADonInnGameMode>(UGameplayStatics::GetGameMode(this)))
@@ -329,6 +326,25 @@ void UInnManagerSubsystem::MorningCheckOut()
 void UInnManagerSubsystem::CloseInnAtMidnight()
 {
 	GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+
+	int32 TodayRoomRevenue = 0;
+	for (int32 LodgerGroup : LodgerGroups)
+	{
+		int32 RoomNumber = InnGroups[LodgerGroup]->AssignedRoomNumber;
+		if (RoomNumber != -1)
+		{
+			FRoomInfo& AssignedRoom = RoomInfos[RoomNumber];
+			int32 BasePrice = AssignedRoom.BasePrice;
+			int32 ExtraPrice = AssignedRoom.ExtraPrice * InnGroups[LodgerGroup]->Satisfaction;
+			TodayRoomRevenue += BasePrice + ExtraPrice;
+		}
+	}
+	RoomServiceRevenue = TodayRoomRevenue;
+
+	if (ADonInnGameMode* InnGameMode = Cast<ADonInnGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		InnGameMode->AddToRevenue(RoomServiceRevenue);
+	}
 	
 	TArray<int32> KeysToRemove;
 	for (auto& [Key, Value] : InnGroups)

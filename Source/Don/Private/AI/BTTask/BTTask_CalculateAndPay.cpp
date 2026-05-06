@@ -34,6 +34,7 @@ EBTNodeResult::Type UBTTask_CalculateAndPay::ExecuteTask(UBehaviorTreeComponent&
 
 			int32 FinalPrice = Level * Price + 10 * (Reputation + Popularity + Interior);
 			CompletedOrder->FoodPrice = FinalPrice;
+			CompletedOrder->bIsCharged = true;
 			
 			UE_LOG(LogTemp, Warning, TEXT("Level : %d, Price : %d, Pay : %d"), Level, Price, FinalPrice);
 			
