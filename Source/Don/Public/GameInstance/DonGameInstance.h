@@ -47,6 +47,9 @@ public:
 	UDataTable* CharacterClassDataTable;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UDataTable* EnemyClassDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UAbilityInfo* AbilityInfo;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

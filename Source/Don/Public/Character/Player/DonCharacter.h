@@ -5,10 +5,13 @@
 #include "CoreMinimal.h"
 #include "DonAbilityTypes.h"
 #include "Character/DonCharacterBase.h"
+#include "Character/DonCharacterTypes.h"
 #include "Interface/PlayerInterface.h"
 #include "Engine/EngineTypes.h"
 #include "DonCharacter.generated.h"
 
+class APlayerWeapon;
+class UInteractionComponent;
 class USphereComponent;
 class UCameraComponent;
 class USpringArmComponent;
@@ -22,13 +25,13 @@ class DON_API ADonCharacter : public ADonCharacterBase, public IPlayerInterface
 public:
 	ADonCharacter();
 
-	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 
-	UFUNCTION()
-	void OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent,	AActor* OtherActor,	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
+	virtual void EquipItem_Implementation(FItem& Item) override;
+	virtual void UnequipItem_Implementation(FItem& Item) override;
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowGameOver();
 
@@ -37,6 +40,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Test")
 	bool bCanDead = true;
+
+	ECharacterClass CharacterClass = ECharacterClass::Fighter;
 
 	// Begin IPlayerInterface 
 
@@ -48,14 +53,9 @@ public:
 	virtual bool AddItemToInventory_Implementation(FItem Item) override;
 
 	// End IPlayerInterface
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateAbilityTypeAndCollision(FGameplayTag AbilityTag, bool bEnableCollision);
-	void ExecuteInteract();
 	
 protected:
 	virtual void InitAbilityActorInfo() override;
-
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -63,34 +63,16 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> Camera;
-
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<USphereComponent> InteractionCollision;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	TObjectPtr<USkeletalMeshComponent> Axe;
-
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<USphereComponent> AxeCollision;
-
-	FGameplayTag AxeAbilityType;
 	
-	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
-	FDamageEffectParams DamageEffectParams;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UChildActorComponent> PlayerWeapon;
 
-	UPROPERTY()
-	TArray<AActor*> IgnoreActors;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInteractionComponent> InteractionComponent;
 
-	UPROPERTY(EditAnywhere)
-	float LightningThresholdTime = 0.05f;
-	float LastLightningTime = 0.f;
-
-	UPROPERTY(EditAnywhere)
-	float LightningThresholdDistance = 50.f;
-	FVector LastLightningLocation = FVector::Zero();
-
+	UFUNCTION(BlueprintCallable)
+	APlayerWeapon* GetPlayerWeapon();
 private:
-
 	void OnMoveSpeedChanged(const FOnAttributeChangeData& Data);
 	
 };

@@ -5,7 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
-#include "Character/Enemy/DonEnemy.h"
+#include "Character/Enemy/DonEnemyCharacter.h"
 #include "Character/NPC/MerchantNPC.h"
 #include "Character/NPC/NPCCharacterBase.h"
 #include "GameInstance/SubSystem/DungeonSubsystem.h"
@@ -29,10 +29,10 @@ void ADonGameModeBase::BeginPlay()
 	for (FEnemySpawnInfo EnemySpawnInfo : EnemySpawnSchedule)
 	{
 		// Spawn Enemy
-		if (EnemySpawnInfo.EnemyClass->IsChildOf(ADonEnemy::StaticClass()))
+		if (EnemySpawnInfo.EnemyClass->IsChildOf(ADonEnemyCharacter::StaticClass()))
 		{
 			float SpawnDelay = EnemySpawnInfo.SpawnTime;
-			TSubclassOf<ADonEnemy> EnemyClass = TSubclassOf<ADonEnemy>(EnemySpawnInfo.EnemyClass);
+			TSubclassOf<ADonEnemyCharacter> EnemyClass = TSubclassOf<ADonEnemyCharacter>(EnemySpawnInfo.EnemyClass);
 			int32 Amount = EnemySpawnInfo.Amount;
 			
 			FTimerDelegate EnemyTimerDelegate;
@@ -164,12 +164,12 @@ void ADonGameModeBase::SpawnEnemy(float SpawnTime, TSubclassOf<ACharacter> Enemy
 			FActorSpawnParameters SpawnParameters;
 			FTransform SpawnTransform(FRotator::ZeroRotator, SpawnLocation);
 			
-			ADonEnemy* EnemyActor = GetWorld()->SpawnActorDeferred<ADonEnemy>(Enemy, SpawnTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
+			ADonEnemyCharacter* EnemyActor = GetWorld()->SpawnActorDeferred<ADonEnemyCharacter>(Enemy, SpawnTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
 			if (EnemyActor)
 			{
 				int32 Level = FMath::Max(1, 1 + FMath::FloorToInt32(GetWorld()->GetTimeSeconds() / EnemyUpgradeTime));
 				UE_LOG(LogTemp, Warning, TEXT("Enemy Level : %d"), Level);
-				EnemyActor->SetCharacterLevel(Level);
+				EnemyActor->SetEnemyLevel(Level);
 				UGameplayStatics::FinishSpawningActor(EnemyActor, SpawnTransform);
 				AddToSpawnedEnemies(1);
 				if (EnemyActor->bBossEnemy) break;
@@ -205,11 +205,11 @@ void ADonGameModeBase::SpawnNPC(TSubclassOf<ACharacter> NPC)
 	}
 
 	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADonEnemy::StaticClass(), FoundActors);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADonEnemyCharacter::StaticClass(), FoundActors);
 
 	for (AActor* Actor : FoundActors)
 	{
-		if (ADonEnemy* BossEnemy = Cast<ADonEnemy>(Actor))
+		if (ADonEnemyCharacter* BossEnemy = Cast<ADonEnemyCharacter>(Actor))
 		{
 			BossEnemy->DestroyStone();
 		}

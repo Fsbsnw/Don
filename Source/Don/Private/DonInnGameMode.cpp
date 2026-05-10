@@ -37,12 +37,7 @@ void ADonInnGameMode::BeginPlay()
 void ADonInnGameMode::HandleMidnight()
 {
 	int32 RoomServiceRevenue = 0;
-	UInnManagerSubsystem* InnSystem = GetGameInstance()->GetSubsystem<UInnManagerSubsystem>();
-	if (InnSystem)
-	{
-		// InnSystem->CloseInnAtMidnight();
-		RoomServiceRevenue = InnSystem->RoomServiceRevenue;
-	}
+	CloseInnSystem(RoomServiceRevenue);
 	
 	TArray<FCompletedFoodOrder> CompletedFoodOrders;
 	CloseInnKitchen(CompletedFoodOrders);

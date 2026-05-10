@@ -4,6 +4,7 @@
 #include "GameInstance/SubSystem/EnemyManagerSubsystem.h"
 
 #include "Character/Enemy/DonEnemyPawn.h"
+#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 
 bool UEnemyManagerSubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -36,7 +37,7 @@ void UEnemyManagerSubsystem::UpdateAILOD()
 	if (NextEnemyToUpdateIndex == 0) MaxEnemyCount = EnemyPawns.Num();
 	
 	// 플레이어 위치 가져오기
-	const AActor* Player = UGameplayStatics::GetPlayerCharacter(this, 0);
+	const ACharacter* Player = UGameplayStatics::GetPlayerCharacter(this, 0);
 	if (!Player) return;
 	const FVector PlayerLocation = Player->GetActorLocation();
 	const int32 MaxRange = FMath::Min(MaxEnemyCount, NextEnemyToUpdateIndex + MaxEnemiesPerFrame);

@@ -4,7 +4,7 @@
 #include "AbilitySystem/Abilities/TeleportAttack.h"
 
 #include "AbilitySystem/Abilities/AbilityTasks/AbilityTask_Timeline.h"
-#include "Character/Enemy/DonEnemy.h"
+#include "Character/Enemy/DonEnemyCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -25,7 +25,7 @@ bool UTeleportAttack::FindCombatTarget()
 		Avatar->GetActorLocation(),
 		CombatRadius,
 		ObjectTypes,
-		ADonEnemy::StaticClass(),
+		ADonEnemyCharacter::StaticClass(),
 		ActorsToIgnore,
 		OverlappedActors
 	);

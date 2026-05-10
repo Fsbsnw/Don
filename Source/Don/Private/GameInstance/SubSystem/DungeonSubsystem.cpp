@@ -4,7 +4,7 @@
 #include "GameInstance/SubSystem/DungeonSubsystem.h"
 
 #include "Actor/PatrolPath.h"
-#include "Character/Enemy/DonEnemy.h"
+#include "Character/Enemy/DonEnemyCharacter.h"
 #include "GameInstance/SubSystem/InnManagerSubsystem.h"
 #include "Inn/DonInnLibrary.h"
 #include "Inn/Object/InnCustomerGroup.h"
@@ -54,12 +54,12 @@ void UDungeonSubsystem::SpawnLodgerEnemy()
 				SpawnLocation + RandomOffset
 			);
 
-			if (ADonEnemy* LodgerEnemy = GetWorld()->SpawnActorDeferred<ADonEnemy>(LodgerData.LodgerEnemyClass, SpawnTransform))
+			if (ADonEnemyCharacter* LodgerEnemy = GetWorld()->SpawnActorDeferred<ADonEnemyCharacter>(LodgerData.LodgerEnemyClass, SpawnTransform))
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Lodger Spawned %d"), ++Count);
 				LodgerEnemy->GroupID = LodgerGroup->GroupID;
 				LodgerEnemy->PatrolPath = Paths[PathIndex];
-				LodgerEnemy->SetCharacterLevel(Member.Level);
+				LodgerEnemy->SetEnemyLevel(Member.Level);
 				LodgerEnemy->OnDungeonGroupKilled.AddUObject(this, &UDungeonSubsystem::CalculateDeadMembers);
 				LodgerEnemy->FinishSpawning(SpawnTransform);
 			}

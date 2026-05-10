@@ -8,7 +8,7 @@
 #include "AbilitySystem/DonAbilityLibrary.h"
 #include "AbilitySystem/Abilities/DonGameplayAbility.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
-#include "Character/DonCharacterBase.h"
+#include "Character/DonPawnBase.h"
 #include "Character/Player/Interface/PlayerInterface.h"
 #include "Inventory/DonItemLibrary.h"
 

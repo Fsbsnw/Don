@@ -3,17 +3,16 @@
 
 #include "AbilitySystem/Abilities/DonDirectionalSweepingAttack.h"
 
+#include "Actor/PlayerWeapon.h"
 #include "Character/Player/DonCharacter.h"
 
 void UDonDirectionalSweepingAttack::CauseDamage(AActor* TargetActor)
 {
-	// if (TargetActor) Super::CauseDamage(TargetActor);
-
 	ADonCharacter* DonCharacter = Cast<ADonCharacter>(GetAvatarActorFromActorInfo());
-	if (DonCharacter)
+	if (DonCharacter && DonCharacter->GetPlayerWeapon())
 	{
-		DonCharacter->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();
-		DonCharacter->DamageEffectParams.KnockbackChance = 100.f;
-		DonCharacter->DamageEffectParams.KnockbackForceMagnitude = Force * 100.f;
+		DonCharacter->GetPlayerWeapon()->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();
+		DonCharacter->GetPlayerWeapon()->DamageEffectParams.KnockbackChance = 100.f;
+		DonCharacter->GetPlayerWeapon()->DamageEffectParams.KnockbackForceMagnitude = Force * 100.f;
 	}
 }

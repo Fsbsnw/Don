@@ -11,7 +11,6 @@
 
 struct FDonGameplayTags
 {
-public:
 	static const FDonGameplayTags& Get() { return GameplayTags; }
 	static void InitializeNativeGameplayTags();
 
@@ -207,11 +206,7 @@ public:
 
 	
 
-
 	TMap<FGameplayTag, FGameplayTag> FindCooldownTags;
-	
-protected:
- 
 private:
 	static FDonGameplayTags GameplayTags;
 };

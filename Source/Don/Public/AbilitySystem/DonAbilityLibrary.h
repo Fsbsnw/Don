@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameplayEffectTypes.h"
-#include "Character/DonCharacterBase.h"
+#include "Character/DonCharacterTypes.h"
+#include "Character/DonPawnBase.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "DonAbilityLibrary.generated.h"
 
+struct FEnemyClassInfo;
+enum class EEnemyClass;
 struct FDamageEffectParams;
 class UAbilityInfo;
 class UAttributeMenuWidgetController;
@@ -22,10 +25,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Attribute")
 	static UAttributeMenuWidgetController* GetAttributeMenuWidgetController(const UObject* WorldContextObject);
 
-	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
+	UFUNCTION(BlueprintPure, Category = "DonItemLibrary")
 	static FCharacterClassInfo FindCharacterClassInfo(const UObject* WorldContextObject, ECharacterClass CharacterClass);
 
-	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
+	UFUNCTION(BlueprintPure, Category = "DonItemLibrary")
+	static FEnemyClassInfo FindEnemyClassInfo(const UObject* WorldContextObject, EEnemyClass EnemyClass);
+
+	UFUNCTION(BlueprintPure, Category = "DonItemLibrary")
 	static UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject, ECharacterClass CharacterClass);
 	
 	UFUNCTION(BlueprintCallable, Category = "DonAbilitySystemLibrary | DamageEffect")

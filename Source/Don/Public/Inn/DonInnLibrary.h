@@ -7,7 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "DonInnLibrary.generated.h"
 
-class ADonEnemy;
+class ADonEnemyCharacter;
 class AInnCustomer;
 class UInnWidgetController;
 struct FRoomServiceOrder;

@@ -156,11 +156,8 @@ void UInventoryComponent::RemoveItem(int32 SlotIndex, int32 Amount)
 				UE_LOG(LogTemp, Error, TEXT("ControlledCharacter does not implement UCombatInterface!"));
 				return;
 			}
-
-			if (ICombatInterface::Execute_IsItemEquipped(ControlledCharacter, Inventory[SlotIndex]))
-			{
-				ICombatInterface::Execute_UnequipItem(ControlledCharacter, Inventory[SlotIndex]);
-			}
+			// 장착중인 아이템이면 장착 아이템 해제
+			ICombatInterface::Execute_UnequipItem(ControlledCharacter, Inventory[SlotIndex]);
 		}
 
 		FItem Item = Inventory[SlotIndex];
@@ -238,7 +235,7 @@ void UInventoryComponent::UpgradeArmorItem(int32 SlotIndex, int32 Amount)
 		
 		if (ControlledCharacter && ControlledCharacter->Implements<UCombatInterface>())
 		{
-			ICombatInterface::Execute_UpdateUpgradedItemInfo(ControlledCharacter, Inventory[SlotIndex]);
+			// TODO 아머 업그레이드
 		}
 	}
 }

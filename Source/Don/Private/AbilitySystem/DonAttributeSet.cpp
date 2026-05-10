@@ -10,10 +10,9 @@
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Character/Enemy/DonEnemy.h"
+#include "Character/Enemy/DonEnemyCharacter.h"
 #include "Character/Player/DonCharacter.h"
 #include "GameFramework/Character.h"
-#include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerController.h"
 
 UDonAttributeSet::UDonAttributeSet()
@@ -99,14 +98,9 @@ void UDonAttributeSet::HandleDie(FEffectProperties Props)
 {
 	if (Props.TargetAvatarActor->Implements<UCombatInterface>())
 	{
-		int32 RewardScore = ICombatInterface::Execute_GetRewardScore(Props.TargetAvatarActor);
 		bool bFound = true;
 		float DropRate = Props.SourceASC->GetGameplayAttributeValue(GetItemDropRateAttribute(), bFound);
 		ICombatInterface::Execute_Die(Props.TargetAvatarActor, FVector(), DropRate);
-		if (Props.SourceCharacter->Implements<UPlayerInterface>())
-		{
-			IPlayerInterface::Execute_AddToScore(Props.SourceCharacter, RewardScore);
-		}
 	}
 }
 
@@ -129,11 +123,11 @@ void UDonAttributeSet::HandleIncomingDamage(FEffectProperties Props)
 	// Calculate Final Damage
 	int32 WeaponDamage = 0.f;
 	int32 ArmorDefense = 0.f;
-	if (Props.SourceCharacter->Implements<UCombatInterface>() && TargetPawn->Implements<UCombatInterface>())
+	if (Props.SourceAvatarActor->Implements<UCombatInterface>() && TargetPawn->Implements<UCombatInterface>())
 	{
-		WeaponDamage = FMath::RoundToInt(ICombatInterface::Execute_GetWeaponDamage(Props.SourceCharacter));
+		WeaponDamage = FMath::RoundToInt(ICombatInterface::Execute_GetWeaponDamage(Props.SourceAvatarActor));
 		ArmorDefense = FMath::RoundToInt(ICombatInterface::Execute_GetArmorDefense(TargetPawn));
-		UE_LOG(LogTemp, Warning, TEXT("%s's Weapon Damage Added : %d Damaged"), *Props.SourceCharacter->GetName(), WeaponDamage);
+		UE_LOG(LogTemp, Warning, TEXT("%s's Weapon Damage Added : %d Damaged"), *Props.SourceAvatarActor->GetName(), WeaponDamage);
 		UE_LOG(LogTemp, Warning, TEXT("%s's Armor Defense Added : %d Blocked"), *TargetPawn->GetName(), ArmorDefense);
 	}
 	int32 FinalDamage = FMath::Max(LocalIncomingDamage + WeaponDamage - ArmorDefense, 0.f);
@@ -171,7 +165,7 @@ void UDonAttributeSet::HandleIncomingDamage(FEffectProperties Props)
 			}
 			else
 			{
-				if (ADonEnemy* Enemy = Cast<ADonEnemy>(TargetPawn))
+				if (ADonEnemyCharacter* Enemy = Cast<ADonEnemyCharacter>(TargetPawn))
 				{
 					if (!Enemy->GetGetupState()) return;
 				}

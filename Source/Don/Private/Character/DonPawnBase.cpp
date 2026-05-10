@@ -1,32 +1,38 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Character/DonCharacterBase.h"
+#include "Character/DonPawnBase.h"
 
 #include "AbilitySystemComponent.h"
 #include "Don.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Player/DonPlayerState.h"
 
-ADonCharacterBase::ADonCharacterBase()
+ADonPawnBase::ADonPawnBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	GetCapsuleComponent()->SetGenerateOverlapEvents(false);
-	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	GetMesh()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Overlap);
-	GetMesh()->SetGenerateOverlapEvents(true);
+	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule"));
+	SetRootComponent(CapsuleComponent);
+
+	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
+	SkeletalMesh->SetupAttachment(CapsuleComponent);
+
+	CapsuleComponent->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	CapsuleComponent->SetGenerateOverlapEvents(false);
+
+	SkeletalMesh->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	SkeletalMesh->SetCollisionResponseToChannel(ECC_Projectile, ECR_Overlap);
+	SkeletalMesh->SetGenerateOverlapEvents(true);
 }
 
-UAbilitySystemComponent* ADonCharacterBase::GetAbilitySystemComponent() const
+UAbilitySystemComponent* ADonPawnBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }
 
-void ADonCharacterBase::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
+void ADonPawnBase::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
 {
 	if (!bDead)
 	{
@@ -34,21 +40,12 @@ void ADonCharacterBase::Die_Implementation(const FVector& DeathImpulse, float It
 	}
 }
 
-void ADonCharacterBase::SetKnockbackState_Implementation(bool NewState, const FVector& Force)
+void ADonPawnBase::SetKnockbackState_Implementation(bool NewState, const FVector& Force)
 {
-	GetCharacterMovement()->AddImpulse(Force);
+	CapsuleComponent->AddImpulse(Force);
 }
 
-float ADonCharacterBase::GetWeaponDamage_Implementation()
-{
-	if (const ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetPlayerState()))
-	{
-		return DonPlayerState->GetAxeUpgrade() * 3.f;
-	}
-	return 0.f;
-}
-
-float ADonCharacterBase::GetCharacterLevel_Implementation() const
+float ADonPawnBase::GetCharacterLevel_Implementation() const
 {
 	if (const ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetPlayerState()))
 	{
@@ -57,22 +54,22 @@ float ADonCharacterBase::GetCharacterLevel_Implementation() const
 	return 0.f;
 }
 
-void ADonCharacterBase::BeginPlay()
+void ADonPawnBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetMesh() && !GetMesh()->GetMaterials().IsEmpty() && DynamicMaterials.IsEmpty())
+	if (SkeletalMesh && !SkeletalMesh->GetMaterials().IsEmpty() && DynamicMaterials.IsEmpty())
 	{
-		for (int32 Index = 0; Index < GetMesh()->GetMaterials().Num(); Index++)
+		for (int32 Index = 0; Index < SkeletalMesh->GetMaterials().Num(); Index++)
 		{
-			UMaterialInstanceDynamic* InstanceDynamic = UMaterialInstanceDynamic::Create(GetMesh()->GetMaterials()[Index], this);
-			GetMesh()->SetMaterial(Index, InstanceDynamic);
+			UMaterialInstanceDynamic* InstanceDynamic = UMaterialInstanceDynamic::Create(SkeletalMesh->GetMaterials()[Index], this);
+			SkeletalMesh->SetMaterial(Index, InstanceDynamic);
 			DynamicMaterials.AddUnique(InstanceDynamic);
 		}
 	}
 }
 
-void ADonCharacterBase::ApplyHitEffect_Implementation()
+void ADonPawnBase::ApplyHitEffect_Implementation()
 {
 	if (!DynamicMaterials.IsEmpty())
 	{
@@ -80,11 +77,11 @@ void ADonCharacterBase::ApplyHitEffect_Implementation()
 		{
 			Material->SetVectorParameterValue(FName("HitFlashColor"), FLinearColor(1.0f, 0.0f, 0.0f, 1.0f));
 		}
-		GetWorld()->GetTimerManager().SetTimer(HitFlashTimerHandle, this, &ADonCharacterBase::ResetMaterials, 0.2f, false);
+		GetWorld()->GetTimerManager().SetTimer(HitFlashTimerHandle, this, &ADonPawnBase::ResetMaterials, 0.2f, false);
 	}
 }
 
-void ADonCharacterBase::ResetMaterials()
+void ADonPawnBase::ResetMaterials()
 {
 	if (!DynamicMaterials.IsEmpty())
 	{
@@ -95,11 +92,11 @@ void ADonCharacterBase::ResetMaterials()
 	}
 }
 
-void ADonCharacterBase::InitAbilityActorInfo()
+void ADonPawnBase::InitAbilityActorInfo()
 {
 }
 
-FActiveGameplayEffectHandle ADonCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level)
+FActiveGameplayEffectHandle ADonPawnBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level)
 {
 	check(IsValid(GetAbilitySystemComponent()));
 	check(GameplayEffectClass);
@@ -110,7 +107,7 @@ FActiveGameplayEffectHandle ADonCharacterBase::ApplyEffectToSelf(TSubclassOf<UGa
 	return GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
 }
 
-void ADonCharacterBase::InitializeDefaultAttributes()
+void ADonPawnBase::InitializeDefaultAttributes()
 {
 	ApplyEffectToSelf(DefaultPrimaryAttributes, GetCharacterLevel_Implementation());
 	SecondaryEffectHandle = ApplyEffectToSelf(DefaultSecondaryAttributes, GetCharacterLevel_Implementation());
@@ -118,7 +115,7 @@ void ADonCharacterBase::InitializeDefaultAttributes()
 	ApplyEffectToSelf(DefaultVitalAttributes, GetCharacterLevel_Implementation());
 }
 
-void ADonCharacterBase::AddCharacterAbilities()
+void ADonPawnBase::AddCharacterAbilities()
 {
 	UDonAbilitySystemComponent* ASC = CastChecked<UDonAbilitySystemComponent>(AbilitySystemComponent);
 	if (!HasAuthority()) return;

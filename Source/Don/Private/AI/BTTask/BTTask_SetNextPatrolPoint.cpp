@@ -6,7 +6,7 @@
 #include "AIController.h"
 #include "Actor/PatrolPath.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Character/Enemy/DonEnemy.h"
+#include "Character/Enemy/DonEnemyCharacter.h"
 
 EBTNodeResult::Type UBTTask_SetNextPatrolPoint::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -16,7 +16,7 @@ EBTNodeResult::Type UBTTask_SetNextPatrolPoint::ExecuteTask(UBehaviorTreeCompone
 	APawn* AIPawn = AIController->GetPawn();
 	if (!AIPawn) return EBTNodeResult::Failed;
 
-	ADonEnemy* Enemy = Cast<ADonEnemy>(AIPawn);
+	ADonEnemyCharacter* Enemy = Cast<ADonEnemyCharacter>(AIPawn);
 	if (!Enemy || !Enemy->PatrolPath) return EBTNodeResult::Failed;
 
 	const TArray<AActor*>& PatrolPoints = Enemy->PatrolPath->PatrolPoints;

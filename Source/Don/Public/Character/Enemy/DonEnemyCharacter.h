@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Character/DonCharacterBase.h"
-#include "DonEnemy.generated.h"
+#include "Character/DonCharacterTypes.h"
+#include "DonEnemyCharacter.generated.h"
 
+enum class EEnemyClass;
 class APatrolPath;
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDungeonGroupKilled, int32);
 
@@ -18,30 +20,28 @@ class UWidgetComponent;
  * 
  */
 UCLASS()
-class DON_API ADonEnemy : public ADonCharacterBase
+class DON_API ADonEnemyCharacter : public ADonCharacterBase
 {
 	GENERATED_BODY()
 public:
-	ADonEnemy();
+	ADonEnemyCharacter();
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Destroyed() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
-	virtual void SetKnockbackState_Implementation(bool bKnockback, const FVector& Force) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void DestroyStone();
 	
 	UFUNCTION(BlueprintCallable)
 	void SetMeshInitState();
+
+	void SetEnemyLevel(int32 InLevel) { EnemyLevel = InLevel; }
 	
 	void SetHealthPercent(float NewValue);
 	void SetHealthText(float NewValue, float NewMaxValue);
 	void SetHealthVisibility(bool State);
-	UFUNCTION(BlueprintCallable)
-	void SetKnockbackState(bool NewState, FVector Force = FVector::ZeroVector);
-	void SetRewardScore(int32 InRewardScore) { RewardScore = InRewardScore; }
 
 	UPROPERTY(EditAnywhere)
 	float ForceMultiplier = 15.f;
@@ -57,6 +57,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FLootableItem> LootableItems;
+
+	UPROPERTY(EditDefaultsOnly)
+	EEnemyClass EnemyClass = EEnemyClass::Fighter;
 
 	/*
 	 * Boss
@@ -104,6 +107,8 @@ protected:
 	TObjectPtr<UNiagaraSystem> DeathEffect;
 
 private:
+	int32 EnemyLevel = 1;
+	
 	UPROPERTY(EditDefaultsOnly)
 	FName BodyCenterBone = FName("Hips");
 
