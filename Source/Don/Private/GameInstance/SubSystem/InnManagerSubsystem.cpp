@@ -224,6 +224,9 @@ void UInnManagerSubsystem::RemoveGroup(int32 GroupID)
 			RoomInfo.GroupID = -1;
 		}
 	}
+	// Customer destroy
+	InnGroups[GroupID]->ExitInn();
+	
 	InnGroups.Remove(GroupID);
 	LodgerGroups.Remove(GroupID);
 	OnInnGroupChanged.Broadcast(GetInnGroupsArray());

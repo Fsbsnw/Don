@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "ActiveGameplayEffectHandle.h"
-#include "GameFramework/Character.h"
 #include "Interface/CombatInterface.h"
-#include "DonCharacterBase.generated.h"
+#include "DonPawnBase.generated.h"
 
+class UFloatingPawnMovement;
+class UCapsuleComponent;
 struct FItemEquipmentInfo;
 struct FDonGameplayTags;
 
@@ -22,12 +23,12 @@ class UAbilitySystemComponent;
 class UAttributeSet;
 
 UCLASS(Abstract)
-class DON_API ADonCharacterBase : public ACharacter, public IAbilitySystemInterface, public ICombatInterface
+class DON_API ADonPawnBase : public APawn, public IAbilitySystemInterface, public ICombatInterface
 {
 	GENERATED_BODY()
 
 public:
-	ADonCharacterBase();
+	ADonPawnBase();
 
 	virtual void BeginPlay() override;
 	virtual void InitAbilityActorInfo();
@@ -41,18 +42,26 @@ public:
 	virtual bool IsDead_Implementation() override { return bDead; };
 	virtual void ApplyHitEffect_Implementation() override;
 	virtual void SetKnockbackState_Implementation(bool NewState, const FVector& Force) override;
-	virtual float GetWeaponDamage_Implementation() override;
 	virtual float GetCharacterLevel_Implementation() const override;
 	// End Combat Interface
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCapsuleComponent* CapsuleComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	USkeletalMeshComponent* SkeletalMesh;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	UFloatingPawnMovement* MovementComponent;
+	
+	UPROPERTY()
+	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
+	
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 	UPROPERTY()
 	TObjectPtr<UAttributeSet> AttributeSet;
-	
-	UPROPERTY()
-	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultPrimaryAttributes;
@@ -85,8 +94,10 @@ public:
 private:
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
+
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupPassiveAbilities;
+
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupCommonAbilities;
 };

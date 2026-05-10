@@ -6,22 +6,16 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "DonGameModeBase.h"
-#include "DonGameplayTags.h"
 #include "DonInnGameMode.h"
-#include "AbilitySystem/DonAbilityLibrary.h"
-#include "AbilitySystem/DonAbilitySystemComponent.h"
 #include "AbilitySystem/DonAttributeSet.h"
-#include "AbilitySystem/Abilities/DonDamageGameplayAbility.h"
+#include "Actor/PlayerWeapon.h"
 #include "Camera/CameraComponent.h"
-#include "Character/Interface/InteractInterface.h"
-#include "Components/SphereComponent.h"
+#include "Character/Component/EquipmentComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
-#include "Player/DonPlayerController.h"
 #include "Player/DonPlayerState.h"
-#include "UI/HUD/DonHUD.h"
 
 ADonCharacter::ADonCharacter()
 {
@@ -33,89 +27,71 @@ ADonCharacter::ADonCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(SpringArm);
 
-	Axe = CreateDefaultSubobject<USkeletalMeshComponent>("Axe Mesh");
-	Axe->SetupAttachment(GetMesh(), "ik_hand_gun");
-	Axe->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	AxeCollision = CreateDefaultSubobject<USphereComponent>("Axe Collision");
-	AxeCollision->SetupAttachment(Axe);
-	AxeCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
-	AxeCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	AxeCollision->SetGenerateOverlapEvents(false);
-	AxeCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	InteractionCollision = CreateDefaultSubobject<USphereComponent>("Interaction Collision");
-	InteractionCollision->SetSphereRadius(100.f);
-	InteractionCollision->SetupAttachment(RootComponent);
-	InteractionCollision->SetCollisionResponseToAllChannels(ECR_Overlap);
-	InteractionCollision->SetGenerateOverlapEvents(true);
-	InteractionCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-}
-
-void ADonCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-	AxeCollision->OnComponentBeginOverlap.AddDynamic(this, &ADonCharacter::OnWeaponBeginOverlap);
+	PlayerWeapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Player Weapon"));
+	PlayerWeapon->SetupAttachment(GetMesh(), TEXT("ik_hand_gun"));
 }
 
 void ADonCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	if (APlayerWeapon* Weapon = Cast<APlayerWeapon>(PlayerWeapon->GetChildActor()))
+	{
+		Weapon->SetOwner(this);
+	}
+
 	InitAbilityActorInfo();
 	AddCharacterAbilities();
+}
+
+// GAS 세팅 및 Default Abilities 적용 
+void ADonCharacter::InitAbilityActorInfo()
+{
+	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
+	check(DonPlayerState);
+	
+	AbilitySystemComponent = DonPlayerState->GetAbilitySystemComponent();
+	check(AbilitySystemComponent);
+
+	AttributeSet = DonPlayerState->GetAttributeSet();
+	
+	AbilitySystemComponent->InitAbilityActorInfo(DonPlayerState, this);
+	DonPlayerState->OnLevelChangedDelegate.AddUObject(this, &ADonCharacter::UpdateAttributesFromLevel);
+
+	// 캐릭터 Speed Attribute 바인딩
+	if (UDonAttributeSet* DonAS = Cast<UDonAttributeSet>(AttributeSet))
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+			DonAS->GetMoveSpeedAttribute()
+		).AddUObject(this, &ADonCharacter::OnMoveSpeedChanged);
+	}
+
+	// Curve Table 기반 Attributes 속성 적용(Primary, Secondary, MaxVital, Vital)
+	InitializeDefaultAttributes();
+}
+
+APlayerWeapon* ADonCharacter::GetPlayerWeapon()
+{
+	if (AActor* Child = PlayerWeapon->GetChildActor())
+	{
+		if (APlayerWeapon* Weapon = Cast<APlayerWeapon>(Child))
+		{
+			return Weapon;
+		}
+	}
+	return nullptr;
+}
+
+// Attribute-캐릭터 스피드 바인딩
+void ADonCharacter::OnMoveSpeedChanged(const FOnAttributeChangeData& Data)
+{
+	GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
+	UE_LOG(LogTemp, Warning, TEXT("Move Speed : %f"), Data.NewValue);
 }
 
 void ADonCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-}
-
-void ADonCharacter::OnWeaponBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (!OtherActor || OtherActor == this) return;
-	if (IgnoreActors.Contains(OtherActor)) return;
-
-	IgnoreActors.Add(OtherActor);
-
-	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
-	{
-		DamageEffectParams.TargetAbilitySystemComponent = TargetASC;
-		FRotator Rotation = GetActorRotation();
-		Rotation.Pitch = 20.f;
-		
-		const FVector DirForce = Rotation.Vector() * DamageEffectParams.KnockbackForceMagnitude;
-		DamageEffectParams.KnockbackForce = DirForce;
-		
-		FGameplayEventData Payload;
-		Payload.Instigator = this;
-		Payload.Target = OtherActor;
-
-
-		const float CurrentTime = GetWorld()->GetTimeSeconds();
-		const float TimeDiff = CurrentTime - LastLightningTime;
-		
-		const FVector CurrentLocation = OtherActor->GetActorLocation();
-		const float Distance = FVector::Dist(LastLightningLocation, CurrentLocation);
-
-		// 번개 이펙트 발동 가능한 거리, 시간이 아닌 경우
-		if (Distance < LightningThresholdDistance || TimeDiff < LightningThresholdTime)
-		{
-			Payload.EventMagnitude = -100.f;
-		}
-		// 번개 이펙트 발동 가능한 경우 시간, 위치 갱신
-		else
-		{
-			LastLightningTime = CurrentTime;
-			LastLightningLocation = CurrentLocation;
-		}
-		
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, FDonGameplayTags::Get().Request_Abilities_Lightning, Payload);
-		
-		UDonAbilityLibrary::ApplyDamageEffect(DamageEffectParams);
-	}
 }
 
 void ADonCharacter::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
@@ -135,6 +111,22 @@ void ADonCharacter::Die_Implementation(const FVector& DeathImpulse, float ItemDr
 	}
 }
 
+void ADonCharacter::EquipItem_Implementation(FItem& Item)
+{
+	if (UEquipmentComponent* EquipComponent = FindComponentByClass<UEquipmentComponent>())
+	{
+		EquipComponent->SpawnAndAttachEquipment(Item);
+	}
+}
+
+void ADonCharacter::UnequipItem_Implementation(FItem& Item)
+{
+	if (UEquipmentComponent* EquipComponent = FindComponentByClass<UEquipmentComponent>())
+	{
+		EquipComponent->DetachAndDestroyEquipment(Item);
+	}
+}
+
 void ADonCharacter::UpdateAttributesFromLevel(int32 NewLevel, bool bLevelUp)
 {
 	if (!bLevelUp) return;
@@ -142,24 +134,6 @@ void ADonCharacter::UpdateAttributesFromLevel(int32 NewLevel, bool bLevelUp)
 	GetAbilitySystemComponent()->SetActiveGameplayEffectLevel(MaxVitalEffectHandle, NewLevel);
 	ApplyEffectToSelf(DefaultVitalAttributes, NewLevel);
 }
-
-void ADonCharacter::UpdateAbilityTypeAndCollision(FGameplayTag AbilityTag, bool bEnableCollision)
-{
-	if (bEnableCollision && AbilityTag.IsValid())
-	{
-		AxeCollision->SetGenerateOverlapEvents(true);
-		AxeCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		AxeAbilityType = AbilityTag;
-	}
-	else
-	{
-		AxeCollision->SetGenerateOverlapEvents(false);
-		AxeCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		AxeAbilityType = FGameplayTag();
-		IgnoreActors.Empty();
-		DamageEffectParams = FDamageEffectParams();
-	}
-} 
 
 int32 ADonCharacter::GetAttributePoints_Implementation() const
 {
@@ -205,53 +179,3 @@ bool ADonCharacter::AddItemToInventory_Implementation(FItem Item)
 	return true;
 }
 
-void ADonCharacter::InitAbilityActorInfo()
-{
-	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
-	check(DonPlayerState);
-	DonPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(DonPlayerState, this);
-	DonPlayerState->OnLevelChangedDelegate.AddUObject(this, &ADonCharacter::UpdateAttributesFromLevel);
-
-	Cast<UDonAbilitySystemComponent>(DonPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
-	
-	AbilitySystemComponent = DonPlayerState->GetAbilitySystemComponent();
-	AttributeSet = DonPlayerState->GetAttributeSet();
-	
-	if (UDonAttributeSet* DonAS = Cast<UDonAttributeSet>(AttributeSet))
-	{
-		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
-			DonAS->GetMoveSpeedAttribute()
-		).AddUObject(this, &ADonCharacter::OnMoveSpeedChanged);
-	}
-	
-	if (ADonPlayerController* DonPlayerController = Cast<ADonPlayerController>(GetController()))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(DonPlayerController->GetHUD()))
-		{
-			DonHUD->InitOverlay(DonPlayerController, DonPlayerState, AbilitySystemComponent, AttributeSet);
-		}
-	}
-
-	InitializeDefaultAttributes();
-}
-
-void ADonCharacter::OnMoveSpeedChanged(const FOnAttributeChangeData& Data)
-{
-	GetCharacterMovement()->MaxWalkSpeed = Data.NewValue;
-	UE_LOG(LogTemp, Warning, TEXT("Move Speed : %f"), Data.NewValue);
-}
-
-void ADonCharacter::ExecuteInteract()
-{
-	TArray<AActor*> OverlappingActors;
-	InteractionCollision->GetOverlappingActors(OverlappingActors);
-
-	for (AActor* NPCActor : OverlappingActors)
-	{
-		if (NPCActor->Implements<UInteractInterface>())
-		{
-			Cast<IInteractInterface>(NPCActor)->Interact(GetPlayerState());
-			return;
-		}
-	}
-}

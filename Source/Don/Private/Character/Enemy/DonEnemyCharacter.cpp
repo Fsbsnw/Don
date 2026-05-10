@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Character/Enemy/DonEnemy.h"
+#include "Character/Enemy/DonEnemyCharacter.h"
 
 #include "DonGameModeBase.h"
 #include "NiagaraFunctionLibrary.h"
@@ -19,7 +19,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "UI/Widget/HealthBarWidget.h"
 
-ADonEnemy::ADonEnemy()
+ADonEnemyCharacter::ADonEnemyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -35,7 +35,7 @@ ADonEnemy::ADonEnemy()
 	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>("Health Bar Widget Component");
 }
 
-void ADonEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
+void ADonEnemyCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (GetWorld())
 	{
@@ -44,7 +44,7 @@ void ADonEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void ADonEnemy::Destroyed()
+void ADonEnemyCharacter::Destroyed()
 {
 	if (ADonGameModeBase* GameModeBase = Cast<ADonGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
@@ -56,101 +56,12 @@ void ADonEnemy::Destroyed()
 	Super::Destroyed();
 }
 
-void ADonEnemy::SetKnockbackState_Implementation(bool NewState, const FVector& Force)
-{
-	Super::SetKnockbackState_Implementation(NewState, Force);
-	
-	SetKnockbackState(NewState, Force);
-}
-
-void ADonEnemy::SetMeshInitState()
+void ADonEnemyCharacter::SetMeshInitState()
 {
 
 }
 
-void ADonEnemy::SetKnockbackState(bool NewState, FVector Force)
-{
-	if (GetCapsuleComponent() == nullptr || GetMesh() == nullptr || bBossEnemy) return;
-	
-	if (NewState)
-	{
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
-		GetMesh()->GetAnimInstance()->Montage_Stop(0.f);
-
-		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		GetMesh()->SetSimulatePhysics(true);
-		GetMesh()->SetPhysicsBlendWeight(1.0f);
-		GetMesh()->bBlendPhysics = false;
-		GetMesh()->WakeAllRigidBodies();
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *GetMesh()->GetName());
-		FVector ScaledForce = FVector(Force.X * (ForceMultiplier / TestXDivide), Force.Y * ForceMultiplier, Force.Z * ForceMultiplier); 
-		GetMesh()->AddImpulse(ScaledForce, NAME_None, true);
-
-		FTimerDelegate KnockbackCollisionTimerDelegate;
-		KnockbackCollisionTimerDelegate.BindLambda(
-			[this]()
-			{
-				if (!IsValid(this) || !IsValid(this->GetMesh())) return;
-				if (!bKnockback)
-				{
-					GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
-					return;
-				}
-				const FVector PelvisLocation = this->GetMesh()->GetSocketLocation(BodyCenterBone);
-				this->GetCapsuleComponent()->SetWorldLocation(PelvisLocation, true);
-			}
-		);
-		GetWorld()->GetTimerManager().SetTimer(KnockbackCollisionTimerHandle, KnockbackCollisionTimerDelegate, 0.1f, true);
-		
-		SetKnockback(true);
-	}
-	else
-	{
-		// 1️⃣ 현재 캐릭터의 중요 위치(골반, 목) 가져오기
-		const FVector NeckLocation = GetMesh()->GetSocketLocation(NeckBone);
-		const FVector PelvisLocation = GetMesh()->GetSocketLocation(BodyCenterBone);
-
-		// 2️⃣ 물리 및 충돌 설정 변경 (일시적으로 비활성화)
-		GetMesh()->SetSimulatePhysics(false);
-		GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-
-		// 3️⃣ 캡슐의 새 회전값 계산 (Pelvis → Neck 방향을 기준으로 회전)
-		FRotator NewCapsuleRotation = (PelvisLocation - NeckLocation).Rotation();
-		NewCapsuleRotation.Pitch = 0.f;
-		NewCapsuleRotation.Roll = 0.f;
-
-		// 4️⃣ 메시의 오른쪽 벡터를 사용해 캡슐 회전 보정
-		FRotator MeshRotation = GetMesh()->GetSocketRotation(BodyCenterBone);
-		FVector SocketUpVector = FRotationMatrix(MeshRotation).GetUnitAxis(EAxis::Y);
-		float Dot = FVector::DotProduct(SocketUpVector, FVector::UpVector);
-
-		if (Dot < 0.f)
-		{
-			NewCapsuleRotation.Yaw += 180.f;
-			bForwardRagdoll = false;
-		}
-		else
-		{
-			bForwardRagdoll = true;
-		}
-
-		// 5️⃣ 캡슐을 새로운 위치 및 회전값으로 설정
-		GetCapsuleComponent()->SetWorldLocationAndRotation(PelvisLocation, NewCapsuleRotation, true);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
-		// 6️⃣ 메시를 캡슐에 부착하고 위치 및 회전값 조정
-		GetMesh()->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.f, -90.f, 0.f));
-		GetMesh()->ResetAllBodiesSimulatePhysics();
-		GetMesh()->RecreatePhysicsState();
-
-		// 7️⃣ 애니메이션 실행
-		SetKnockback(false);
-	}
-}
-
-void ADonEnemy::PossessedBy(AController* NewController)
+void ADonEnemyCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
@@ -164,7 +75,7 @@ void ADonEnemy::PossessedBy(AController* NewController)
 	}
 }
 
-void ADonEnemy::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
+void ADonEnemyCharacter::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
 {
 	Super::Die_Implementation(DeathImpulse, ItemDropRate);
 	
@@ -172,10 +83,10 @@ void ADonEnemy::Die_Implementation(const FVector& DeathImpulse, float ItemDropRa
 	
 	const FVector SpawnLocation = GetActorLocation();
 	const FRotator SpawnRotation = GetActorRotation();
-	FCharacterClassInfo CharacterClassInfo = UDonAbilityLibrary::FindCharacterClassInfo(this, CharacterClass);
+	FEnemyClassInfo EnemyClassInfo = UDonAbilityLibrary::FindEnemyClassInfo(this, EnemyClass);
 
-	UDonItemLibrary::SpawnLootableXP(this, CharacterClassInfo.DroppableXP, SpawnLocation, SpawnRotation);
-	UDonItemLibrary::SpawnLootableMoney(this, CharacterClassInfo.DroppableMoney, FMath::RandRange(0, 3), SpawnLocation, SpawnRotation);
+	UDonItemLibrary::SpawnLootableXP(this, EnemyClassInfo.DroppableXP, SpawnLocation, SpawnRotation);
+	UDonItemLibrary::SpawnLootableMoney(this, EnemyClassInfo.DroppableMoney, FMath::RandRange(0, 3), SpawnLocation, SpawnRotation);
 	for (FLootableItem& LootableItem : LootableItems)
 	{
 		// Normalized Rate
@@ -187,7 +98,7 @@ void ADonEnemy::Die_Implementation(const FVector& DeathImpulse, float ItemDropRa
 	Destroy();
 }
 
-void ADonEnemy::SetHealthPercent(float NewValue)
+void ADonEnemyCharacter::SetHealthPercent(float NewValue)
 {
 	if (HealthBarComponent)
 	{
@@ -203,7 +114,7 @@ void ADonEnemy::SetHealthPercent(float NewValue)
 	}
 }
 
-void ADonEnemy::SetHealthText(float NewValue, float NewMaxValue)
+void ADonEnemyCharacter::SetHealthText(float NewValue, float NewMaxValue)
 {
 	if (HealthBarComponent)
 	{
@@ -219,7 +130,7 @@ void ADonEnemy::SetHealthText(float NewValue, float NewMaxValue)
 	}
 }
 
-void ADonEnemy::SetHealthVisibility(bool State)
+void ADonEnemyCharacter::SetHealthVisibility(bool State)
 {
 	if (HealthBarComponent)
 	{
@@ -227,7 +138,7 @@ void ADonEnemy::SetHealthVisibility(bool State)
 	}
 }
 
-void ADonEnemy::BeginPlay()
+void ADonEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -235,7 +146,7 @@ void ADonEnemy::BeginPlay()
 	HealthBarComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform);
 }
 
-void ADonEnemy::InitAbilityActorInfo()
+void ADonEnemyCharacter::InitAbilityActorInfo()
 {
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	Cast<UDonAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();

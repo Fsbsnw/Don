@@ -38,5 +38,4 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	bool AddItemToInventory(FItem Item);
-	
 };

@@ -7,7 +7,7 @@
 #include "Inn/Character/InnCustomer.h"
 #include "CustomerAsset.generated.h"
 
-class ADonEnemy;
+class ADonEnemyCharacter;
 
 USTRUCT(BlueprintType)
 struct FCustomerData
@@ -21,7 +21,7 @@ struct FCustomerData
 	TSubclassOf<AInnCustomer> CustomerClass;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	TSubclassOf<ADonEnemy> LodgerEnemyClass;
+	TSubclassOf<ADonEnemyCharacter> LodgerEnemyClass;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TObjectPtr<UTexture2D> CustomerPortrait;

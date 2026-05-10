@@ -29,46 +29,14 @@ ADonEnemyPawn::ADonEnemyPawn()
 	AbilitySystemComponent = CreateDefaultSubobject<UDonAbilitySystemComponent>("AbilitySystemComponent");
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
-
-	Capsule = CreateDefaultSubobject<UCapsuleComponent>("Capsule Component");
-	Capsule->SetCollisionObjectType(ECC_GameTraceChannel2);
-	Capsule->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
-	Capsule->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-	Capsule->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
-	Capsule->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Ignore);
-	SetRootComponent(Capsule);
-
-	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>("Skeletal Mesh");
-	Mesh->SetGenerateOverlapEvents(false);
-	Mesh->SetupAttachment(Capsule);
 	
 	MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>("MovementComponent");
 	MovementComponent->SetUpdatedComponent(RootComponent);
+	
 	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>("Health Bar Widget Component");
+	HealthBarComponent->SetupAttachment(CapsuleComponent);
 }
 
-UAbilitySystemComponent* ADonEnemyPawn::GetAbilitySystemComponent() const
-{
-	return AbilitySystemComponent;
-}
-
-void ADonEnemyPawn::BeginPlay()
-{
-	Super::BeginPlay();
-
-	InitAbilityActorInfo();
-	HealthBarComponent->AttachToComponent(Mesh, FAttachmentTransformRules::KeepRelativeTransform);
-
-	if (Mesh && !Mesh->GetMaterials().IsEmpty() && DynamicMaterials.IsEmpty())
-	{
-		for (int32 Index = 0; Index < Mesh->GetMaterials().Num(); Index++)
-		{
-			UMaterialInstanceDynamic* InstanceDynamic = UMaterialInstanceDynamic::Create(Mesh->GetMaterials()[Index], this);
-			Mesh->SetMaterial(Index, InstanceDynamic);
-			DynamicMaterials.AddUnique(InstanceDynamic);
-		}
-	}
-}
 
 void ADonEnemyPawn::Destroyed()
 {
@@ -124,7 +92,11 @@ void ADonEnemyPawn::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	InitializeDefaultAttributes();
 	AddCharacterAbilities();
+	InitAbilityActorInfo();
+
+	SetHealthVisibility(false);
 	
 	// 적군 액터 관리 매니저 등록
 	if (ADonAIController* DonAIController = Cast<ADonAIController>(NewController))
@@ -140,22 +112,16 @@ void ADonEnemyPawn::PossessedBy(AController* NewController)
 
 void ADonEnemyPawn::Die_Implementation(const FVector& DeathImpulse, float ItemDropRate)
 {
-	if (!bDead)
-	{
-		bDead = true;
-		if (ActorHasTag(FName("Enemy")) && DeathSound)
-		{
-			UGameplayStatics::PlaySound2D(this, DeathSound, 1);
-		}
-		UE_LOG(LogTemp, Warning, TEXT("%s is Dead"), *GetName());
-	}
+	Super::Die_Implementation(DeathImpulse, ItemDropRate);
+
+	if (DeathSound) UGameplayStatics::PlaySound2D(this, DeathSound, 1);
 
 	const FVector SpawnLocation = GetActorLocation();
 	const FRotator SpawnRotation = GetActorRotation();
-	FCharacterClassInfo CharacterClassInfo = UDonAbilityLibrary::FindCharacterClassInfo(this, CharacterClass);
+	FEnemyClassInfo EnemyClassInfo = UDonAbilityLibrary::FindEnemyClassInfo(this, EnemyClass);
 
-	UDonItemLibrary::SpawnLootableXP(this, CharacterClassInfo.DroppableXP, SpawnLocation, SpawnRotation);
-	UDonItemLibrary::SpawnLootableMoney(this, CharacterClassInfo.DroppableMoney, FMath::RandRange(0, 3), SpawnLocation, SpawnRotation);
+	UDonItemLibrary::SpawnLootableXP(this, EnemyClassInfo.DroppableXP, SpawnLocation, SpawnRotation);
+	UDonItemLibrary::SpawnLootableMoney(this, EnemyClassInfo.DroppableMoney, FMath::RandRange(0, 3), SpawnLocation, SpawnRotation);
 	for (FLootableItem& LootableItem : LootableItems)
 	{
 		// Normalized Rate
@@ -166,59 +132,6 @@ void ADonEnemyPawn::Die_Implementation(const FVector& DeathImpulse, float ItemDr
 	if (DeathEffect) UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, DeathEffect, SpawnLocation);
 	
 	Destroy();
-}
-
-
-void ADonEnemyPawn::InitializeDefaultAttributes()
-{
-	ApplyEffectToSelf(DefaultPrimaryAttributes, GetCharacterLevel_Implementation());
-	SecondaryEffectHandle = ApplyEffectToSelf(DefaultSecondaryAttributes, GetCharacterLevel_Implementation());
-	MaxVitalEffectHandle = ApplyEffectToSelf(DefaultMaxVitalAttributes, GetCharacterLevel_Implementation());
-	ApplyEffectToSelf(DefaultVitalAttributes, GetCharacterLevel_Implementation());
-}
-
-void ADonEnemyPawn::AddCharacterAbilities()
-{
-	UDonAbilitySystemComponent* ASC = CastChecked<UDonAbilitySystemComponent>(AbilitySystemComponent);
-	if (!HasAuthority()) return;
-
-	ASC->AddCharacterAbilities(StartupAbilities);
-	ASC->AddCharacterPassiveAbilities(StartupPassiveAbilities);
-	ASC->AddCharacterStartupAbilities(StartupCommonAbilities);
-}
-
-void ADonEnemyPawn::ApplyHitEffect_Implementation()
-{
-	if (!DynamicMaterials.IsEmpty())
-	{
-		for (UMaterialInstanceDynamic* Material : DynamicMaterials)
-		{
-			Material->SetVectorParameterValue(FName("HitFlashColor"), FLinearColor(1.0f, 0.0f, 0.0f, 1.0f));
-		}
-		GetWorld()->GetTimerManager().SetTimer(HitFlashTimerHandle, this, &ADonEnemyPawn::ResetMaterials, 0.2f, false);
-	}
-}
-
-void ADonEnemyPawn::ResetMaterials()
-{
-	if (!DynamicMaterials.IsEmpty())
-	{
-		for (UMaterialInstanceDynamic* Material : DynamicMaterials)
-		{
-			Material->SetVectorParameterValue(FName("HitFlashColor"), FLinearColor(0.0f, 0.0f, 0.0f, 0.0f)); // 초기화
-		}
-	}
-}
-
-FActiveGameplayEffectHandle ADonEnemyPawn::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level)
-{
-	check(IsValid(GetAbilitySystemComponent()));
-	check(GameplayEffectClass);
-	
-	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
-	ContextHandle.AddSourceObject(this);
-	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(GameplayEffectClass, Level, ContextHandle);
-	return GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
 }
 
 void ADonEnemyPawn::SetHealthVisibility(bool NewState)
@@ -258,6 +171,87 @@ void ADonEnemyPawn::SetHealthPercent(float NewHealth)
 				HealthBarWidget->ProgressBar_HP->SetPercent(NewHealth);
 			}
 		}
+	}
+}
+void ADonEnemyPawn::SetKnockbackState_Implementation(bool NewState, const FVector& Force)
+{
+	if (CapsuleComponent == nullptr || SkeletalMesh == nullptr) return;
+	
+	if (NewState)
+	{
+		CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+		SkeletalMesh->GetAnimInstance()->Montage_Stop(0.f);
+
+		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		SkeletalMesh->SetSimulatePhysics(true);
+		SkeletalMesh->SetPhysicsBlendWeight(1.0f);
+		SkeletalMesh->bBlendPhysics = false;
+		SkeletalMesh->WakeAllRigidBodies();
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *SkeletalMesh->GetName());
+		FVector ScaledForce = FVector(Force.X * (ForceMultiplier / TestXDivide), Force.Y * ForceMultiplier, Force.Z * ForceMultiplier); 
+		SkeletalMesh->AddImpulse(ScaledForce, NAME_None, true);
+
+		FTimerDelegate KnockbackCollisionTimerDelegate;
+		KnockbackCollisionTimerDelegate.BindLambda(
+			[this]()
+			{
+				if (!IsValid(this) || !IsValid(this->SkeletalMesh)) return;
+				if (!bKnockback)
+				{
+					GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
+					return;
+				}
+				const FVector PelvisLocation = this->SkeletalMesh->GetSocketLocation(BodyCenterBone);
+				this->CapsuleComponent->SetWorldLocation(PelvisLocation, true);
+			}
+		);
+		GetWorld()->GetTimerManager().SetTimer(KnockbackCollisionTimerHandle, KnockbackCollisionTimerDelegate, 0.1f, true);
+		
+		bKnockback = true;
+	}
+	else
+	{
+		// 1️⃣ 현재 캐릭터의 중요 위치(골반, 목) 가져오기
+		const FVector NeckLocation = SkeletalMesh->GetSocketLocation(NeckBone);
+		const FVector PelvisLocation = SkeletalMesh->GetSocketLocation(BodyCenterBone);
+
+		// 2️⃣ 물리 및 충돌 설정 변경 (일시적으로 비활성화)
+		SkeletalMesh->SetSimulatePhysics(false);
+		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+		// 3️⃣ 캡슐의 새 회전값 계산 (Pelvis → Neck 방향을 기준으로 회전)
+		FRotator NewCapsuleRotation = (PelvisLocation - NeckLocation).Rotation();
+		NewCapsuleRotation.Pitch = 0.f;
+		NewCapsuleRotation.Roll = 0.f;
+
+		// 4️⃣ 메시의 오른쪽 벡터를 사용해 캡슐 회전 보정
+		FRotator MeshRotation = SkeletalMesh->GetSocketRotation(BodyCenterBone);
+		FVector SocketUpVector = FRotationMatrix(MeshRotation).GetUnitAxis(EAxis::Y);
+		float Dot = FVector::DotProduct(SocketUpVector, FVector::UpVector);
+
+		if (Dot < 0.f)
+		{
+			NewCapsuleRotation.Yaw += 180.f;
+			bForwardRagdoll = false;
+		}
+		else
+		{
+			bForwardRagdoll = true;
+		}
+
+		// 5️⃣ 캡슐을 새로운 위치 및 회전값으로 설정
+		CapsuleComponent->SetWorldLocationAndRotation(PelvisLocation, NewCapsuleRotation, true);
+		CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+		// 6️⃣ 메시를 캡슐에 부착하고 위치 및 회전값 조정
+		SkeletalMesh->AttachToComponent(CapsuleComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		SkeletalMesh->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.f, -90.f, 0.f));
+		SkeletalMesh->ResetAllBodiesSimulatePhysics();
+		SkeletalMesh->RecreatePhysicsState();
+
+		// 7️⃣ 애니메이션 실행
+		SetKnockback(false);
 	}
 }
 

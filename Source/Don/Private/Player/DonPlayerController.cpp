@@ -10,11 +10,14 @@
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
+#include "Character/Component/InteractComponent.h"
+#include "Character/Component/InteractionComponent.h"
 #include "Character/Player/DonCharacter.h"
 #include "Components/SplineComponent.h"
 #include "Input/DonInputComponent.h"
 #include "Inventory/InventoryComponent.h"
 #include "Player/DonPlayerState.h"
+#include "UI/HUD/DonHUD.h"
 #include "UI/Widget/DamageTextComponent.h"
 
 ADonPlayerController::ADonPlayerController()
@@ -22,6 +25,18 @@ ADonPlayerController::ADonPlayerController()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Spline = CreateDefaultSubobject<USplineComponent>("Spline");
+}
+
+void ADonPlayerController::InitializeHUD()
+{
+	ADonPlayerState* DPS = GetPlayerState<ADonPlayerState>();
+	UAbilitySystemComponent* ASC = DPS->GetAbilitySystemComponent();
+	UAttributeSet* AS = DPS->GetAttributeSet();
+
+	if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
+	{
+		DonHUD->InitOverlay(this, DPS, ASC, AS);
+	}
 }
 
 void ADonPlayerController::BeginPlay()
@@ -46,6 +61,8 @@ void ADonPlayerController::BeginPlay()
 	{
 		Subsystem->AddMappingContext(DefaultContext, 0);
 	}
+
+	InitializeHUD();
 }
 
 void ADonPlayerController::PlayerTick(float DeltaTime)
@@ -56,25 +73,25 @@ void ADonPlayerController::PlayerTick(float DeltaTime)
 	AutoRun();
 }
 
-void ADonPlayerController::ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter, bool bCriticalHit)
+void ADonPlayerController::ShowDamageNumber(float DamageAmount, APawn* TargetPawn, bool bCriticalHit)
 {
-	if (IsValid(TargetCharacter) && DamageTextComponentClass)
+	if (IsValid(TargetPawn) && DamageTextComponentClass)
 	{
-		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
+		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetPawn, DamageTextComponentClass);
 		DamageText->RegisterComponent();
-		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->AttachToComponent(TargetPawn->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 		DamageText->SetDamageText(DamageAmount, bCriticalHit, false);
 	}
 }
 
-void ADonPlayerController::ShowEvadeText(ACharacter* TargetCharacter, bool bEvade)
+void ADonPlayerController::ShowEvadeText(APawn* TargetPawn, bool bEvade)
 {
-	if (IsValid(TargetCharacter) && DamageTextComponentClass)
+	if (IsValid(TargetPawn) && DamageTextComponentClass)
 	{
-		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
+		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetPawn, DamageTextComponentClass);
 		DamageText->RegisterComponent();
-		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->AttachToComponent(TargetPawn->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 		DamageText->SetDamageText(0, false, bEvade);
 	}
@@ -155,15 +172,16 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 	{
 		OnUIOpenRequested.ExecuteIfBound(InputTag);
 	}
-	
-	// j k q e esc
 
 	// Interact with NPC
 	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_E))
 	{
 		if (ADonCharacter* DonCharacter = Cast<ADonCharacter>(GetPawn()))
 		{
-			DonCharacter->ExecuteInteract();
+			if (DonCharacter == nullptr) return;
+
+			DonCharacter->InteractionComponent->Interact();
+			return;
 		}
 	}
 

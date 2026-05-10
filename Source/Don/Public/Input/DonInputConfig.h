@@ -7,13 +7,15 @@
 #include "Engine/DataAsset.h"
 #include "DonInputConfig.generated.h"
 
+class UInputAction;
+
 USTRUCT(BlueprintType)
 struct FDonInputAction
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly)
-	const class UInputAction* InputAction = nullptr;
+	const UInputAction* InputAction = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag InputTag = FGameplayTag();

@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "DonAbilityTypes.h"
 #include "DonGameplayTags.h"
+#include "Character/Enemy/DonEnemyPawn.h"
 #include "GameInstance/DonGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
@@ -66,6 +67,22 @@ FCharacterClassInfo UDonAbilityLibrary::FindCharacterClassInfo(const UObject* Wo
 		}
 	}
 	return FCharacterClassInfo();
+}
+
+FEnemyClassInfo UDonAbilityLibrary::FindEnemyClassInfo(const UObject* WorldContextObject, EEnemyClass EnemyClass)
+{
+	UDonGameInstance* DonGameInstance = Cast<UDonGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
+	if (DonGameInstance && DonGameInstance->EnemyClassDataTable)
+	{
+		UDataTable* EnemyClassDT = DonGameInstance->EnemyClassDataTable;
+		TArray<FEnemyClassInfo*> EnemyClasses; 
+		EnemyClassDT->GetAllRows(TEXT(""), EnemyClasses);
+		for (FEnemyClassInfo* Enemy : EnemyClasses)
+		{
+			if (Enemy->EnemyClass == EnemyClass) return *Enemy;
+		}
+	}
+	return FEnemyClassInfo();
 }
 
 UAbilityInfo* UDonAbilityLibrary::GetAbilityInfo(const UObject* WorldContextObject, ECharacterClass CharacterClass)

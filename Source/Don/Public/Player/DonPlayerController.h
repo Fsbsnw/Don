@@ -27,13 +27,14 @@ class DON_API ADonPlayerController : public APlayerController
 	GENERATED_BODY()
 public:
 	ADonPlayerController();
+	void InitializeHUD();
 
 	virtual void PlayerTick(float DeltaTime) override;
 
 	UFUNCTION()
-	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter, bool bCriticalHit);
+	void ShowDamageNumber(float DamageAmount, APawn* TargetPawn, bool bCriticalHit);
 	UFUNCTION()
-	void ShowEvadeText(ACharacter* TargetCharacter, bool bEvade);
+	void ShowEvadeText(APawn* TargetPawn, bool bEvade);
 
 	FOnUIOpenRequested OnUIOpenRequested;
 protected:

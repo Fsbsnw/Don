@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "ActiveGameplayEffectHandle.h"
-#include "Character/DonCharacterBase.h"
+#include "Character/DonCharacterTypes.h"
+#include "Character/DonPawnBase.h"
 #include "Character/Interface/CombatInterface.h"
 #include "GameFramework/Pawn.h"
 #include "DonEnemyPawn.generated.h"
 
+class UCapsuleComponent;
 struct FLootableItem;
 class UNiagaraSystem;
 class UBehaviorTree;
@@ -18,103 +19,88 @@ class UAttributeSet;
 class UFloatingPawnMovement;
 
 UCLASS()
-class DON_API ADonEnemyPawn : public APawn, public IAbilitySystemInterface, public ICombatInterface
+class DON_API ADonEnemyPawn : public ADonPawnBase
 {
 	GENERATED_BODY()
 
 public:
 	ADonEnemyPawn();
-	
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
-	virtual void ApplyHitEffect_Implementation() override;
+	virtual void InitAbilityActorInfo() override;
 
 protected:
-	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
-	virtual void InitAbilityActorInfo();
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
-	void InitializeDefaultAttributes();
-	void AddCharacterAbilities();
-	void ResetMaterials();
-	FActiveGameplayEffectHandle ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level);
-	void SetCharacterLevel(float InLevel) { CharacterLevel = InLevel; }
-
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UNiagaraSystem> DeathEffect;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TArray<FLootableItem> LootableItems;
-
-	UPROPERTY()
-	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
+	virtual void SetKnockbackState_Implementation(bool NewState, const FVector& Force) override;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCapsuleComponent* Capsule;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	USkeletalMeshComponent* Mesh;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	UFloatingPawnMovement* MovementComponent;
-	
-	UPROPERTY()
-	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-
-	UPROPERTY()
-	TObjectPtr<UAttributeSet> AttributeSet;
-	
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
-	TSubclassOf<UGameplayEffect> DefaultPrimaryAttributes;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
-	TSubclassOf<UGameplayEffect> DefaultSecondaryAttributes;
-	
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
-	TSubclassOf<UGameplayEffect> DefaultMaxVitalAttributes;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
-	TSubclassOf<UGameplayEffect> DefaultVitalAttributes;
-
-	FActiveGameplayEffectHandle PrimaryEffectHandle;
-	FActiveGameplayEffectHandle SecondaryEffectHandle;
-	FActiveGameplayEffectHandle MaxVitalEffectHandle;
-
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UBehaviorTree* BehaviorTree;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UWidgetComponent* HealthBarComponent;
 	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UNiagaraSystem> DeathEffect;
+
+	// Looting
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FLootableItem> LootableItems;
+
+	UPROPERTY(EditAnywhere, Category = "Looting")
+	TSubclassOf<ALootableActor> LootableXPClass;
+	
+	UPROPERTY(EditAnywhere, Category = "Looting")
+	TSubclassOf<ALootableActor> LootableMoneyClass;
+	
+	UPROPERTY(EditAnywhere, Category = "Looting")
+	float TestOffsetLocation = 75.f;
+
+public:
 	UPROPERTY(EditDefaultsOnly)
 	float CharacterLevel = 1.f;
 	
 	UPROPERTY(EditDefaultsOnly)
-	ECharacterClass CharacterClass = ECharacterClass::Fighter;
+	int32 RewardScore = 1;
 	
-	UPROPERTY(BlueprintReadOnly)
-	bool bDead = false;
+	UPROPERTY(EditDefaultsOnly)
+	EEnemyClass EnemyClass = EEnemyClass::Fighter;
 
-	UPROPERTY(BlueprintReadWrite)
-	bool bKnockback = false;
+	UPROPERTY(EditAnywhere)
+	float ForceMultiplier = 15.f;
 
-private:
-	UPROPERTY(EditAnywhere, Category = "Abilities")
-	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
-
-	UPROPERTY(EditAnywhere, Category = "Abilities")
-	TArray<TSubclassOf<UGameplayAbility>> StartupPassiveAbilities;
-
-	UPROPERTY(EditAnywhere, Category = "Abilities")
-	TArray<TSubclassOf<UGameplayAbility>> StartupCommonAbilities;
+	UPROPERTY(EditAnywhere)
+	float TestXDivide = 2.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	USoundBase* DeathSound;
+	FName BodyCenterBone = FName("Hips");
+	
+	UPROPERTY(EditDefaultsOnly)
+	FName NeckBone = FName("Neck");
 
-	FTimerHandle HitFlashTimerHandle;
+	FTimerHandle KnockbackCollisionTimerHandle;
+
+	UFUNCTION(BlueprintCallable)
+	bool GetKnockbackInProgress() const { return bKnockback; }
+	
+	UFUNCTION(BlueprintCallable)
+	void SetKnockback(bool KnockbackState) { bKnockback = KnockbackState; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetGetupState(bool NewState) { bGetupState = NewState; }
+
+	UFUNCTION(BlueprintCallable)
+	bool GetGetupState() const { return bGetupState; }
+
+	UFUNCTION(BlueprintCallable)
+	bool IsForwardRagdoll() { return bForwardRagdoll; }
+
+private:
+	bool bKnockback = false;
+	bool bForwardRagdoll = false;
+	bool bGetupState = true;
 
 	FTimerHandle HealthVisibilityTimerHandle;
 
@@ -128,6 +114,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float ResetDistanceThreshold = 200.f;
 
+// LOD 설정
 public:
 	void CheckAndUpdateAILOD(const FVector& PlayerLocation);
 
