@@ -20,10 +20,6 @@ class DON_API UDonInnLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
-
-	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | Inn")
-	static UInnWidgetController* GetInnWidgetController(const UObject* WorldContextObject);
-
 	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | Inn")
 	static FCustomerData GetCustomerAssetData(const UObject* WorldContextObject, ECustomerType Type);
 	

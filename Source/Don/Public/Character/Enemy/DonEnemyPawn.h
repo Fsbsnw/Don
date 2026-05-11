@@ -10,13 +10,10 @@
 #include "GameFramework/Pawn.h"
 #include "DonEnemyPawn.generated.h"
 
-class UCapsuleComponent;
-struct FLootableItem;
+
 class UNiagaraSystem;
-class UBehaviorTree;
 class UWidgetComponent;
-class UAttributeSet;
-class UFloatingPawnMovement;
+class UBehaviorTree;
 
 UCLASS()
 class DON_API ADonEnemyPawn : public ADonPawnBase
@@ -56,14 +53,11 @@ protected:
 	TSubclassOf<ALootableActor> LootableMoneyClass;
 	
 	UPROPERTY(EditAnywhere, Category = "Looting")
-	float TestOffsetLocation = 75.f;
+	float LootOffsetLocation = 75.f;
 
 public:
 	UPROPERTY(EditDefaultsOnly)
 	float CharacterLevel = 1.f;
-	
-	UPROPERTY(EditDefaultsOnly)
-	int32 RewardScore = 1;
 	
 	UPROPERTY(EditDefaultsOnly)
 	EEnemyClass EnemyClass = EEnemyClass::Fighter;
@@ -84,18 +78,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool GetKnockbackInProgress() const { return bKnockback; }
+	UFUNCTION(BlueprintCallable)
+	bool GetGetupState() const { return bGetupState; }
+	UFUNCTION(BlueprintCallable)
+	bool IsForwardRagdoll() { return bForwardRagdoll; }
 	
 	UFUNCTION(BlueprintCallable)
 	void SetKnockback(bool KnockbackState) { bKnockback = KnockbackState; }
-
 	UFUNCTION(BlueprintCallable)
 	void SetGetupState(bool NewState) { bGetupState = NewState; }
-
-	UFUNCTION(BlueprintCallable)
-	bool GetGetupState() const { return bGetupState; }
-
-	UFUNCTION(BlueprintCallable)
-	bool IsForwardRagdoll() { return bForwardRagdoll; }
 
 private:
 	bool bKnockback = false;

@@ -11,21 +11,6 @@
 #include "UI/HUD/DonHUD.h"
 #include "UI/WidgetController/DonWidgetController.h"
 
-UQuestListWidgetController* UDonInteractionLibrary::GetQuestListWidgetController(const UObject* WorldContextObject)
-{
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(PC->GetHUD()))
-		{
-			ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>();
-			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
-			UAttributeSet* AS = PS->GetAttributeSet();
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			return DonHUD->GetQuestListWidgetController(WidgetControllerParams);
-		}
-	}
-	return nullptr;
-}
 
 bool UDonInteractionLibrary::FindQuestRow(const UObject* WorldContextObject, FQuest& OutQuest, ENPCName NPCName, FString QuestTitle)
 {

@@ -12,6 +12,9 @@ struct FInputActionValue;
 class UInputAction;
 DECLARE_DELEGATE_OneParam(FOnUIOpenRequested, FGameplayTag);
 
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnWidgetToggleRequested, FGameplayTag);
+
 class UDamageTextComponent;
 class UDonAbilitySystemComponent;
 class UDonInputConfig;
@@ -28,6 +31,7 @@ class DON_API ADonPlayerController : public APlayerController
 public:
 	ADonPlayerController();
 	void InitializeHUD();
+	void RegisterUIBinding();
 
 	virtual void PlayerTick(float DeltaTime) override;
 
@@ -37,6 +41,8 @@ public:
 	void ShowEvadeText(APawn* TargetPawn, bool bEvade);
 
 	FOnUIOpenRequested OnUIOpenRequested;
+	FOnWidgetToggleRequested OnWidgetToggleRequested;
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

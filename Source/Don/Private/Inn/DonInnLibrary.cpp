@@ -10,25 +10,6 @@
 #include "GameInstance/SubSystem/RoomServiceOrderSubsystem.h"
 #include "Inn/Data/CustomerAsset.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/DonPlayerState.h"
-#include "UI/HUD/DonHUD.h"
-#include "UI/WidgetController/DonWidgetController.h"
-
-UInnWidgetController* UDonInnLibrary::GetInnWidgetController(const UObject* WorldContextObject)
-{
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(PC->GetHUD()))
-		{
-			ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>();
-			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
-			UAttributeSet* AS = PS->GetAttributeSet();
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			return DonHUD->GetInnWidgetController(WidgetControllerParams);
-		}
-	}
-	return nullptr;
-}
 
 FCustomerData UDonInnLibrary::GetCustomerAssetData(const UObject* WorldContextObject, ECustomerType Type)
 {

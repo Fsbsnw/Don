@@ -11,6 +11,7 @@
 #include "GameplayEffectExtension.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Character/Enemy/DonEnemyCharacter.h"
+#include "Character/Enemy/DonEnemyPawn.h"
 #include "Character/Player/DonCharacter.h"
 #include "GameFramework/Character.h"
 #include "Player/DonPlayerController.h"
@@ -165,7 +166,7 @@ void UDonAttributeSet::HandleIncomingDamage(FEffectProperties Props)
 			}
 			else
 			{
-				if (ADonEnemyCharacter* Enemy = Cast<ADonEnemyCharacter>(TargetPawn))
+				if (ADonEnemyPawn* Enemy = Cast<ADonEnemyPawn>(TargetPawn))
 				{
 					if (!Enemy->GetGetupState()) return;
 				}

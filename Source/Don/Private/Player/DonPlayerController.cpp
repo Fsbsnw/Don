@@ -14,9 +14,12 @@
 #include "Character/Component/InteractionComponent.h"
 #include "Character/Player/DonCharacter.h"
 #include "Components/SplineComponent.h"
+#include "Data/UIConfigDataAsset.h"
+#include "GameState/DonGameStateBase.h"
 #include "Input/DonInputComponent.h"
 #include "Inventory/InventoryComponent.h"
 #include "Player/DonPlayerState.h"
+#include "UI/UIManagerSubsystem.h"
 #include "UI/HUD/DonHUD.h"
 #include "UI/Widget/DamageTextComponent.h"
 
@@ -29,13 +32,16 @@ ADonPlayerController::ADonPlayerController()
 
 void ADonPlayerController::InitializeHUD()
 {
+	// GameState에서 설정 로드
+	ADonGameStateBase* GS = GetWorld()->GetGameState<ADonGameStateBase>();
+	FUIConfigData ConfigData = GS->UIConfigDataAsset ? GS->UIConfigDataAsset->UIConfigData : FUIConfigData();
 	ADonPlayerState* DPS = GetPlayerState<ADonPlayerState>();
 	UAbilitySystemComponent* ASC = DPS->GetAbilitySystemComponent();
 	UAttributeSet* AS = DPS->GetAttributeSet();
 
 	if (ADonHUD* DonHUD = Cast<ADonHUD>(GetHUD()))
 	{
-		DonHUD->InitOverlay(this, DPS, ASC, AS);
+		DonHUD->InitOverlay(this, DPS, ASC, AS, ConfigData);
 	}
 }
 
@@ -63,12 +69,28 @@ void ADonPlayerController::BeginPlay()
 	}
 
 	InitializeHUD();
+	RegisterUIBinding();	
+}
+
+void ADonPlayerController::RegisterUIBinding()
+{
+	if (ULocalPlayer* LP = GetLocalPlayer())
+	{
+		if (UUIManagerSubsystem* UISubsystem = LP->GetSubsystem<UUIManagerSubsystem>())
+		{
+			// UI 키 입력 바인딩
+			UISubsystem->InitializeUIBinding(this);
+		}
+	}
 }
 
 void ADonPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
+	FString MapName = GetWorld()->GetMapName();
+	if (MapName.Contains("Dungeon")) return;
+	
 	CursorTrace();
 	AutoRun();
 }
@@ -114,6 +136,7 @@ void ADonPlayerController::SetupInputComponent()
 void ADonPlayerController::OnMoveInput(const FInputActionValue& Value)
 {
 	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn == nullptr) return;
 
 	const FVector2D Input = Value.Get<FVector2D>();
 	if (Input.IsNearlyZero()) return;
@@ -131,6 +154,13 @@ void ADonPlayerController::OnMoveInput(const FInputActionValue& Value)
 void ADonPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Pressed %s"), *InputTag.ToString());
+
+	if (InputTag.MatchesTag(FDonGameplayTags::Get().UI))
+	{
+		OnWidgetToggleRequested.Broadcast(InputTag);
+		return;
+	}
+	
 	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_RMB))
 	{
 		bAutoRunning = false;

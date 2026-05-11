@@ -16,22 +16,6 @@
 
 class UDonGameInstance;
 
-UAttributeMenuWidgetController* UDonAbilityLibrary::GetAttributeMenuWidgetController(const UObject* WorldContextObject)
-{
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(PC->GetHUD()))
-		{
-			ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>();
-			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
-			UAttributeSet* AS = PS->GetAttributeSet();
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			return DonHUD->GetAttributeMenuWidgetController(WidgetControllerParams);
-		}
-	}
-	return nullptr;
-}
-
 FGameplayEffectContextHandle UDonAbilityLibrary::ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams)
 {
 	const FDonGameplayTags& GameplayTags = FDonGameplayTags::Get();

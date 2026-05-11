@@ -14,24 +14,24 @@ class DON_API UDonUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
-public:
-	UPROPERTY()
-	UDonUserWidget* ParentWidget = nullptr;
-
-	UPROPERTY()
-	TArray<UDonUserWidget*> ChildWidgets;	
-	
+public:	
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UObject> WidgetController;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetWidgetController(UObject* InWidgetController);
 
+	UFUNCTION(BlueprintCallable)
 	void AddChildWidget(UDonUserWidget* Child);
 	void CloseWidgetAndChildren();
-	void CloseSelf();
+	void ClearAllChildren();
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
-	void WidgetControllerSet();
+	void OnWidgetControllerSet();
+
+	UPROPERTY()
+	TObjectPtr<UDonUserWidget> ParentWidget = nullptr;
+	UPROPERTY()
+	TArray<UDonUserWidget*> ChildWidgets;
 };

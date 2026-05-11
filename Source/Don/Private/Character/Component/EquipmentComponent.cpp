@@ -20,7 +20,7 @@ void UEquipmentComponent::BeginPlay()
 
 void UEquipmentComponent::SpawnAndAttachEquipment(const FItem& Item)
 {
-	// 장비가 이미 장착중인 경우
+	// 장비가 이미 장착중인 경우 장비 해제
 	if (EquipmentParts.Contains(Item.ItemTag))
 	{
 		ADonEquipmentActor* Existing = EquipmentParts[Item.ItemTag];
@@ -35,7 +35,8 @@ void UEquipmentComponent::SpawnAndAttachEquipment(const FItem& Item)
 			}
 		}
 	}
-	
+
+	// 장비 장착
 	FItemEquipmentInfo EquipmentInfo = UDonItemLibrary::FindItemEquipmentByName(this, Item.ItemName);
 	if (UClass* LoadedClass = EquipmentInfo.ItemActorClass.LoadSynchronous())
 	{
@@ -60,6 +61,7 @@ void UEquipmentComponent::DetachAndDestroyEquipment(const FItem& Item)
 	if (EquipmentParts.Contains(Item.ItemTag))
 	{
 		ADonEquipmentActor* Existing = EquipmentParts[Item.ItemTag];
+		// 장착 중인 아이템 인스턴스와 동일한 장비인 경우, 장비 해제
 		if (Existing && Item.IsSameInstance(Existing->GetEquipmentInfo()))
 		{
 			Existing->Destroy();

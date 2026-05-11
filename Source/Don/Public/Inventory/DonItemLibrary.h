@@ -19,11 +19,6 @@ class DON_API UDonItemLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
-	static UInventoryWidgetController* GetInventoryWidgetController(const UObject* WorldContextObject);
-
-
-	
 	static UDonItemBase* CreateItemObjectByTag(const UObject* WorldContextObject, FGameplayTag Tag);
 	
 	UFUNCTION(BlueprintPure, Category = "DonItemLibrary | Item")
