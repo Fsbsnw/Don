@@ -4,7 +4,7 @@
 #include "Inn/Actor/InnTavern.h"
 
 #include "Inn/Actor/InnTable.h"
-#include "Inn/InnManagerComponent/InnManagerComponent.h"
+#include "Inn/Component/InnManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
 

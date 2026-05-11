@@ -76,21 +76,20 @@ protected:
 	FActiveGameplayEffectHandle SecondaryEffectHandle;
 	FActiveGameplayEffectHandle MaxVitalEffectHandle;
 	
-public:
-	FActiveGameplayEffectHandle ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level);
+	void ResetMaterials();
+	void AddCharacterAbilities();
 	void InitializeDefaultAttributes();
-
+	FActiveGameplayEffectHandle ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level);
+	
+public:
 	UPROPERTY(BlueprintReadOnly)
 	bool bDead = false;
 	
-	void ResetMaterials();
-	void AddCharacterAbilities();
-
 	UPROPERTY(EditDefaultsOnly)
 	USoundBase* DeathSound;
 
 	FTimerHandle HitFlashTimerHandle;
-	
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;

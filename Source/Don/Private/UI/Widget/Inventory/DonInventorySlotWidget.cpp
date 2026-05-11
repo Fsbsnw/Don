@@ -14,7 +14,7 @@ void UDonInventorySlotWidget::SetWidgetController(UObject* InWidgetController)
 	{
 		InventoryController->OnInventoryChanged.AddDynamic(this, &UDonInventorySlotWidget::HandleInventoryUpdated);
 	}
-	WidgetControllerSet();
+	OnWidgetControllerSet();
 }
 
 void UDonInventorySlotWidget::HandleInventoryUpdated(const TArray<FItem>& Inventory)

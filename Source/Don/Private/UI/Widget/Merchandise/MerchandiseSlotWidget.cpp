@@ -18,7 +18,7 @@ void UMerchandiseSlotWidget::SetWidgetController(UObject* InWidgetController)
 		}
 	}
 	
-	WidgetControllerSet();
+	OnWidgetControllerSet();
 }
 
 void UMerchandiseSlotWidget::UpdateSlotInfo(FItem ItemInfo)

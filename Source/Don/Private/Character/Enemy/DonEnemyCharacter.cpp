@@ -35,15 +35,6 @@ ADonEnemyCharacter::ADonEnemyCharacter()
 	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>("Health Bar Widget Component");
 }
 
-void ADonEnemyCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	if (GetWorld())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
-	}
-	Super::EndPlay(EndPlayReason);
-}
-
 void ADonEnemyCharacter::Destroyed()
 {
 	if (ADonGameModeBase* GameModeBase = Cast<ADonGameModeBase>(UGameplayStatics::GetGameMode(this)))
@@ -51,7 +42,6 @@ void ADonEnemyCharacter::Destroyed()
 		GameModeBase->AddToSpawnedEnemies(-1);
 	}
 	GetWorld()->GetTimerManager().ClearTimer(HealthVisibilityTimerHandle);
-	GetWorld()->GetTimerManager().ClearTimer(KnockbackCollisionTimerHandle);
 	
 	Super::Destroyed();
 }

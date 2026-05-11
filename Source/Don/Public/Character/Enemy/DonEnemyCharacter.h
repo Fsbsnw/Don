@@ -26,7 +26,6 @@ class DON_API ADonEnemyCharacter : public ADonCharacterBase
 public:
 	ADonEnemyCharacter();
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Destroyed() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void Die_Implementation(const FVector& DeathImpulse, float ItemDropRate) override;
@@ -49,12 +48,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	float TestXDivide = 2.f;
 
-	UPROPERTY(EditAnywhere)
-	float CrystalDropRate = 0.5f;
-
-	UFUNCTION(BlueprintCallable)
-	bool IsForwardRagdoll() { return bForwardRagdoll; }
-
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FLootableItem> LootableItems;
 
@@ -66,17 +59,10 @@ public:
 	 */
 
 	UFUNCTION(BlueprintCallable)
+	bool GetIsHoldingRock() const { return bIsHoldingRock; }
+	UFUNCTION(BlueprintCallable)
 	void SetIsHoldingRock(bool NewState) { bIsHoldingRock = NewState; }
 
-	UFUNCTION(BlueprintCallable)
-	bool GetIsHoldingRock() const { return bIsHoldingRock; }
-
-	UFUNCTION(BlueprintCallable)
-	void SetGetupState(bool NewState) { bGetupState = NewState; }
-
-	UFUNCTION(BlueprintCallable)
-	bool GetGetupState() const { return bGetupState; }
-	
 	UPROPERTY(EditDefaultsOnly)
 	bool bBossEnemy = false;
 
@@ -98,7 +84,6 @@ protected:
 	UWidgetComponent* HealthBarComponent;
 
 	FTimerHandle HealthVisibilityTimerHandle;
-	FTimerHandle KnockbackCollisionTimerHandle;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
@@ -108,14 +93,5 @@ protected:
 
 private:
 	int32 EnemyLevel = 1;
-	
-	UPROPERTY(EditDefaultsOnly)
-	FName BodyCenterBone = FName("Hips");
-
-	UPROPERTY(EditDefaultsOnly)
-	FName NeckBone = FName("Neck");
-	
-	bool bForwardRagdoll = false;
 	bool bIsHoldingRock = false;
-	bool bGetupState = true;
 };

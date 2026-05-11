@@ -5,8 +5,8 @@
 
 #include "DonGameplayTags.h"
 #include "GameInstance/SubSystem/InnManagerSubsystem.h"
-#include "Inn/InnManagerComponent/InnManagerComponent.h"
-#include "Inn/InnStoreComponent/InnStoreComponent.h"
+#include "Inn/Component/InnManagerComponent.h"
+#include "Inn/Component/InnStoreComponent.h"
 #include "Inn/Object/InnCustomerGroup.h"
 #include "Inn/UI/Widget/InnRoomInfoWidget.h"
 #include "Inventory/InventoryComponent.h"

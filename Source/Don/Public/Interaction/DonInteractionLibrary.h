@@ -27,7 +27,4 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Dialogue")
 	static UTexture2D* GetNPCImage(const UObject* WorldContextObject, ENPCName NPCName);
-
-	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Quest")
-	static UQuestListWidgetController* GetQuestListWidgetController(const UObject* WorldContextObject);
 };

@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Inn/InnManagerComponent/InnManagerComponent.h"
+#include "Inn/Component/InnManagerComponent.h"
 
 #include "DonInnGameMode.h"
 #include "Inn/Actor/InnChef.h"
 #include "Inn/Actor/InnChefPoint.h"
-#include "Inn/InnStoreComponent/InnStoreComponent.h"
+#include "Inn/Component/InnStoreComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
 

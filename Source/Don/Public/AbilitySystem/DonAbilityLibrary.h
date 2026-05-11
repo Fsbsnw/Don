@@ -22,9 +22,6 @@ class DON_API UDonAbilityLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintPure, Category = "DonInteractLibrary | Attribute")
-	static UAttributeMenuWidgetController* GetAttributeMenuWidgetController(const UObject* WorldContextObject);
-
 	UFUNCTION(BlueprintPure, Category = "DonItemLibrary")
 	static FCharacterClassInfo FindCharacterClassInfo(const UObject* WorldContextObject, ECharacterClass CharacterClass);
 

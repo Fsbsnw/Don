@@ -9,9 +9,6 @@
 #include "Data/LootableActorDataAsset.h"
 #include "GameInstance/DonGameInstance.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/DonPlayerState.h"
-#include "UI/HUD/DonHUD.h"
-#include "UI/WidgetController/DonWidgetController.h"
 #include "Actor/LootableActor.h"
 #include "Data/DonItem_EquipmentBase.h"
 #include "Data/DonItem_PotionBase.h"
@@ -56,22 +53,6 @@ UDonItemBase* UDonItemLibrary::CreateItemObjectByTag(const UObject* WorldContext
 		return NewObject<UDonItem_EquipmentBase>(WorldContextObject->GetWorld());
 	}
 	return NewObject<UDonItemBase>(WorldContextObject->GetWorld());
-}
-
-UInventoryWidgetController* UDonItemLibrary::GetInventoryWidgetController(const UObject* WorldContextObject)
-{
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(PC->GetHUD()))
-		{
-			ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>();
-			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
-			UAttributeSet* AS = PS->GetAttributeSet();
-			const FWidgetControllerParams WidgetControllerParams(PC, PS, ASC, AS);
-			return DonHUD->GetInventoryWidgetController(WidgetControllerParams);
-		}
-	}
-	return nullptr;
 }
 
 FEquipmentAttributes UDonItemLibrary::FindEquipmentAttributes(const UObject* WorldContextObject, FName EquipmentName)

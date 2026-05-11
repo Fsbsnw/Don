@@ -6,8 +6,8 @@
 #include "GameInstance/SubSystem/InnManagerSubsystem.h"
 #include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
 #include "GameInstance/SubSystem/TimeSubsystem.h"
-#include "Inn/InnManagerComponent/InnManagerComponent.h"
-#include "Inn/InnStoreComponent/InnStoreComponent.h"
+#include "Inn/Component/InnManagerComponent.h"
+#include "Inn/Component/InnStoreComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
 
