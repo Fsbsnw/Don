@@ -289,4 +289,70 @@
  </details>
 </details>
 
+<details>
+ <summary>왜 하나의 Repository?</summary>
+ 처음에는 언리얼 C++ 시스템 구현 연습을 위한 기능 테스트 프로젝트로 시작했습니다.
+ 
+ 개발 과정에서 시스템 구조가 안정화되면서, 동일한 코드베이스를 활용해 장르가 다른 게임(여관 경영 / 액션)까지 확장하는 형태로 발전시켰습니다.
+ 
+ 이 과정에서 **공통 시스템을 재사용 가능한 구조로 개선하고, 장르가 달라져도 확장 가능한지 검증**하는 것을 목표로 했습니다.
+
+ ## 하나의 프로젝트에서 두 장르를 구현하며 겪은 트러블슈팅
+
+ ### 1. Character 의존적인 초기화 구조 개선
+초기에는 "컨트롤러가 캐릭터를 Possess한다"는 전제 하에,  
+`Character` 클래스에서 GAS 초기화 및 HUD 초기화를 수행하도록 설계했습니다.
+
+ ```c++
+void ADonCharacter::InitializeHUD()
+{
+	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
+	DonPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(DonPlayerState, this);
+	AbilitySystemComponent = DonPlayerState->GetAbilitySystemComponent();
+	AttributeSet = DonPlayerState->GetAttributeSet();
+	
+	if (ADonPlayerController* DonPlayerController = Cast<ADonPlayerController>(GetController()))
+	{
+		if (ADonHUD* DonHUD = Cast<ADonHUD>(DonPlayerController->GetHUD()))
+		{
+			DonHUD->InitOverlay(DonPlayerController, DonPlayerState, AbilitySystemComponent, AttributeSet);
+		}
+	}
+}
+ ```
+
+하지만 여관 경영 모드에서는 캐릭터 메시가 필요하지 않아,
+기본 Pawn/Character가 존재하지 않는 상황이 발생했고 이로 인해 초기화가 수행되지 않아 크래시가 발생했습니다.
+
+**해결**: 캐릭터에 의존하던 HUD/GAS 초기화 책임을 `PlayerController`로 옮겨,
+Pawn/Character 존재 여부와 관계없이 안정적으로 동작하도록 구조를 개선했습니다.
+
+  ```c++
+ void ADonPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	InitializeHUD();
+	RegisterUIBinding();	
+}
+ ```
+
+### 2. 게임 모드별 UI 입력 충돌 해결
+
+액션 모드에서는 WASD가 이동 입력이지만,
+여관 모드에서는 WASD가 메뉴 이동/관리 UI 조작 등 다른 입력으로 동작할 가능성이 있었습니다.
+
+이 확장성을 확보하기 위해,
+
+* UI Manager를 통해 UI 제어를 중앙화하고
+* 맵/게임 모드별로 다른 UI 동작을 UIConfigData(DataAsset)로 분리하여 관리했습니다.
+
+ <img width="48%" height="800" alt="image" src="https://github.com/user-attachments/assets/bad8ad54-4874-410f-8b73-ed87be9fdc8a" />
+ <img width="48%" height="800" alt="image" src="https://github.com/user-attachments/assets/a3116bff-7b6a-45bc-8d9b-9ded8ee16fe6" />
+
+- 맵마다 필요한 UI 입력 바인딩 개수(예: 3개 / 2개)가 달라도 Config로 대응 가능
+- 동일한 입력 키라도 맵에 따라 서로 다른 위젯을 매핑할 수 있도록 구성
+ 
+</details>
+
 [리팩토링 및 구조 설계 repo](https://github.com/Fsbsnw/UnrealPlayground)
