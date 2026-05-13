@@ -47,9 +47,6 @@ struct FPlayerSaveData
 	int32 AxeUpgrade = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 MemoryFragment = 0;
-
-	UPROPERTY(EditAnywhere)
 	int32 GameScore = 0;
 
 	// Inn Manager Component

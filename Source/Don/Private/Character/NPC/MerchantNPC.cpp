@@ -3,13 +3,18 @@
 
 #include "Character/NPC/MerchantNPC.h"
 
-#include "Character/Component/InteractComponent.h"
+#include "DonGameplayTags.h"
 #include "GameInstance/DonGameInstance.h"
 #include "Inventory/DonItemLibrary.h"
 
-void AMerchantNPC::Interact(APlayerState* TargetPlayerState)
+
+FInteractionWidgetContext AMerchantNPC::Interact_Implementation()
 {
-	GetInteractComponent()->OpenStore(TargetPlayerState);
+	FInteractionWidgetContext IWC;
+	IWC.InteractionType = EInteractionType::OpenStore;
+	IWC.InteractionTarget = this;
+	IWC.WidgetTag = FDonGameplayTags::Get().UI_Interact_Store;
+	return IWC;
 }
 
 void AMerchantNPC::BeginPlay()

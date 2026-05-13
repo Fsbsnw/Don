@@ -25,7 +25,7 @@ void ADonInnGameMode::BeginPlay()
 	ADonPlayerState* DPS = Cast<ADonPlayerState>(UGameplayStatics::GetPlayerState(this, 0));
 	if (DPS && DPS->GetInnStoreComponent())
 	{
-		DPS->InnStoreComponent->OnDevilPotionPurchased.AddLambda(
+		DPS->GetInnStoreComponent()->OnDevilPotionPurchased.AddLambda(
 			[this]()
 			{
 				GameOver(2);
@@ -96,7 +96,7 @@ void ADonInnGameMode::AddToReputation(int32 InReputation)
 	{
 		if (ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>())
 		{
-			PS->InnManagerComponent->AddToReputation(InReputation);
+			PS->GetInnManagerComponent()->AddToReputation(InReputation);
 		}
 	}
 }
@@ -107,7 +107,7 @@ void ADonInnGameMode::AddToPopularity(int32 InPopularity)
 	{
 		if (ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>())
 		{
-			PS->InnManagerComponent->AddToPopularity(InPopularity);
+			PS->GetInnManagerComponent()->AddToPopularity(InPopularity);
 		}
 	}
 }
@@ -118,7 +118,7 @@ void ADonInnGameMode::AddToInterior(int32 InInterior)
 	{
 		if (ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>())
 		{
-			PS->InnManagerComponent->AddToInterior(InInterior);
+			PS->GetInnManagerComponent()->AddToInterior(InInterior);
 		}
 	}
 }
@@ -129,7 +129,7 @@ void ADonInnGameMode::AddToInnLevel(int32 InInnLevel)
 	{
 		if (ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>())
 		{
-			PS->InnManagerComponent->AddToInnLevel(InInnLevel);
+			PS->GetInnManagerComponent()->AddToInnLevel(InInnLevel);
 		}
 	}
 }
@@ -140,7 +140,7 @@ void ADonInnGameMode::AddToSuspicion(int32 InSuspicion)
 	{
 		if (ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>())
 		{
-			PS->InnManagerComponent->AddToSuspicion(InSuspicion);
+			PS->GetInnManagerComponent()->AddToSuspicion(InSuspicion);
 		}
 	}
 }
@@ -181,7 +181,7 @@ int32 ADonInnGameMode::GetReputation()
 	{
 		if (ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>())
 		{
-			return PS->InnManagerComponent->GetReputation();
+			return PS->GetInnManagerComponent()->GetReputation();
 		}
 	}
 	return 0;
@@ -193,7 +193,7 @@ int32 ADonInnGameMode::GetPopularity()
 	{
 		if (ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>())
 		{
-			return PS->InnManagerComponent->GetPopularity();
+			return PS->GetInnManagerComponent()->GetPopularity();
 		}
 	}
 	return 0;
@@ -205,7 +205,7 @@ int32 ADonInnGameMode::GetInterior()
 	{
 		if (ADonPlayerState* PS = PC->GetPlayerState<ADonPlayerState>())
 		{
-			return PS->InnManagerComponent->GetInterior();
+			return PS->GetInnManagerComponent()->GetInterior();
 		}
 	}
 	return 0;

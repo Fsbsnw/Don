@@ -33,6 +33,8 @@ struct FDonGameplayTags
 	FGameplayTag InputTag_J;
 	FGameplayTag InputTag_K;
 
+	FGameplayTag Interact;
+
 
 	// Primary Attributes
 
@@ -191,8 +193,11 @@ struct FDonGameplayTags
 	FGameplayTag UI_Skill_Open;
 	FGameplayTag UI_Quest_Open;
 	FGameplayTag UI_Setting_Open;
+	FGameplayTag UI_Store_Merchant;
 	FGameplayTag UI_Store_Normal_Open;
 	FGameplayTag UI_Interact;
+	FGameplayTag UI_Interact_Dialog;
+	FGameplayTag UI_Interact_Store;
 	FGameplayTag UI_Interact_Dialog_Open;
 	FGameplayTag UI_Interact_Store_Open;
 

@@ -8,6 +8,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "UIManagerSubsystem.generated.h"
 
+struct FInteractionWidgetContext;
 class UDonUserWidget;
 
 /**
@@ -26,6 +27,7 @@ public:
 	void OnToggleRequested(FGameplayTag InputTag);	
 	void ToggleWidget(FGameplayTag Tag);
 	void OpenWidget(FGameplayTag Tag);
+	void OpenInteractionWidget(FGameplayTag Tag, const FInteractionWidgetContext& IWC);
 
 private:
 	TMap<FGameplayTag, FUIConfigWidget> ConfigData;

@@ -25,6 +25,8 @@ class DON_API ADonCharacter : public ADonCharacterBase, public IPlayerInterface
 public:
 	ADonCharacter();
 
+	virtual void BeginPlay() override;
+
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 
@@ -69,6 +71,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInteractionComponent> InteractionComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USphereComponent> InteractionCollision;
 
 	UFUNCTION(BlueprintCallable)
 	APlayerWeapon* GetPlayerWeapon();

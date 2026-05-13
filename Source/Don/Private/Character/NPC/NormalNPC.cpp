@@ -3,9 +3,14 @@
 
 #include "Character/NPC/NormalNPC.h"
 
-#include "Character/Component/InteractComponent.h"
+#include "DonGameplayTags.h"
 
-void ANormalNPC::Interact(APlayerState* TargetPlayerState)
+FInteractionWidgetContext ANormalNPC::Interact_Implementation()
 {
-	GetInteractComponent()->OpenDialogue(TargetPlayerState);
+	FInteractionWidgetContext IWC;
+	IWC.InteractionType = EInteractionType::StartDialogue;
+	IWC.InteractionTarget = this;
+	IWC.WidgetTag = FDonGameplayTags::Get().UI_Interact_Dialog;
+
+	return IWC;
 }

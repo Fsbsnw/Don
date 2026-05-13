@@ -28,6 +28,7 @@ ADonPlayerState::ADonPlayerState()
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>("Inventory Component");
 	InnManagerComponent = CreateDefaultSubobject<UInnManagerComponent>("Inn Manager Component");
 	InnStoreComponent = CreateDefaultSubobject<UInnStoreComponent>("Inn Store Component");
+	
 	NetUpdateFrequency = 100.f;
 }
 
@@ -66,7 +67,6 @@ void ADonPlayerState::SavePlayerData(FPlayerSaveData& Data)
 	Data.AttributePoints = AttributePoints;
 	Data.AxeUpgrade = AxeUpgrade;
 	Data.GameScore = GameScore;
-	Data.MemoryFragment = MemoryFragment;
 	Data.SkillPoints = SkillPoints;
 	Data.XP = XP;
 }
@@ -78,7 +78,6 @@ void ADonPlayerState::LoadPlayerData(const FPlayerSaveData& InData)
 	AttributePoints = InData.AttributePoints;
 	AxeUpgrade = InData.AxeUpgrade;
 	GameScore = InData.GameScore;
-	MemoryFragment = InData.MemoryFragment;
 	SkillPoints = InData.SkillPoints;
 	XP = InData.XP;
 }
@@ -108,19 +107,6 @@ void ADonPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	// 최종 결과물을 GameInstance에 저장
 	GI->SavedPlayerData = NewData;
-}
-
-void ADonPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ADonPlayerState, Level);
-	DOREPLIFETIME(ADonPlayerState, XP);
-	DOREPLIFETIME(ADonPlayerState, AttributePoints);
-	DOREPLIFETIME(ADonPlayerState, SkillPoints);
-	DOREPLIFETIME(ADonPlayerState, Money);
-	DOREPLIFETIME(ADonPlayerState, MemoryFragment);
-	DOREPLIFETIME(ADonPlayerState, GameScore);
 }
 
 UAbilitySystemComponent* ADonPlayerState::GetAbilitySystemComponent() const
@@ -364,12 +350,6 @@ void ADonPlayerState::AddToMoney(int32 InMoney)
 	PlayInteractionSound2D(MoneyGainSound);
 }
 
-void ADonPlayerState::AddToMemoryFragment(int32 InMemoryFragment)
-{
-	MemoryFragment += InMemoryFragment;
-	OnMemoryFragmentChangedDelegate.Broadcast(MemoryFragment);
-}
-
 void ADonPlayerState::AddToScore(int32 InGameScore)
 {
 	GameScore += InGameScore;
@@ -438,12 +418,6 @@ void ADonPlayerState::SetMoney(int32 InMoney)
 	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
 }
 
-void ADonPlayerState::SetMemoryFragment(int32 InMemoryFragment)
-{
-	MemoryFragment = InMemoryFragment;
-	OnMemoryFragmentChangedDelegate.Broadcast(MemoryFragment);
-}
-
 void ADonPlayerState::SetGameScore(int32 InGameScore)
 {
 	GameScore = InGameScore;
@@ -453,54 +427,5 @@ void ADonPlayerState::SetGameScore(int32 InGameScore)
 void ADonPlayerState::SetKillCount(int32 InKillCount)
 {
 	KillCount = InKillCount;
-	OnKillCountChangedDelegate.Broadcast(KillCount);
-}
-
-
-bool ADonPlayerState::RestoreMemory(int32 MemoryCost)
-{
-	if (MemoryFragment < MemoryCost) return false;
-
-	AddToMemoryFragment(-MemoryCost);
-	return true;
-}
-
-void ADonPlayerState::OnRep_Level(int32 OldLevel)
-{
-	OnLevelChangedDelegate.Broadcast(Level, true);
-}
-
-void ADonPlayerState::OnRep_XP(int32 OldXP)
-{
-	OnXPChangedDelegate.Broadcast(XP);
-}
-
-void ADonPlayerState::OnRep_AttributePoints(int32 OldAttributePoints)
-{
-	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
-}
-
-void ADonPlayerState::OnRep_SkillPoints(int32 OldSkillPoints)
-{
-	OnSkillPointsChangedDelegate.Broadcast(SkillPoints);
-}
-
-void ADonPlayerState::OnRep_Money(int32 OldMoney)
-{
-	OnMoneyChangedDelegate.Broadcast(Money);
-}
-
-void ADonPlayerState::OnRep_MemoryFragment(int32 OldMemoryFragment)
-{
-	OnMemoryFragmentChangedDelegate.Broadcast(MemoryFragment);
-}
-
-void ADonPlayerState::OnRep_GameScore(int32 OldGameScore)
-{
-	OnGameScoreChangedDelegate.Broadcast(GameScore);
-}
-
-void ADonPlayerState::OnRep_KillCount(int32 OldKillCount)
-{
 	OnKillCountChangedDelegate.Broadcast(KillCount);
 }

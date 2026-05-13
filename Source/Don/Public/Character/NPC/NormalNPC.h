@@ -14,5 +14,5 @@ class DON_API ANormalNPC : public ANPCCharacterBase
 {
 	GENERATED_BODY()
 public:
-	virtual void Interact(APlayerState* TargetPlayerState) override;
+	virtual FInteractionWidgetContext Interact_Implementation() override;
 };

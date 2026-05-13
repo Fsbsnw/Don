@@ -11,9 +11,11 @@
 #include "Actor/PlayerWeapon.h"
 #include "Camera/CameraComponent.h"
 #include "Character/Component/EquipmentComponent.h"
+#include "Character/Component/InteractionComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Inventory/DonItemLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Player/DonPlayerState.h"
 
@@ -27,8 +29,23 @@ ADonCharacter::ADonCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(SpringArm);
 
-	PlayerWeapon = CreateDefaultSubobject<UChildActorComponent>(TEXT("Player Weapon"));
+	PlayerWeapon = CreateDefaultSubobject<UChildActorComponent>("Player Weapon");
 	PlayerWeapon->SetupAttachment(GetMesh(), TEXT("ik_hand_gun"));
+	
+	InteractionCollision = CreateDefaultSubobject<USphereComponent>("Interaction Collision");
+	InteractionCollision->SetupAttachment(GetCapsuleComponent());
+	InteractionCollision->SetSphereRadius(100.f);
+	InteractionCollision->SetCollisionResponseToAllChannels(ECR_Overlap);
+	InteractionCollision->SetGenerateOverlapEvents(true);
+	InteractionCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	
+	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>("Interaction Component");
+}
+
+void ADonCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	InteractionComponent->SetInteractionCollision(InteractionCollision);
 }
 
 void ADonCharacter::PossessedBy(AController* NewController)

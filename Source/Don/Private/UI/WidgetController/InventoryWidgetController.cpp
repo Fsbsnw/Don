@@ -18,10 +18,6 @@ void UInventoryWidgetController::BindCallbacksToDependencies()
 
 void UInventoryWidgetController::BroadcastInitialValues()
 {
-	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
-	
-	OnMoneyChanged.Broadcast(DonPlayerState->GetMoney());
-	OnMemoryFragmentChanged.Broadcast(DonPlayerState->GetMemoryFragment());
 }
 
 void UInventoryWidgetController::HandleInventoryUpdated(const TArray<FItem>& Inventory)

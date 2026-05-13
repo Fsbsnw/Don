@@ -21,6 +21,7 @@ class DON_API UAttributeMenuWidgetController : public UDonWidgetController
 public:
 	virtual void BindCallbacksToDependencies() override;
 	virtual void BroadcastInitialValues() override;
+	void BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute);
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
 	FAttributeInfoSignature AttributeInfoSignature;
@@ -36,9 +37,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool UpgradeWeapon();
-
-private:
-	void BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute);
 
 protected:	
 	UPROPERTY(EditDefaultsOnly)

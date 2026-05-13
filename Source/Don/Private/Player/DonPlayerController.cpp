@@ -10,7 +10,6 @@
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "AbilitySystem/DonAbilitySystemComponent.h"
-#include "Character/Component/InteractComponent.h"
 #include "Character/Component/InteractionComponent.h"
 #include "Character/Player/DonCharacter.h"
 #include "Components/SplineComponent.h"
@@ -43,6 +42,11 @@ void ADonPlayerController::InitializeHUD()
 	{
 		DonHUD->InitOverlay(this, DPS, ASC, AS, ConfigData);
 	}
+}
+
+void ADonPlayerController::RequestOpenInteractionWidget(FGameplayTag WidgetTag,	const FInteractionWidgetContext& Context)
+{
+	OnInteractionWidgetRequested.Broadcast(WidgetTag, Context);
 }
 
 void ADonPlayerController::BeginPlay()
@@ -155,6 +159,17 @@ void ADonPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Pressed %s"), *InputTag.ToString());
 
+	if (InputTag.MatchesTag(FDonGameplayTags::Get().Interact))
+	{
+		if (ADonCharacter* ControlledCharacter = GetPawn<ADonCharacter>())
+		{
+			if (ControlledCharacter->InteractionComponent == nullptr) return;
+			
+			ControlledCharacter->InteractionComponent->Interact();
+		}
+		return;
+	}
+
 	if (InputTag.MatchesTag(FDonGameplayTags::Get().UI))
 	{
 		OnWidgetToggleRequested.Broadcast(InputTag);
@@ -201,18 +216,6 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 	if (InputTag.MatchesTag(FDonGameplayTags::Get().UI))
 	{
 		OnUIOpenRequested.ExecuteIfBound(InputTag);
-	}
-
-	// Interact with NPC
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_E))
-	{
-		if (ADonCharacter* DonCharacter = Cast<ADonCharacter>(GetPawn()))
-		{
-			if (DonCharacter == nullptr) return;
-
-			DonCharacter->InteractionComponent->Interact();
-			return;
-		}
 	}
 
 	// Use Quick Slot 1

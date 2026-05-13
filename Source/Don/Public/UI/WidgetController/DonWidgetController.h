@@ -44,43 +44,12 @@ class DON_API UDonWidgetController : public UObject
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintCallable)
 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);
+	virtual void BindCallbacksToDependencies();
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitialValues();
-	
-	virtual void BindCallbacksToDependencies();
 
-	UFUNCTION(BlueprintCallable)
-	void BroadcastAbilityInfo();
-
-	UDonAbilitySystemComponent* GetDonASC();
-
-
-	/*
-	 * Delegates
-	 */
-
-	UPROPERTY(BlueprintAssignable, Category="GAS|Messages")
-	FAbilityInfoSignature AbilityInfoDelegate;
-
-	UPROPERTY(BlueprintAssignable, Category = "Player State")
-	FOnResourceChanged OnMoneyChanged;
-
-	UPROPERTY(BlueprintAssignable, Category = "Player State")
-	FOnResourceChanged OnMemoryFragmentChanged;
-
-	/*
-	 * Delegates
-	 */
-	
-	UFUNCTION()
-	void OnMoneyAdded(int32 NewMoney);
-	
-	UFUNCTION()
-	void OnMemoryFragmentAdded(int32 NewMemoryFragment);
-	
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<APlayerController> PlayerController;
@@ -93,10 +62,4 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UAttributeSet> AttributeSet;
-
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
-	TObjectPtr<UDonAbilitySystemComponent> DonAbilitySystemComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UAbilityInfo> AbilityInfo;
 };

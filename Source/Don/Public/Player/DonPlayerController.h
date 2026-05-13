@@ -8,12 +8,14 @@
 #include "DonPlayerController.generated.h"
 
 
+struct FInteractionWidgetContext;
 struct FInputActionValue;
 class UInputAction;
 DECLARE_DELEGATE_OneParam(FOnUIOpenRequested, FGameplayTag);
 
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnWidgetToggleRequested, FGameplayTag);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnInteractionWidgetRequested, FGameplayTag, const FInteractionWidgetContext&);
 
 class UDamageTextComponent;
 class UDonAbilitySystemComponent;
@@ -42,6 +44,9 @@ public:
 
 	FOnUIOpenRequested OnUIOpenRequested;
 	FOnWidgetToggleRequested OnWidgetToggleRequested;
+	FOnInteractionWidgetRequested OnInteractionWidgetRequested;
+
+	void RequestOpenInteractionWidget(FGameplayTag WidgetTag, const FInteractionWidgetContext& Context);
 	
 protected:
 	virtual void BeginPlay() override;
