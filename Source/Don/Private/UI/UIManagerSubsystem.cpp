@@ -9,6 +9,7 @@
 #include "Player/DonPlayerState.h"
 #include "UI/Widget/DonUserWidget.h"
 #include "UI/WidgetController/DonWidgetController.h"
+#include "UI/WidgetController/InteractionWidgetController.h"
 
 void UUIManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -50,6 +51,9 @@ void UUIManagerSubsystem::InitializeUIBinding(APlayerController* PC)
 	{
 		LPC->OnWidgetToggleRequested.RemoveAll(this);
 		LPC->OnWidgetToggleRequested.AddUObject(this, &ThisClass::OnToggleRequested);
+
+		LPC->OnInteractionWidgetRequested.RemoveAll(this);
+		LPC->OnInteractionWidgetRequested.AddUObject(this, &UUIManagerSubsystem::OpenInteractionWidget);
 	}
 }
 
@@ -129,4 +133,19 @@ void UUIManagerSubsystem::OpenWidget(FGameplayTag Tag)
 	}
 	Widget->AddToViewport();
 	ActiveWidgets.Add(Tag, Widget);
+}
+
+void UUIManagerSubsystem::OpenInteractionWidget(FGameplayTag Tag, const FInteractionWidgetContext& IWC)
+{
+	ToggleWidget(Tag);
+
+	// 상호작용 위젯인 경우, InteractionWidgetContext 설정 추가
+	if (UDonUserWidget** Found = ActiveWidgets.Find(Tag))
+	{
+		UDonUserWidget* Widget = *Found;
+		if (UInteractionWidgetController* IWController = Cast<UInteractionWidgetController>(Widget->WidgetController))
+		{
+			IWController->SetInteractionWidgetContext(IWC);
+		}
+	}
 }

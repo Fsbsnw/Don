@@ -42,7 +42,7 @@ class DON_API AMerchantNPC : public ANPCCharacterBase
 {
 	GENERATED_BODY()
 public:
-	virtual void Interact(APlayerState* TargetPlayerState) override;
+	virtual FInteractionWidgetContext Interact_Implementation() override;
 	virtual void BeginPlay() override;
 
 	FOnMerchandiseChanged OnMerchandiseChanged;

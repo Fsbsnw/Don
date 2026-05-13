@@ -21,11 +21,11 @@ void UEnemyManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	GetWorld()->GetTimerManager().SetTimer(
-		UpdateAIsTimerHandle,      // 타이머 핸들z
-		this,                      // 함수를 호출할 오브젝트
-		&UEnemyManagerSubsystem::UpdateAILOD, // 호출할 함수
-		0.1f,                      // 호출 간격 (초)
-		true                       // 반복 여부
+		UpdateAIsTimerHandle,      
+		this,                      
+		&UEnemyManagerSubsystem::UpdateAILOD,
+		0.1f,                      
+		true                       
 	);
 
 	UE_LOG(LogTemp, Warning, TEXT("AI Subsystem Initialized and Timer Started!"));
@@ -56,7 +56,6 @@ void UEnemyManagerSubsystem::UpdateAILOD()
 	// 처리 완료 후, 다음 인덱스 초기화 및 Destroy된 객체들 제거 
 	if (NextEnemyToUpdateIndex >= MaxEnemyCount)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BT : %d, Not BT : %d"), TestCountBT, TestCountNotBT);
 		TestCountBT = 0, TestCountNotBT = 0;
 		NextEnemyToUpdateIndex = 0;
 		EnemyPawns.Remove(nullptr);

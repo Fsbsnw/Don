@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/Dialogue.h"
 #include "Character/Interface/InteractInterface.h"
 #include "Data/Quest.h"
 #include "GameFramework/Character.h"
@@ -19,9 +18,7 @@ class DON_API ANPCCharacterBase : public ACharacter, public IInteractInterface
 public:
 	ANPCCharacterBase();
 
-	virtual UInteractComponent* GetInteractComponent() override;
-	UFUNCTION(BlueprintCallable, Category = "Interaction")
-	virtual void Interact(APlayerState* TargetPlayerState) override;
+	virtual FInteractionWidgetContext Interact_Implementation() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "NPC")
 	ENPCName NPCName = ENPCName::Normal;
@@ -42,10 +39,7 @@ public:
 
 	
 protected:
-	virtual void BeginPlay() override;
 	
-	UPROPERTY(VisibleDefaultsOnly)
-	TObjectPtr<UInteractComponent> InteractComponent;
 	UPROPERTY(VisibleDefaultsOnly)
 	TObjectPtr<UWidgetComponent> QuestNotification;
 };

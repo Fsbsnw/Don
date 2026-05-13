@@ -25,10 +25,8 @@ public:
 	virtual void BindCallbacksToDependencies() override;
 
 	UFUNCTION(BlueprintCallable)
-	void SetCurrentHealth(float NewHealth);
-
-	UFUNCTION(BlueprintCallable)
 	void ResetAbilityInputTag(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag = FGameplayTag());
+	void OnXPChanged(int32 NewXP);
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
@@ -37,7 +35,7 @@ public:
 	FOnAttributeChangedSignature OnMaxHealthChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
-	FOnAttributeChangedSignature OnXPPercentChangedDelegate;
+	FOnAttributeChangedSignature OnXPChangedDelegate;
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
 	FOnPlayerLevelChangedSignature OnPlayerLevelChangedDelegate;
@@ -47,14 +45,4 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS | Attributes")
 	FOnAttributeChangedSignature OnKillCountChangedDelegate;
-	
-	UPROPERTY(BlueprintAssignable, Category = "GAS | Abilities")
-	FOnTagChangedSignature OnTagChanged;
-	
-	void OnXPChanged(int32 NewXP);
-
-	UFUNCTION(BlueprintCallable)
-	void AddXPToPlayer(int32 AddXP);
-
-protected:
 };

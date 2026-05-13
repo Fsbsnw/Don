@@ -96,6 +96,12 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	FString("Keyboard K")
 	);
 
+	
+	GameplayTags.Interact = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Interact"),
+	FString("Interact")
+	);
+
 		
 	/*
 	 * Primary Attributes 
@@ -690,9 +696,27 @@ void FDonGameplayTags::InitializeNativeGameplayTags()
 	);
 
 			
+	GameplayTags.UI_Store_Merchant = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Store.Merchant"),
+	FString("UI Store Merchant")
+	);
+
+			
 	GameplayTags.UI_Interact = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("UI.Interact"),
 	FString("UI Interact")
+	);
+
+				
+	GameplayTags.UI_Interact_Dialog = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Interact.Dialog"),
+	FString("UI Interact Dialog")
+	);
+	
+				
+	GameplayTags.UI_Interact_Store = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("UI.Interact.Store"),
+	FString("UI Interact Store")
 	);
 
 			

@@ -19,7 +19,7 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	OnMaxHealthChanged.Broadcast(DonAttributeSet->GetMaxHealth());
 	
 	OnPlayerLevelChangedDelegate.Broadcast(DonPlayerState->GetPlayerLevel(), true);
-	OnXPPercentChangedDelegate.Broadcast(DonPlayerState->GetXP());
+	OnXPChangedDelegate.Broadcast(DonPlayerState->GetXP());
 	OnGameScoreChangedDelegate.Broadcast(DonPlayerState->GetGameScore());
 	OnKillCountChangedDelegate.Broadcast(DonPlayerState->GetKillCount());
 }
@@ -47,36 +47,6 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 			OnMaxHealthChanged.Broadcast(Data.NewValue);
 		}
 	);
-
-	/*
-	 * Bind AbilitySystemComponent
-	 */
-
-	if (GetDonASC())
-	{
-		if (GetDonASC()->bStartupAbilitiesGiven)
-		{
-			BroadcastAbilityInfo();
-		}
-		else
-		{
-			GetDonASC()->AbilitiesGivenDelegate.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
-			GetDonASC()->AbilitiesChangedDelegate.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
-		}
-		
-		GetDonASC()->EffectAssetTags.AddLambda(
-			[this](const FGameplayTagContainer& AssetTags)
-			{
-				for (const FGameplayTag& Tag : AssetTags)
-				{
-					const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
-					GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue, Msg);
-
-				}
-				OnTagChanged.Broadcast(AssetTags);
-			}
-		);
-	}
 
 
 	/*
@@ -106,17 +76,12 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	);
 }
 
-void UOverlayWidgetController::SetCurrentHealth(float NewHealth)
-{
-	UDonAttributeSet* DonAttributeSet = CastChecked<UDonAttributeSet>(AttributeSet);
-
-	DonAttributeSet->SetHealth(NewHealth);
-	UE_LOG(LogTemp, Warning, TEXT("Set Health : %f"), NewHealth);
-}
-
 void UOverlayWidgetController::ResetAbilityInputTag(const FGameplayTag& AbilityTag, const FGameplayTag& NewInputTag)
 {
-	GetDonASC()->SetAbilityInputTag(AbilityTag, NewInputTag);
+	if (UDonAbilitySystemComponent* DASC = Cast<UDonAbilitySystemComponent>(AbilitySystemComponent))
+	{
+		DASC->SetAbilityInputTag(AbilityTag, NewInputTag);
+	}
 }
 
 void UOverlayWidgetController::OnXPChanged(int32 NewXP)
@@ -135,12 +100,7 @@ void UOverlayWidgetController::OnXPChanged(int32 NewXP)
 		
 		const float XPBarPercent = static_cast<float>(XPForThisLevel) / static_cast<float>(DeltaLevelRequirement);
 		
-		OnXPPercentChangedDelegate.Broadcast(XPBarPercent);
+		OnXPChangedDelegate.Broadcast(XPBarPercent);
 	}
-	else OnXPPercentChangedDelegate.Broadcast(1.f);
-}
-
-void UOverlayWidgetController::AddXPToPlayer(int32 AddXP)
-{
-	Cast<ADonPlayerState>(PlayerState)->AddToXP(AddXP);
+	else OnXPChangedDelegate.Broadcast(1.f);
 }

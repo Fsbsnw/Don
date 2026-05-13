@@ -6,17 +6,16 @@
 #include "Character/Interface/InteractInterface.h"
 #include "Character/Player/DonCharacter.h"
 #include "Components/SphereComponent.h"
+#include "Player/DonPlayerController.h"
 
 UInteractionComponent::UInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+}
 
-	InteractionCollision = CreateDefaultSubobject<USphereComponent>("Interaction Collision");
-	InteractionCollision->SetupAttachment(this);
-	InteractionCollision->SetSphereRadius(100.f);
-	InteractionCollision->SetCollisionResponseToAllChannels(ECR_Overlap);
-	InteractionCollision->SetGenerateOverlapEvents(true);
-	InteractionCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+void UInteractionComponent::SetInteractionCollision(USphereComponent* Collision)
+{
+	InteractionCollision = Collision;
 }
 
 void UInteractionComponent::Interact()
@@ -28,11 +27,19 @@ void UInteractionComponent::Interact()
 	{
 		if (NPCActor->Implements<UInteractInterface>())
 		{
-			if (ADonCharacter* DonCharacter = Cast<ADonCharacter>(GetOwner()))
+			if (ACharacter* PlayerCharacter = Cast<ACharacter>(GetOwner()))
 			{
-				Cast<IInteractInterface>(NPCActor)->Interact(DonCharacter->GetPlayerState());				
-			}			
-			return;
+				// 상호작용 가능한 오브젝트는 FInteractionWidgetContext 반환
+				const FInteractionWidgetContext& IWC = IInteractInterface::Execute_Interact(NPCActor);
+				// 단순 아이템 획득인 경우엔 종료
+				if (IWC.InteractionType == EInteractionType::PickupItem) return;
+
+				ADonPlayerController* DPC = Cast<ADonPlayerController>(PlayerCharacter->GetController());
+				if (DPC == nullptr) return;
+				// 상호작용 위젯 열기
+				DPC->RequestOpenInteractionWidget(IWC.WidgetTag, IWC);				
+				return;
+			}
 		}
 	}
 }

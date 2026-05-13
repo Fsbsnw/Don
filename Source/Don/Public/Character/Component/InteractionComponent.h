@@ -10,17 +10,17 @@
 class USphereComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class DON_API UInteractionComponent : public USceneComponent
+class DON_API UInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	UInteractionComponent();
+	void SetInteractionCollision(USphereComponent* Collision);
+
+	void Interact();
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USphereComponent> InteractionCollision;
-
-public:
-	void Interact();
 };

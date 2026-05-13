@@ -15,9 +15,9 @@ void UInnManagerComponent::BeginPlay()
 	Super::BeginPlay();
 
 	ADonPlayerState* DPS = CastChecked<ADonPlayerState>(GetOwner());
-	if (DPS && DPS->InnStoreComponent)
+	if (DPS && DPS->GetInnStoreComponent())
 	{
-		DPS->InnStoreComponent->OnUpgradeRequested.AddUObject(this, &UInnManagerComponent::HandleUpgradeRequest);
+		DPS->GetInnStoreComponent()->OnUpgradeRequested.AddUObject(this, &UInnManagerComponent::HandleUpgradeRequest);
 	}
 }
 

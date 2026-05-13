@@ -3,7 +3,6 @@
 
 #include "Character/NPC/NPCCharacterBase.h"
 
-#include "Character/Component/InteractComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 
@@ -11,19 +10,14 @@ ANPCCharacterBase::ANPCCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	InteractComponent = CreateDefaultSubobject<UInteractComponent>("Interact Component");
 	QuestNotification = CreateDefaultSubobject<UWidgetComponent>("Quest Notification");
 	QuestNotification->SetVisibility(false);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 }
 
-UInteractComponent* ANPCCharacterBase::GetInteractComponent()
+FInteractionWidgetContext ANPCCharacterBase::Interact_Implementation()
 {
-	return InteractComponent;
-}
-
-void ANPCCharacterBase::Interact(APlayerState* TargetPlayerState)
-{
+	return FInteractionWidgetContext();
 }
 
 void ANPCCharacterBase::NotifyQuestCompletionOnScreen(FQuest Quest)
@@ -49,11 +43,4 @@ void ANPCCharacterBase::RemoveCompletedQuest(FQuest Quest)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Removed Completed Quest!"));
 	}
-}
-
-void ANPCCharacterBase::BeginPlay()
-{
-	Super::BeginPlay();
-
-	GetInteractComponent()->BindCallbacksToDependencies();
 }

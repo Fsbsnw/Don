@@ -18,7 +18,7 @@ void AInnTavern::RegisterTables()
 {
 	if (ADonPlayerState* DPC = Cast<ADonPlayerState>(UGameplayStatics::GetPlayerState(this, 0)))
 	{
-		DPC->InnManagerComponent->OnInnLevelChanged.AddUObject(this, &AInnTavern::UpgradeTavernInterior);
+		DPC->GetInnManagerComponent()->OnInnLevelChanged.AddUObject(this, &AInnTavern::UpgradeTavernInterior);
 	}
 	
 	TArray<AActor*> ChildActors;
@@ -55,6 +55,6 @@ void AInnTavern::BroadcastInitialTables()
 {
 	if (ADonPlayerState* DPC = Cast<ADonPlayerState>(UGameplayStatics::GetPlayerState(this, 0)))
 	{
-		UpgradeTavernInterior(DPC->InnManagerComponent->GetInnLevel());
+		UpgradeTavernInterior(DPC->GetInnManagerComponent()->GetInnLevel());
 	}
 }

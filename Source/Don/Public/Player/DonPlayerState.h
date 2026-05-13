@@ -33,32 +33,39 @@ class DON_API ADonPlayerState : public APlayerState, public IAbilitySystemInterf
 public:
 	ADonPlayerState();
 
+protected:
+	UPROPERTY()
+	TObjectPtr<UAttributeSet> AttributeSet;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UInnManagerComponent> InnManagerComponent;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UInnStoreComponent> InnStoreComponent;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UInventoryComponent> InventoryComponent;
+
+public:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
+	
 	// Saveable Interface
 
 	virtual void PostInitializeComponents() override;
 	virtual void SavePlayerData(FPlayerSaveData& Data) override;
 	virtual void LoadPlayerData(const FPlayerSaveData& InData) override;
 
-	// Inn Manager Component
+	// Saveable Interface
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UInnManagerComponent> InnManagerComponent;
-	
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UInnStoreComponent> InnStoreComponent;
-	
-	UFUNCTION(BlueprintCallable, Category = "Inn Store")
+	UFUNCTION(BlueprintCallable, Category = "Inn")
+	UInnManagerComponent* GetInnManagerComponent() const { return InnManagerComponent; }
+	UFUNCTION(BlueprintCallable, Category = "Inn")
 	UInnStoreComponent* GetInnStoreComponent() const { return InnStoreComponent; }
-	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
-
 	
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
-
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<ULevelUpInfo> LevelUpInfo;
@@ -101,7 +108,6 @@ public:
 	FORCEINLINE int32 GetAttributePoints() const { return AttributePoints; }
 	FORCEINLINE int32 GetSpellPoints() const { return SkillPoints; }
 	FORCEINLINE int32 GetMoney() const { return Money; }
-	FORCEINLINE int32 GetMemoryFragment() const { return MemoryFragment; }
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE int32 GetGameScore() const { return GameScore; }
 	FORCEINLINE int32 GetKillCount() const { return KillCount; }
@@ -113,7 +119,6 @@ public:
 	void AddToAttributePoints(int32 InPoints);
 	void AddToSkillPoints(int32 InPoints);
 	void AddToMoney(int32 InMoney);
-	void AddToMemoryFragment(int32 InMemoryFragment);
 	void AddToScore(int32 InScore);
 	void AddToKillCount(int32 InKillCount);
 
@@ -126,19 +131,12 @@ public:
 	void SetAttributePoints(int32 InPoints);
 	void SetSkillPoints(int32 InPoints);
 	void SetMoney(int32 InMoney);
-	void SetMemoryFragment(int32 InMemoryFragment);
 	void SetGameScore(int32 InGameScore);
 	void SetKillCount(int32 InKillCount);
 
-
-	UFUNCTION(BlueprintCallable)
-	bool RestoreMemory(int32 MemoryCost);
-	
-	// Start Quests
 	
 	UPROPERTY(BlueprintReadWrite)
 	TMap<ENPCName, FDialogueContainer> CompletedDialogues;
-
 	UPROPERTY(BlueprintReadWrite)
 	TMap<ENPCName, FQuestContainer> PlayerQuests;
 
@@ -162,68 +160,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsKillCountConditionMet(FString QuestTitle, const FObjective& Objective);
 
-	// End Quests
-	
-protected:
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-
-	UPROPERTY()
-	TObjectPtr<UAttributeSet> AttributeSet;
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UInventoryComponent> InventoryComponent;
-	
 private:
-	UPROPERTY(EditAnywhere)
-	int32 AxeUpgrade = 0;
-	
-	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_Level)
+	UPROPERTY(EditDefaultsOnly)
 	int32 Level = 1;
-	
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_XP)
+	UPROPERTY(VisibleAnywhere)
 	int32 XP = 0;
-	
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_AttributePoints)
+	UPROPERTY(EditAnywhere)
+	int32 AxeUpgrade = 0;	
+	UPROPERTY(VisibleAnywhere)
 	int32 AttributePoints = 10;
-	
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_SkillPoints)
+	UPROPERTY(VisibleAnywhere)
 	int32 SkillPoints = 0;
-
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Money)
+	UPROPERTY(VisibleAnywhere)
 	int32 Money = 0;
-
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_MemoryFragment)
-	int32 MemoryFragment = 0;
-
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_GameScore)
+	UPROPERTY(VisibleAnywhere)
 	int32 GameScore = 0;
-
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_KillCount)
+	UPROPERTY(VisibleAnywhere)
 	int32 KillCount = 0;
-	
-	UFUNCTION()
-	void OnRep_Level(int32 OldLevel);
-	
-	UFUNCTION()
-	void OnRep_XP(int32 OldXP);
-	
-	UFUNCTION()
-	void OnRep_AttributePoints(int32 OldAttributePoints);
-	
-	UFUNCTION()
-	void OnRep_SkillPoints(int32 OldSkillPoints);
-
-	UFUNCTION()
-	void OnRep_Money(int32 OldMoney);
-
-	UFUNCTION()
-	void OnRep_MemoryFragment(int32 OldMemoryFragment);
-
-	UFUNCTION()
-	void OnRep_GameScore(int32 OldGameScore);
-
-	UFUNCTION()
-	void OnRep_KillCount(int32 OldKillCount);
 };
 
