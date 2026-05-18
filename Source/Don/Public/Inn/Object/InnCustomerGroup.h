@@ -71,7 +71,7 @@ public:
 // 멤버 관리
 // =========================================================
 	
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	TArray<AInnCustomer*> MemberActors;
 
 	/* 객실 입장 시에 갖고 있는 스냅샷 데이터 */
