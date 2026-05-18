@@ -33,9 +33,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> SlotWidgetClass;
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void HandleSlotSellEvent(int32 SlotIndex = -1);
-
 	
 	// Item functions
 
@@ -50,9 +47,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void UseItem(int32 SlotIndex);
-
-	UFUNCTION(BlueprintCallable)
-	bool UpgradeArmorItem(int32 SlotIndex, int32 Points = 1);
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnInventoryWidgetChanged OnInventoryChanged;

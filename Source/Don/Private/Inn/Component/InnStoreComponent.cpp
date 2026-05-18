@@ -93,7 +93,7 @@ bool UInnStoreComponent::UpgradeInn(bool bTargetIsTable)
 			!DPS->GetInventoryComponent()->HasEnoughItems(CostItems) ||
 			InnUpgradeLevel >= 6) return false;
 
-		DPS->GetInventoryComponent()->SellItem(ItemToCost, ItemToCost.Amount);
+		DPS->GetInventoryComponent()->RemoveItem(ItemToCost, ItemToCost.Amount);
 		DPS->AddToMoney(-InnUpgradeCost * InnUpgradeLevel);
 		InnUpgradeCrystal += 5;
 		++InnUpgradeLevel;
@@ -109,7 +109,7 @@ bool UInnStoreComponent::UpgradeInn(bool bTargetIsTable)
 			!DPS->GetInventoryComponent()->HasEnoughItems(CostItems) ||
 			HiringChefCount >= 3) return false;
 
-		DPS->GetInventoryComponent()->SellItem(ItemToCost, ItemToCost.Amount);
+		DPS->GetInventoryComponent()->RemoveItem(ItemToCost, ItemToCost.Amount);
 		DPS->AddToMoney(-ChefHiringCost * HiringChefCount);
 		ChefHiringCrystal += 10;
 		++HiringChefCount;

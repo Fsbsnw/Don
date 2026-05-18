@@ -374,7 +374,7 @@ bool ADonPlayerState::UpgradeAxe()
 		int32 Index = InventoryComponent->FindItemInInventory(Item);
 		if (Index != INDEX_NONE)
 		{
-			InventoryComponent->RemoveItem(Index, Item.Amount);
+			InventoryComponent->RemoveItemByIndex(Index, Item.Amount);
 			AddToAxeUpgrade(1);
 			return true;
 		}
