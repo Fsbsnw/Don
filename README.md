@@ -11,31 +11,32 @@
  <br><img width="409" height="429" alt="Image" src="https://github.com/user-attachments/assets/7191d90b-b254-4b12-9a9a-7bd03c5b7981" /><br>
 
  
+## [포트폴리오 영상](https://youtu.be/gn_eyMzty2I)
 
+## 게임 장르
 
+3D 뱀파이어 서바이벌류
 
-## 게임 장르 : 3D 뱀파이어 서바이벌류
 
 ## 기획 배경
 
- 3D 언리얼 엔진이라는 **무거운 기능 기반의 환경**에서 수많은 AI 오브젝트를 **효율적으로 관리하고 최적화**하는 방법에 대한 기술적 호기심이 생겼고, 성능 분석 및 최적화라는 **기술적 목표**를 추구하는 과제로 발전하게 되었습니다.
+3D 언리얼 엔진이라는 **무거운 기능 기반의 환경**에서 수많은 AI 오브젝트를 **효율적으로 관리하고 최적화**하는 방법에 대한 기술적 호기심이 생겼고, 성능 분석 및 최적화라는 **기술적 목표**를 추구하는 과제로 발전하게 되었습니다.
+
  
-## 포트폴리오 요약
-* 최적화 시도들
-* GAS 시스템 기반 Ability
-* 인벤토리
-* 퀘스트
-* 아이템
-* 상점
-* 적 AI(Behavior Tree)
+## 목차
+* [최적화 시도들](#최적화-시도)
+* [트러블 슈팅](#트러블-슈팅)
+* [인벤토리](#인벤토리)
+* [보스 AI](#보스-ai)
+* [아이템](#아이템-구조)
+* GAS
 
-## [Don 포트폴리오 영상](https://youtu.be/gn_eyMzty2I)
-
+## 최적화 시도
 
 <details>
  <summary>최적화 시도</summary>
- 
- <br>**<문제 상황>** <br>
+
+ ## 문제 상황
  적이 **50마리 정도가 스폰됐을 때, 프레임이 73 FPS에서 39 FPS로 급락**하는 심각한 성능 저하가 발생<br>
  
  **<문제 원인 파악>** <br>
@@ -52,11 +53,8 @@
  2. Overlap 관련 비용 원인 탐색 → **Mesh overlap events**이 불필요하게 켜져 있었고, 이를 해제
  3. **Character Movement Component → Floating Pawn Movement**로 변경(네트워크, 물리 상호작용 비용 최소화)
  4. 불필요한 물리 충돌 **Ignore** 설정 및 **AI 뭉침 현상**을 완화하기 위해 각 AI에게 플레이어 주변의 랜덤 좌표를 할당하는 <br>
-    커스텀 **BTTaskNode_MoveToLocationAndRepath** 노드 사용
+    커스텀 [**BTTaskNode_MoveToLocationAndRepath**](Source/Don/Private/AI/BTTask/BTTask_MoveToLocationAndRepath.cpp) 노드 구현
  ⇒ **UpdateOverlaps Time, PerformOverlapQuery Time** 감소 <br>
- 
- <**BTTaskNode_MoveToLocationAndRepath** - **TickTask**>
- <img width="722" height="398" alt="Image" src="https://github.com/user-attachments/assets/59248caa-4225-4829-bf49-e444c45d929f" /> <br><br>
  
  **<중간 결과>** <br>
  프레임 드랍의 주요 원인 4가지의 비용을 현저히 낮춤 <br> 
@@ -152,7 +150,7 @@
    <img width="537" height="563" alt="Image" src="https://github.com/user-attachments/assets/b83e16b8-744f-4d58-ae0c-15ee1ae757cf" />
    <br>
 
-   => **85 FPS**까지 방어 가능
+   => 스파이크 현상 방지
   </details>
 
   <details>
@@ -177,70 +175,66 @@
    
   </details>
 
+## 인벤토리
+[InventoryComponent.cpp](Source/Don/Private/Inventory/InventoryComponent.cpp)<br>
 
+<img src="https://github.com/user-attachments/assets/b726ab54-e899-413e-a8a4-827a0a1a429a" alt="인벤토리 설명"/>
 
-## 게임 소개
-![Image](https://github.com/user-attachments/assets/0dc82893-94c5-41f8-bbc4-038b61fd2ee1)
-
-## 캐릭터 클래스 구조
-![Image](https://github.com/user-attachments/assets/b2ac41e2-0385-4ba3-82ed-4d22c7710ec4)
-
-### <li>인벤토리</li>
- <br>
- <img src="https://github.com/user-attachments/assets/b726ab54-e899-413e-a8a4-827a0a1a429a" alt="인벤토리 설명"/>
- <br>
- <br><br><br>
- <img src="https://github.com/user-attachments/assets/bd287183-838c-4773-9c51-ea4b22f3e109">
- <br><br><br>
-
- ### <li>퀘스트</li>
-
- <img src="https://github.com/user-attachments/assets/636849ed-f893-42cf-964f-162eb205a59a">
-
- 퀘스트 완료 보상
  
- <img src="https://github.com/user-attachments/assets/68ce44d7-7d70-429f-a75d-1f5dd4b258f1">
-
 ## 보스 AI
- <img src="https://github.com/user-attachments/assets/822a05aa-6a38-4913-b1a3-80599c6eb19b">
- <br>
+[BTTask_Rampage_UseAbility.cpp](Source/Don/Private/AI/BTTask/BTTask_Rampage_UseAbility.cpp)<br>
 
-  <img src="https://github.com/user-attachments/assets/a915becc-cc7d-4db6-8e4a-f4d56a5510bd">
-  
+<img src="https://github.com/user-attachments/assets/822a05aa-6a38-4913-b1a3-80599c6eb19b">
+<img src="https://github.com/user-attachments/assets/a915becc-cc7d-4db6-8e4a-f4d56a5510bd">
 
-  <br><Gameplay Tag로 능력을 활성화>
-  
-  <img src="https://github.com/user-attachments/assets/e19511ea-bacb-400c-a70a-a06938277b64">
+## 아이템 구조
+[ItemStructs.h](Source/Don/Public/Data/ItemStructs.h)<br>
+
+<img width="669" height="807" alt="image" src="https://github.com/user-attachments/assets/e4ad3b4a-c63f-4ecb-bb3c-bfd43df9a45b" />
+
 
 </details>
 
 <details>
  <summary>여관 경영 시뮬레이션</summary>
- <br>
 
- # 게임 장르
- 
- 여관 경영 시뮬레이션
+ <img width="1648" height="884" alt="image" src="https://github.com/user-attachments/assets/f271388d-d782-49f8-a861-922ac5974769" />
 
  # [포트폴리오 영상](https://youtu.be/_K6ISF4AflY)
  
- # 게임 소개
+ # 게임 장르
+ 여관 경영 시뮬레이션
+
+ # 목차
+ * [게임 소개](#게임-소개)
+ * [낮 사이클](#낮-사이클)
+ * [밤 사이클](#밤-사이클)
+ * [손님 AI](#손님-ai)
+ * [아키텍처(최적화 및 시스템 설계)](#아키텍처)
+ * [트러블 슈팅](#트러블-슈팅)
 
  
+ # 게임 소개 
+
+ 낮에는 요리와 숙소 서비스를 이용해 돈을 벌고 밤에는 손님들을 약탈하는 게임입니다.
 
  <img width="725" height="711" alt="image" src="https://github.com/user-attachments/assets/a5f6746a-1f74-4cb2-aaa9-1f22cb07b2ec" /><br><br>
+
+ # 낮 사이클
 
  <img width="1684" height="948" alt="Image" src="https://github.com/user-attachments/assets/5a67b3df-9669-4993-a633-ffca5363b88e" /><br><br>
 
  <img width="1300" height="807" alt="image" src="https://github.com/user-attachments/assets/4a62b2b7-6840-41f7-8b90-9b50cd63b0b7" /><br><br>
 
+ # 밤 사이클
+
  <img width="1652" height="931" alt="image" src="https://github.com/user-attachments/assets/98dd55db-5465-46d7-a51b-0098ded25e32" /><br><br>
 
- <img width="1023" height="911" alt="image" src="https://github.com/user-attachments/assets/11219a71-ae14-439d-b15f-9d78eda72b9f" /><br><br>
 
- <img width="1312" height="789" alt="image" src="https://github.com/user-attachments/assets/1d779ac1-9978-4a44-a249-def9d616c577" /><br><br>
+ # 손님 AI
 
- # 손님 Behavior Tree
+ [InnCustomer.cpp](Source/Don/Private/Inn/Character/InnCustomer.cpp)<br>
+ 
  <img width="1371" height="757" alt="image" src="https://github.com/user-attachments/assets/6024b8ab-5bfd-4692-913d-52157883edab" />
 
   1. 손님 그룹 입장
@@ -249,20 +243,29 @@
   4. 체크아웃 시간에 모든 손님 퇴장 및 계산
 
 
- # Observer 패턴을 활용한 그룹 단위 상태 동기화
+ # 아키텍처
+ 
+ [InnManagerSubsystem.cpp](Don/Private/GameInstance/SubSystem/InnManagerSubsystem.cpp)<br>
+ [KitchenOrderSubsystem.cpp](Source/Don/Private/GameInstance/SubSystem/KitchenOrderSubsystem.cpp)<br>
+
+ <img width="1023" height="911" alt="image" src="https://github.com/user-attachments/assets/11219a71-ae14-439d-b15f-9d78eda72b9f" /><br><br>
+
+ <img width="1312" height="789" alt="image" src="https://github.com/user-attachments/assets/1d779ac1-9978-4a44-a249-def9d616c577" /><br><br>
+
+
+
+ ## Observer 패턴을 활용한 그룹 단위 상태 동기화
+
+ [UCustomerGroup.cpp - OnMemberNotified()](Source/Don/Private/Inn/Object/InnCustomerGroup.cpp#L16)
 
  집단 지성 로직: **개별 멤버**(**AInnCustomer**)가 자신의 상태 변화를 **그룹**(**UInnCustomerGroup**)에 **통보**(**Notify**)하면, 그룹은 모든 멤버의 상태를 카운팅하여 '전원 입장', '전원 식사 완료' 같은 그룹 단위의 의사결정을 내립니다.
 
  이를 통해 개별 액터 간의 직접적인 참조를 줄여 스파게티 코드를 방지하고, 그룹의 다음 단계(좌석 요청, 숙소 입장 등)를 한 곳에서 안전하게 제어합니다.
 
- <img width="518" height="813" alt="image" src="https://github.com/user-attachments/assets/3df56eb7-d135-4e91-8470-a7a56e9bd29a" /><br><br>
 
- --- 
+ ## 가벼운 데이터 구조(Snapshot) 기반의 메모리 최적화
 
- <img width="1333" height="737" alt="image" src="https://github.com/user-attachments/assets/84988958-bed1-4d65-babf-ec4ffebdb6fb" /><br><br>
-
-
- # 가벼운 데이터 구조(Snapshot) 기반의 메모리 최적화
+ [UCustomerGroup.cpp - MakeCustomerSnapshot()](Source/Don/Private/Inn/Object/InnCustomerGroup.cpp#L169)
 
  데이터와 로직의 분리: 손님이 숙소에 입장하여 화면에서 사라지는 순간, 무거운 AActor 객체를 유지하지 않고 필수 정보만 담은 **FCustomerSnapshot** 구조체로 변환합니다.
 
@@ -270,10 +273,8 @@
 
  데이터 보존: 액터는 사라지지만 핵심 데이터는 **UObject인 그룹**에 남겨, 밤의 던전 시스템에서 다시 활용할 수 있는 데이터 무결성을 확보했습니다.
 
- <img width="651" height="483" alt="image" src="https://github.com/user-attachments/assets/17812744-33c4-4e8f-8230-14ce3eff1f65" /><br><br>
 
-
- **트러블 슈팅**
+ ## 트러블 슈팅
 
  <details>
   <summary>집단 행동의 의사결정 주체 설정</summary>
@@ -339,6 +340,7 @@ Pawn/Character 존재 여부와 관계없이 안정적으로 동작하도록 구
 
 ### 2. 게임 모드별 UI 입력 충돌 해결
 
+[UIManagerSubsystem.cpp](Source/Don/Private/UI/UIManagerSubsystem.cpp#L65)<br>
 액션 모드에서는 WASD가 이동 입력이지만,
 여관 모드에서는 WASD가 메뉴 이동/관리 UI 조작 등 다른 입력으로 동작할 가능성이 있었습니다.
 
