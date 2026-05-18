@@ -245,7 +245,7 @@
 
  # 아키텍처
  
- [InnManagerSubsystem.cpp](Don/Private/GameInstance/SubSystem/InnManagerSubsystem.cpp)<br>
+ [InnManagerSubsystem.cpp](Source/Don/Private/GameInstance/SubSystem/InnManagerSubsystem.cpp)<br>
  [KitchenOrderSubsystem.cpp](Source/Don/Private/GameInstance/SubSystem/KitchenOrderSubsystem.cpp)<br>
 
  <img width="1023" height="911" alt="image" src="https://github.com/user-attachments/assets/11219a71-ae14-439d-b15f-9d78eda72b9f" /><br><br>
