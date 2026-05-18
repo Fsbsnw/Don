@@ -4,14 +4,10 @@
 #include "Inventory/InventoryComponent.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
-#include "AbilitySystemComponent.h"
 #include "DonGameplayTags.h"
 #include "Character/Interface/CombatInterface.h"
-#include "Character/Player/DonCharacter.h"
 #include "Data/DonItemBase.h"
-#include "Data/ItemAsset.h"
 #include "Inventory/DonItemLibrary.h"
-#include "Kismet/GameplayStatics.h"
 #include "Player/DonPlayerState.h"
 
 UInventoryComponent::UInventoryComponent()
@@ -27,17 +23,16 @@ void UInventoryComponent::SavePlayerData(FPlayerSaveData& Data)
 void UInventoryComponent::LoadPlayerData(const FPlayerSaveData& InData)
 {
 	Inventory = InData.Inventory;
-	if (Inventory.IsEmpty()) InitInventory();
+
+	if (Inventory.IsEmpty())
+	{
+		InitInventory();
+	}
 }
 
-void UInventoryComponent::AssignQuickSlotItem(const FGameplayTag& InputTag, const int32 InventoryIndex)
+void UInventoryComponent::InitInventory()
 {
-	AssignedQuickSlots.Add(InputTag, InventoryIndex);
-}
-
-void UInventoryComponent::UnassignQuickSlotItem(const FGameplayTag& InputTag)
-{
-	AssignedQuickSlots.Remove(InputTag);
+	Inventory.SetNum(MaxItemSlots);
 }
 
 int32 UInventoryComponent::FindItemInInventory(const FItem& Item) const
@@ -46,7 +41,7 @@ int32 UInventoryComponent::FindItemInInventory(const FItem& Item) const
 	return Inventory.Find(Item);
 }
 
-bool UInventoryComponent::HasEnoughItems(TArray<FItem> Items)
+bool UInventoryComponent::HasEnoughItems(TArray<FItem> Items) const
 {
 	for (FItem Item : Items)
 	{
@@ -61,154 +56,134 @@ bool UInventoryComponent::HasEnoughItems(TArray<FItem> Items)
 
 void UInventoryComponent::SwapInventoryItems(int32 FromIndex, int32 ToIndex)
 {
-	Inventory.Swap(FromIndex, ToIndex);
-
-	Inventory[FromIndex].InventorySlotIndex = FromIndex;
-	Inventory[ToIndex].InventorySlotIndex = ToIndex;
-	
-	OnInventoryChanged.Broadcast(Inventory);
-}
-
-void UInventoryComponent::InitInventory()
-{
-	Inventory.SetNum(MaxItemSlots);
-	for (int32 i = 0; i < MaxItemSlots; i++)
-	{
-		Inventory[i].InventorySlotIndex = i;
-	}
-}
-
-void UInventoryComponent::BroadcastInventory()
-{
+	Inventory.Swap(FromIndex, ToIndex);	
 	OnInventoryChanged.Broadcast(Inventory);
 }
 
 void UInventoryComponent::AddItem(FItem Item, int32 Amount)
 {
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
-	{		
-		if (Item.ItemName.IsNone()) return;
+	if (Item.ItemName.IsNone())
+	{
+		return;
+	}
 
-		Item.Amount = Amount;
-
-		FDonGameplayTags Tags = FDonGameplayTags::Get();
-		
-		// ItemType == EItemType::Equipable
-		if (Item.ItemTag.MatchesTag(Tags.Item_Equippable))
+	const FDonGameplayTags& Tags = FDonGameplayTags::Get();
+	
+	// Stack이 1인 아이템의 경우 분산 배치
+	if (Item.ItemTag.MatchesTag(Tags.Item_Equippable))
+	{
+		for (int32 i = 0; i < MaxItemSlots && Amount > 0; ++i)
 		{
+			if (Inventory[i].ItemName.IsNone())
+			{
+				Inventory[i] = Item;
+				--Amount;
+			}
+		}
+	}
+	// Stack이 여러 개인 아이템의 경우 
+	else
+	{
+		// 기존 아이템 존재 여부 확인
+		const int32 Index = Inventory.Find(Item);
+
+		if (Index != INDEX_NONE)
+		{
+			// 기존 슬롯에 수량 누적
+			Inventory[Index].Amount += Amount;
+		}
+		else
+		{
+			// 빈 슬롯에 신규 삽입
 			for (uint8 i = 0; i < MaxItemSlots; i++)
 			{
 				if (Inventory[i].ItemName.IsNone())
 				{
-					if (Amount <= 0) break;
-
-					Item.InventorySlotIndex = i;
+					Item.Amount = Amount;
 					Inventory[i] = Item;
-					Amount--;
-				}
-			}
-			DonPlayerState->CheckAllQuestObjectives();
-		}
-		// ItemType != EItemType::Equipable
-		else
-		{
-			int32 Index = Inventory.Find(Item);
-
-			// Found Item
-			if (Index != INDEX_NONE)
-			{
-				Inventory[Index].Amount += Amount;
-				
-				DonPlayerState->CheckAllQuestObjectives();
-			}
-			// Cannot Find Item
-			else
-			{
-				for (uint8 i = 0; i < MaxItemSlots; i++)
-				{
-					if (Inventory[i].ItemName.IsNone())
-					{
-						Item.Amount = Amount;
-						Item.InventorySlotIndex = i;
-						Inventory[i] = Item;
-						
-						DonPlayerState->CheckAllQuestObjectives();
-						break;
-					}
+					break;
 				}
 			}
 		}
-		OnInventoryChanged.Broadcast(Inventory);
 	}
+	OnInventoryChanged.Broadcast(Inventory);
 }
 
-void UInventoryComponent::RemoveItem(int32 SlotIndex, int32 Amount)
+void UInventoryComponent::RemoveItemByIndex(int32 SlotIndex, int32 Amount)
 {
-	if (SlotIndex != INDEX_NONE)
+	if (SlotIndex == INDEX_NONE || !Inventory.IsValidIndex(SlotIndex))
 	{
-		if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
-		{
-			APawn* Pawn = DonPlayerState->GetPawn();
-			ADonCharacter* ControlledCharacter = Cast<ADonCharacter>(Pawn);
-
-			if (!ControlledCharacter->Implements<UCombatInterface>())
-			{
-				UE_LOG(LogTemp, Error, TEXT("ControlledCharacter does not implement UCombatInterface!"));
-				return;
-			}
-			// 장착중인 아이템이면 장착 아이템 해제
-			ICombatInterface::Execute_UnequipItem(ControlledCharacter, Inventory[SlotIndex]);
-		}
-
-		FItem Item = Inventory[SlotIndex];
-		int32 RemainingAmount = Amount;
-		int32 IndexToCheck = SlotIndex;
-
-		while (RemainingAmount > 0 && IndexToCheck != INDEX_NONE)
-		{
-			if (Inventory[IndexToCheck].Amount - RemainingAmount > 0)
-			{
-				Inventory[IndexToCheck].Amount -= RemainingAmount;
-				RemainingAmount = 0;				
-			}
-			else
-			{
-				RemainingAmount -= Inventory[IndexToCheck].Amount;
-				FItem DefaultItem;
-				DefaultItem.Amount = 0;
-				DefaultItem.InventorySlotIndex = IndexToCheck;
-				Inventory[IndexToCheck] = DefaultItem;
-			}
-
-			IndexToCheck = FindItemInInventory(Item);
-		}
-		OnInventoryChanged.Broadcast(Inventory);
+		return;
 	}
-}
 
-void UInventoryComponent::SellItem(FItem Item, int32 Amount)
-{
-	int32 ItemIndex = FindItemInInventory(Item);
-	if (ItemIndex != INDEX_NONE)
+	// 아이템 제거 전에 장착 중인 아이템인 경우 해제
+	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
 	{
-		if (Inventory[ItemIndex].Amount - Amount > 0)
+		APawn* Pawn = DonPlayerState->GetPawn();
+
+		if (Pawn && Pawn->Implements<UCombatInterface>())
 		{
-			Inventory[ItemIndex].Amount -= Amount;		
+			ICombatInterface::Execute_UnequipItem(Pawn, Inventory[SlotIndex]);
 		}
 		else
 		{
-			FItem DefaultItem;
-			DefaultItem.Amount = 0;
-			DefaultItem.InventorySlotIndex = ItemIndex;
-			Inventory[ItemIndex] = DefaultItem;
+			UE_LOG(LogTemp, Error, TEXT("Pawn does not implement UCombatInterface!"));
 		}
-		OnInventoryChanged.Broadcast(Inventory);
 	}
+
+	// 아이템 제거 실행
+	FItem& Item = Inventory[SlotIndex];
+
+	if (Item.Amount > Amount)
+	{
+		// 일부 감소
+		Item.Amount -= Amount;
+	}
+	else
+	{
+		// 슬롯 비우기
+		Item = FItem();
+		Item.InventorySlotIndex = SlotIndex;
+	}
+	
+	OnInventoryChanged.Broadcast(Inventory);
 }
 
-void UInventoryComponent::OnRequestSellItem(int32 SlotIndex)
+void UInventoryComponent::RemoveItem(const FItem& Item, int32 Amount)
 {
-	OnInventoryItemSold.Broadcast(SlotIndex);
+	if (Item.ItemName.IsNone() || Amount <= 0)
+	{
+		return;
+	}
+
+	int32 RemainingAmount = Amount;
+
+	// 인벤토리 순회
+	for (int32 i = 0; i < Inventory.Num() && RemainingAmount > 0; ++i)
+	{
+		FItem& InventoryItem = Inventory[i];
+
+		// 동일 아이템이 아니면 skip
+		if (InventoryItem.ItemName != Item.ItemName)
+		{
+			continue;
+		}
+
+		// 아이템 제거
+		if (InventoryItem.Amount > RemainingAmount)
+		{
+			InventoryItem.Amount -= RemainingAmount;
+			RemainingAmount = 0;
+		}
+		// 아이템 제거 및 슬롯 초기화
+		else
+		{
+			RemainingAmount -= InventoryItem.Amount;
+			InventoryItem = FItem();
+			InventoryItem.InventorySlotIndex = i;
+		}
+	}
+	OnInventoryChanged.Broadcast(Inventory);
 }
 
 void UInventoryComponent::UseItem(int32 SlotIndex)
@@ -216,35 +191,5 @@ void UInventoryComponent::UseItem(int32 SlotIndex)
 	UDonItemBase* Item = UDonItemLibrary::CreateItemObjectByTag(this, Inventory[SlotIndex].ItemTag);
 	bool bWasConsumed = false;
 	Item->UseItem(GetOwner(), Inventory[SlotIndex], bWasConsumed);
-	if (bWasConsumed) RemoveItem(SlotIndex, 1);
-}
-
-void UInventoryComponent::UseQuickSlotItem(const FGameplayTag& InputTag)
-{
-	int32 FoundInventoryIndex = *AssignedQuickSlots.Find(InputTag);
-	UseItem(FoundInventoryIndex);
-}
-
-void UInventoryComponent::UpgradeArmorItem(int32 SlotIndex, int32 Amount)
-{
-	Inventory[SlotIndex].EquipmentAttribute.Upgrade += Amount;
-
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
-	{
-		ADonCharacter* ControlledCharacter = Cast<ADonCharacter>(DonPlayerState->GetPawn());
-		
-		if (ControlledCharacter && ControlledCharacter->Implements<UCombatInterface>())
-		{
-			// TODO 아머 업그레이드
-		}
-	}
-}
-
-bool UInventoryComponent::CanAffordItem(int32 Cost)
-{
-	if (ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(GetOwner()))
-	{
-		return DonPlayerState->GetMoney() >= Cost;
-	}
-	return false;
+	if (bWasConsumed) RemoveItemByIndex(SlotIndex, 1);
 }

@@ -21,14 +21,3 @@ void UDonInventorySlotWidget::HandleInventoryUpdated(const TArray<FItem>& Invent
 {
 	NotifyUpdateSlot(Inventory[InventorySlotIndex]);
 }
-
-bool UDonInventorySlotWidget::UpgradeEquipment(int32 Points)
-{
-	if (UInventoryWidgetController* IWC = Cast<UInventoryWidgetController>(WidgetController))
-	{
-		if (!IWC->GetItemInfo(InventorySlotIndex).ItemTag.MatchesTag(FDonGameplayTags::Get().Item_Equippable)) return false;
-		if (!IWC->UpgradeArmorItem(InventorySlotIndex, Points)) return false;
-		return true;
-	}
-	return false;
-}

@@ -25,11 +25,6 @@ void UInventoryWidgetController::HandleInventoryUpdated(const TArray<FItem>& Inv
 	OnInventoryChanged.Broadcast(Inventory);
 }
 
-void UInventoryWidgetController::HandleSlotSellEvent(int32 SlotIndex)
-{
-	GetInventoryComponent()->OnRequestSellItem(SlotIndex);
-}
-
 UInventoryComponent* UInventoryWidgetController::GetInventoryComponent()
 {
 	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
@@ -63,24 +58,4 @@ void UInventoryWidgetController::UseItem(int32 SlotIndex)
 	ADonPlayerState* DonPlayerState = CastChecked<ADonPlayerState>(PlayerState);
 	
 	DonPlayerState->GetInventoryComponent()->UseItem(SlotIndex);
-}
-
-bool UInventoryWidgetController::UpgradeArmorItem(int32 SlotIndex, int32 Points)
-{
-	FItem Item = UDonItemLibrary::FindItemByName(this, FName("Upgrade Crystal"));
-	Item.Amount = 1;
-	TArray<FItem> Items;
-	Items.Add(Item);
-	
-	if (GetInventoryComponent()->HasEnoughItems(Items))
-	{
-		GetInventoryComponent()->UpgradeArmorItem(SlotIndex, Points);
-		const int32 Index = GetInventoryComponent()->FindItemInInventory(Item);
-		if (Index != INDEX_NONE)
-		{
-			GetInventoryComponent()->RemoveItem(Index, Item.Amount);
-			return true;
-		}
-	}
-	return false;
 }

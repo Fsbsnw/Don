@@ -26,7 +26,4 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory Slot")
 	void NotifyUpdateSlot(const FItem& Item);
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory Slot")
-	bool UpgradeEquipment(int32 Points = 1);
 };

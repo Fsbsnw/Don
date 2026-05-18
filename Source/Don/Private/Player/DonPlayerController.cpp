@@ -218,58 +218,6 @@ void ADonPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		OnUIOpenRequested.ExecuteIfBound(InputTag);
 	}
 
-	// Use Quick Slot 1
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_NumKey_1))
-	{
-		ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
-		if (DonPlayerState)
-		{
-			if (DonPlayerState->GetInventoryComponent()->FindQuickSlotItemByInputTag(InputTag))
-			{
-				DonPlayerState->GetInventoryComponent()->UseQuickSlotItem(InputTag);
-			}
-		}
-	}
-
-	// Use Quick Slot 2
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_NumKey_2))
-	{
-		ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
-		if (DonPlayerState)
-		{
-			if (DonPlayerState->GetInventoryComponent()->FindQuickSlotItemByInputTag(InputTag))
-			{
-				DonPlayerState->GetInventoryComponent()->UseQuickSlotItem(InputTag);
-			}
-		}
-	}
-
-	// Use Quick Slot 3
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_NumKey_3))
-	{
-		ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
-		if (DonPlayerState)
-		{
-			if (DonPlayerState->GetInventoryComponent()->FindQuickSlotItemByInputTag(InputTag))
-			{
-				DonPlayerState->GetInventoryComponent()->UseQuickSlotItem(InputTag);
-			}
-		}
-	}
-
-	// Use Quick Slot 4
-	if (InputTag.MatchesTagExact(FDonGameplayTags::Get().InputTag_NumKey_4))
-	{
-		ADonPlayerState* DonPlayerState = Cast<ADonPlayerState>(PlayerState);
-		if (DonPlayerState)
-		{
-			if (DonPlayerState->GetInventoryComponent()->FindQuickSlotItemByInputTag(InputTag))
-			{
-				DonPlayerState->GetInventoryComponent()->UseQuickSlotItem(InputTag);
-			}
-		}
-	}
-
 	if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
 }
 

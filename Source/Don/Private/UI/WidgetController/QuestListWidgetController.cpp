@@ -36,7 +36,7 @@ void UQuestListWidgetController::AwardQuestRewards(FString QuestTitle)
 			FItem ItemToRemove = UDonItemLibrary::FindItemByName(GetWorld(), Objective.ItemID);
 			int32 IndexToRemove = DonPlayerState->GetInventoryComponent()->FindItemInInventory(ItemToRemove);
 			if (IndexToRemove == INDEX_NONE) return;
-			DonPlayerState->GetInventoryComponent()->RemoveItem(IndexToRemove, Objective.ItemAmount);						
+			DonPlayerState->GetInventoryComponent()->RemoveItemByIndex(IndexToRemove, Objective.ItemAmount);						
 		}
 	}
 

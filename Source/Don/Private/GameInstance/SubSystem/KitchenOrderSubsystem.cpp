@@ -124,7 +124,7 @@ void UKitchenOrderSubsystem::UpdateKitchenOrders()
 			if (Index != INDEX_NONE)
 			{
 				FinalSatisfaction *= 2;
-				DonPlayerState->GetInventoryComponent()->RemoveItem(Index);
+				DonPlayerState->GetInventoryComponent()->RemoveItemByIndex(Index);
 			}
 			
 			UInnCustomerGroup* Group = InnSystem->GetGroupInfo(Customer->GetGroupID());
