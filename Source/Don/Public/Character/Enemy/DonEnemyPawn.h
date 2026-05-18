@@ -3,10 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemInterface.h"
 #include "Character/DonCharacterTypes.h"
 #include "Character/DonPawnBase.h"
-#include "Character/Interface/CombatInterface.h"
 #include "GameFramework/Pawn.h"
 #include "DonEnemyPawn.generated.h"
 
@@ -44,7 +42,7 @@ protected:
 	// Looting
 	
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FLootableItem> LootableItems;
+	TArray<FItemLootableInfo> LootableItems;
 
 	UPROPERTY(EditAnywhere, Category = "Looting")
 	TSubclassOf<ALootableActor> LootableXPClass;

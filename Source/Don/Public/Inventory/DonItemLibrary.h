@@ -40,5 +40,5 @@ public:
 	static void SpawnLootableMoney(const UObject* WorldContextObject, int32 Amount, int32 Quantity, FVector SpawnLocation, FRotator SpawnRotation);
 
 	UFUNCTION(BlueprintCallable, Category = "DonItemLibrary | Item")
-	static void SpawnLootableItem(const UObject* WorldContextObject, TArray<FLootableItem> Items, FVector SpawnLocation, FRotator SpawnRotation, float ItemDropRate);
+	static void SpawnLootableItem(const UObject* WorldContextObject, TArray<FItemLootableInfo> Items, FVector SpawnLocation, FRotator SpawnRotation, float ItemDropRate);
 };

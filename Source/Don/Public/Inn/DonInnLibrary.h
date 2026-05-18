@@ -42,10 +42,4 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | RoomService")
 	static FRoomServiceOrder GetRandomRoomService(const UObject* WorldContextObject);
-
-	UFUNCTION(BlueprintCallable, Category = "DonInnLibrary | RoomService")
-	static void AddRoomServiceOrder(const UObject* WorldContextObject, FRoomServiceOrder RoomServiceOrder);
-
-	UFUNCTION(BlueprintPure, Category = "DonInnLibrary | RoomService")
-	static FRoomServiceOrder RemoveRoomServiceOrder(const UObject* WorldContextObject);
 };

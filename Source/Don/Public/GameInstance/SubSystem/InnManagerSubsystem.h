@@ -148,7 +148,6 @@ public:
 
 	ECustomerInnState GetGroupInnState(int32 GroupID);
 	int32 GetGroupSize(int32 GroupID);
-	// int32 GetGroupTable(int32 GroupID);
 
 	void ReturnGroupSeats(int32 GroupID);
 	void RemoveGroup(int32 GroupID);
@@ -171,7 +170,6 @@ public:
 	FInnCustomerGroupSnapshot GetLodgerInfo(int32 RoomNumber);
 	bool CheckInCustomer(int32 GroupID);
 
-	UFUNCTION(BlueprintCallable)
 	void MorningCheckOut();
 	void CloseInnAtMidnight();
 	

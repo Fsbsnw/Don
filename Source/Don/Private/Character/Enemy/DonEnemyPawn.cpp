@@ -122,7 +122,7 @@ void ADonEnemyPawn::Die_Implementation(const FVector& DeathImpulse, float ItemDr
 
 	UDonItemLibrary::SpawnLootableXP(this, EnemyClassInfo.DroppableXP, SpawnLocation, SpawnRotation);
 	UDonItemLibrary::SpawnLootableMoney(this, EnemyClassInfo.DroppableMoney, FMath::RandRange(0, 3), SpawnLocation, SpawnRotation);
-	for (FLootableItem& LootableItem : LootableItems)
+	for (FItemLootableInfo& LootableItem : LootableItems)
 	{
 		// Normalized Rate
 		float AdjustedRate = ItemDropRate * 0.01f * LootableItem.DropRate;
