@@ -107,7 +107,7 @@ void UDonItemLibrary::SpawnLootableMoney(const UObject* WorldContextObject, int3
 	}
 }
 
-void UDonItemLibrary::SpawnLootableItem(const UObject* WorldContextObject, TArray<FLootableItem> Items, FVector SpawnLocation, FRotator SpawnRotation, float ItemDropRate)
+void UDonItemLibrary::SpawnLootableItem(const UObject* WorldContextObject, TArray<FItemLootableInfo> Items, FVector SpawnLocation, FRotator SpawnRotation, float ItemDropRate)
 {
 	if (FMath::RandRange(1, 100) > ItemDropRate * 100) return;
 	

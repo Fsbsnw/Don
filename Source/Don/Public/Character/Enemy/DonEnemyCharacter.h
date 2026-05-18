@@ -49,7 +49,7 @@ public:
 	float TestXDivide = 2.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FLootableItem> LootableItems;
+	TArray<FItemLootableInfo> LootableItems;
 
 	UPROPERTY(EditDefaultsOnly)
 	EEnemyClass EnemyClass = EEnemyClass::Fighter;

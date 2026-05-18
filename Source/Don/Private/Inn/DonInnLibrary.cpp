@@ -7,7 +7,6 @@
 #include "Data/RoomServiceAsset.h"
 #include "GameInstance/DonGameInstance.h"
 #include "GameInstance/SubSystem/KitchenOrderSubsystem.h"
-#include "GameInstance/SubSystem/RoomServiceOrderSubsystem.h"
 #include "Inn/Data/CustomerAsset.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -56,20 +55,4 @@ FGuid UDonInnLibrary::FindNextQueuedKitchenOrder(const UObject* WorldContextObje
 	if (KitchenOrderSubsystem == nullptr) return FGuid();
 
 	return KitchenOrderSubsystem->FindNextQueuedOrderID();
-}
-
-void UDonInnLibrary::AddRoomServiceOrder(const UObject* WorldContextObject, FRoomServiceOrder Order)
-{
-	URoomServiceOrderSubsystem* RoomServiceOrderSubsystem = UGameplayStatics::GetGameInstance(WorldContextObject)->GetSubsystem<URoomServiceOrderSubsystem>();
-	if (RoomServiceOrderSubsystem == nullptr) return;
-
-	RoomServiceOrderSubsystem->EnqueueRoomServiceOrder(Order);
-}
-
-FRoomServiceOrder UDonInnLibrary::RemoveRoomServiceOrder(const UObject* WorldContextObject)
-{
-	URoomServiceOrderSubsystem* RoomServiceOrderSubsystem = UGameplayStatics::GetGameInstance(WorldContextObject)->GetSubsystem<URoomServiceOrderSubsystem>();
-	if (RoomServiceOrderSubsystem == nullptr) return FRoomServiceOrder();
-
-	return RoomServiceOrderSubsystem->DequeueRoomServiceOrder();
 }
