@@ -356,5 +356,3 @@ Pawn/Character 존재 여부와 관계없이 안정적으로 동작하도록 구
 - 동일한 입력 키라도 맵에 따라 서로 다른 위젯을 매핑할 수 있도록 구성
  
 </details>
-
-[리팩토링 및 구조 설계 repo](https://github.com/Fsbsnw/UnrealPlayground)
