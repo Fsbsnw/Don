@@ -84,7 +84,7 @@
  * RHI Thread -> GPU가 이해하는 저수준 언어로 파싱 및 전달
  * **GPU : 드로우 콜 처리 => 이 부분에서 21.11ms가 발생** <br>
  
- 기본적으로 Game Thread가 1프레임 정도는 앞서서 처리할 수 있지만 최종적으로 GPU에서 처리하는 시간이 1프레임(설정 값 기준)을 초과한 지연이 발생. <br>
+ GPU에서 처리하는 시간이 1프레임(설정 값 기준)을 초과한 지연이 발생. <br>
  GPU를 제외한 세 개의 스레드에서 GPU 작업 완료 후에 처리될 동기화를 기다리기 때문에 프레임 드랍 초래. <br>
  이를 실제로 파악하기 위해 **Unreal Insights** 툴을 사용
  
@@ -113,7 +113,7 @@
  * ShadowDepths **5.2ms**
  
  => 주로 Mesh의 **Triangles 수에** 비례하는 처리 비용들 <br>
- * 가벼운 스켈레탈 메시로 교체 후 LOD의 **Cull distance** 설정
+ * 가벼운 스켈레탈 메시로 교체
  * 애니메이션 적용시키고 멀리 있는 애니메이션 업데이트 주기 감소(**Enable Update Rate Optimizations**) 활성화
    
  <img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/0023eaaa-4803-4729-9b09-738c933cb750" />
@@ -287,71 +287,4 @@
   4. 결과 : 개별 액터의 판단으로 인해 발생하는 **논리적 충돌 제거** 및 의사결정 코드를 한 곳에 정리 가능
 
  </details>
-</details>
-
-<details>
- <summary>왜 하나의 Repository?</summary>
- 처음에는 언리얼 C++ 시스템 구현 연습을 위한 기능 테스트 프로젝트로 시작했습니다.
- 
- 개발 과정에서 시스템 구조가 안정화되면서, 동일한 코드베이스를 활용해 장르가 다른 게임(여관 경영 / 액션)까지 확장하는 형태로 발전시켰습니다.
- 
- 이 과정에서 **공통 시스템을 재사용 가능한 구조로 개선하고, 장르가 달라져도 확장 가능한지 검증**하는 것을 목표로 했습니다.
-
- ## 하나의 프로젝트에서 두 장르를 구현하며 겪은 트러블슈팅
-
- ### 1. Character 의존적인 초기화 구조 개선
-초기에는 "컨트롤러가 캐릭터를 Possess한다"는 전제 하에,  
-`Character` 클래스에서 GAS 초기화 및 HUD 초기화를 수행하도록 설계했습니다.
-
- ```c++
-void ADonCharacter::InitializeHUD()
-{
-	ADonPlayerState* DonPlayerState = GetPlayerState<ADonPlayerState>();
-	DonPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(DonPlayerState, this);
-	AbilitySystemComponent = DonPlayerState->GetAbilitySystemComponent();
-	AttributeSet = DonPlayerState->GetAttributeSet();
-	
-	if (ADonPlayerController* DonPlayerController = Cast<ADonPlayerController>(GetController()))
-	{
-		if (ADonHUD* DonHUD = Cast<ADonHUD>(DonPlayerController->GetHUD()))
-		{
-			DonHUD->InitOverlay(DonPlayerController, DonPlayerState, AbilitySystemComponent, AttributeSet);
-		}
-	}
-}
- ```
-
-하지만 여관 경영 모드에서는 캐릭터 메시가 필요하지 않아,
-기본 Pawn/Character가 존재하지 않는 상황이 발생했고 이로 인해 초기화가 수행되지 않아 크래시가 발생했습니다.
-
-**해결**: 캐릭터에 의존하던 HUD/GAS 초기화 책임을 `PlayerController`로 옮겨,
-Pawn/Character 존재 여부와 관계없이 안정적으로 동작하도록 구조를 개선했습니다.
-
-  ```c++
- void ADonPlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-
-	InitializeHUD();
-	RegisterUIBinding();	
-}
- ```
-
-### 2. 게임 모드별 UI 입력 충돌 해결
-
-[UIManagerSubsystem.cpp](Source/Don/Private/UI/UIManagerSubsystem.cpp#L65)<br>
-액션 모드에서는 WASD가 이동 입력이지만,
-여관 모드에서는 WASD가 메뉴 이동/관리 UI 조작 등 다른 입력으로 동작할 가능성이 있었습니다.
-
-이 확장성을 확보하기 위해,
-
-* UI Manager를 통해 UI 제어를 중앙화하고
-* 맵/게임 모드별로 다른 UI 동작을 UIConfigData(DataAsset)로 분리하여 관리했습니다.
-
- <img width="48%" height="800" alt="image" src="https://github.com/user-attachments/assets/bad8ad54-4874-410f-8b73-ed87be9fdc8a" />
- <img width="48%" height="800" alt="image" src="https://github.com/user-attachments/assets/a3116bff-7b6a-45bc-8d9b-9ded8ee16fe6" />
-
-- 맵마다 필요한 UI 입력 바인딩 개수(예: 3개 / 2개)가 달라도 Config로 대응 가능
-- 동일한 입력 키라도 맵에 따라 서로 다른 위젯을 매핑할 수 있도록 구성
- 
 </details>
