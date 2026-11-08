@@ -6,7 +6,7 @@
 ## 개발 환경 : Unreal Engine 5.2, Git, Rider
 
 <details>
- <summary>3D 뱀파이어 서바이벌</summary>
+ <summary>3D 액션 서바이벌</summary>
 
  <br><img width="409" height="429" alt="Image" src="https://github.com/user-attachments/assets/7191d90b-b254-4b12-9a9a-7bd03c5b7981" /><br>
 
@@ -15,7 +15,7 @@
 
 ## 게임 장르
 
-3D 뱀파이어 서바이벌류
+3D 서바이벌
 
 
 ## 기획 배경
